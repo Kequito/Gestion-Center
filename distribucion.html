@@ -78,6 +78,13 @@
       .reset-button:hover {
         background-color: #3e5da8;
       }
+      .counter-box {
+        text-align: center;
+        font-size: 16px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #a5c5f7;
+      }
       table.coverage-table,
       table.distribution-table {
         width: 100%;
@@ -139,6 +146,7 @@
         <div class="reset-container">
           <button class="reset-button" onclick="resetFilters()">🔄 Restablecer filtros</button>
         </div>
+        <div class="counter-box" id="op-counter">Mostrando 0 operadores</div>
         <table class="distribution-table" id="tabla-distribucion">
           <thead>
             <tr id="filter-row"></tr>
@@ -160,6 +168,12 @@
     </div>
 
     <script>
+      function actualizarContador() {
+        const total = Array.from(document.querySelectorAll('#tabla-distribucion tbody tr'))
+          .filter(row => row.style.display !== 'none').length;
+        document.getElementById('op-counter').textContent = `Mostrando ${total} operadores`;
+      }
+
       function resetFilters() {
         document.querySelectorAll('.filter-input').forEach(input => {
           input.value = '';
@@ -167,6 +181,7 @@
         document.querySelectorAll('#tabla-distribucion tbody tr').forEach(row => {
           row.style.display = '';
         });
+        actualizarContador();
       }
 
       fetch('datadistribucion.json')
@@ -187,6 +202,8 @@
             `;
             tbody.appendChild(row);
           });
+
+          actualizarContador();
 
           const valoresUnicos = {};
           columnas.forEach((col, index) => {
@@ -229,6 +246,7 @@
                 const visible = filters.every((filtro, i) => !filtro || cells[i].textContent.toLowerCase().includes(filtro));
                 row.style.display = visible ? '' : 'none';
               });
+              actualizarContador();
             });
           });
         });
