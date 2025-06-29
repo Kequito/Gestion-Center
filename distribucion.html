@@ -101,6 +101,22 @@
         outline: 2px solid #5a7bc2;
         background-color: #3b507a;
       }
+      .reset-button {
+        display: block;
+        margin: 20px auto 0;
+        padding: 10px 20px;
+        background-color: #5a7bc2;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-family: 'Lexend', sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .reset-button:hover {
+        background-color: #3e5da8;
+      }
     </style>
   </head>
   <body>
@@ -135,10 +151,20 @@
             <!-- Contenido dinámico aquí -->
           </tbody>
         </table>
+        <button class="reset-button" onclick="resetFilters()">🔄 Restablecer filtros</button>
       </section>
     </div>
 
     <script>
+      function resetFilters() {
+        document.querySelectorAll('.filter-input').forEach(input => {
+          input.value = '';
+        });
+        document.querySelectorAll('#tabla-distribucion tbody tr').forEach(row => {
+          row.style.display = '';
+        });
+      }
+
       fetch('datadistribucion.json')
         .then(response => response.json())
         .then(data => {
