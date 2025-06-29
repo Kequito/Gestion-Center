@@ -82,6 +82,16 @@
       table tr:hover {
         background-color: #324469;
       }
+      .filter-input {
+        width: 95%;
+        padding: 6px;
+        border: none;
+        border-radius: 4px;
+        text-align: center;
+        margin-bottom: 6px;
+        background-color: #1c2a45;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -92,7 +102,7 @@
         <a href="#informes">📝 Informes</a>
         <a href="distribucion.html">📋 Distribución</a>
         <a href="#estadisticas">📈 Estadísticas</a>
-        <a href="#cobertura">🌎 Cobertura</a>
+        <a href="cobertura.html">🌎 Cobertura</a>
         <a href="#contacto">📬 Contacto</a>
       </nav>
     </aside>
@@ -101,6 +111,15 @@
         <h2>📋 Distribución de Operadores</h2>
         <table class="distribution-table" id="tabla-distribucion">
           <thead>
+            <tr>
+              <th><input class="filter-input" data-column="0" placeholder="Filtrar..." /></th>
+              <th><input class="filter-input" data-column="1" placeholder="Filtrar..." /></th>
+              <th><input class="filter-input" data-column="2" placeholder="Filtrar..." /></th>
+              <th><input class="filter-input" data-column="3" placeholder="Filtrar..." /></th>
+              <th><input class="filter-input" data-column="4" placeholder="Filtrar..." /></th>
+              <th><input class="filter-input" data-column="5" placeholder="Filtrar..." /></th>
+              <th><input class="filter-input" data-column="6" placeholder="Filtrar..." /></th>
+            </tr>
             <tr>
               <th>Team Leader</th>
               <th>Operador</th>
@@ -137,6 +156,23 @@
             tbody.appendChild(row);
           });
         });
+
+      document.querySelectorAll('.filter-input').forEach(input => {
+        input.addEventListener('keyup', function () {
+          const column = this.dataset.column;
+          const filter = this.value.toLowerCase();
+          const rows = document.querySelectorAll('#tabla-distribucion tbody tr');
+
+          rows.forEach(row => {
+            const cell = row.cells[column];
+            if (cell.textContent.toLowerCase().includes(filter)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        });
+      });
     </script>
   </body>
 </html>
