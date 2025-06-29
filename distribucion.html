@@ -111,15 +111,7 @@
         <h2>📋 Distribución de Operadores</h2>
         <table class="distribution-table" id="tabla-distribucion">
           <thead>
-            <tr>
-              <th><input class="filter-input" data-column="0" placeholder="Filtrar..." /></th>
-              <th><input class="filter-input" data-column="1" placeholder="Filtrar..." /></th>
-              <th><input class="filter-input" data-column="2" placeholder="Filtrar..." /></th>
-              <th><input class="filter-input" data-column="3" placeholder="Filtrar..." /></th>
-              <th><input class="filter-input" data-column="4" placeholder="Filtrar..." /></th>
-              <th><input class="filter-input" data-column="5" placeholder="Filtrar..." /></th>
-              <th><input class="filter-input" data-column="6" placeholder="Filtrar..." /></th>
-            </tr>
+            <tr id="filter-row"></tr>
             <tr>
               <th>Team Leader</th>
               <th>Operador</th>
@@ -142,6 +134,7 @@
         .then(response => response.json())
         .then(data => {
           const tbody = document.querySelector('#tabla-distribucion tbody');
+          const columnas = ['A', 'B', 'C', 'E', 'F', 'G', 'K'];
           data.forEach(op => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -155,24 +148,51 @@
             `;
             tbody.appendChild(row);
           });
-        });
 
-      document.querySelectorAll('.filter-input').forEach(input => {
-        input.addEventListener('keyup', function () {
-          const column = this.dataset.column;
-          const filter = this.value.toLowerCase();
-          const rows = document.querySelectorAll('#tabla-distribucion tbody tr');
+          const valoresUnicos = {};
+          columnas.forEach((col, index) => {
+            valoresUnicos[index] = [...new Set(data.map(op => op[col]))].sort();
+          });
 
-          rows.forEach(row => {
-            const cell = row.cells[column];
-            if (cell.textContent.toLowerCase().includes(filter)) {
-              row.style.display = '';
+          const filterRow = document.getElementById('filter-row');
+          columnas.forEach((col, index) => {
+            const th = document.createElement('th');
+            if ([3, 4, 5, 6].includes(index)) {
+              const select = document.createElement('select');
+              select.classList.add('filter-input');
+              const defaultOption = document.createElement('option');
+              defaultOption.value = '';
+              defaultOption.textContent = 'Filtrar...';
+              select.appendChild(defaultOption);
+              valoresUnicos[index].forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+              });
+              select.dataset.column = index;
+              th.appendChild(select);
             } else {
-              row.style.display = 'none';
+              const input = document.createElement('input');
+              input.classList.add('filter-input');
+              input.placeholder = 'Filtrar...';
+              input.dataset.column = index;
+              th.appendChild(input);
             }
+            filterRow.appendChild(th);
+          });
+
+          document.querySelectorAll('.filter-input').forEach(input => {
+            input.addEventListener('input', function () {
+              const filters = Array.from(document.querySelectorAll('.filter-input')).map(el => el.value.toLowerCase());
+              document.querySelectorAll('#tabla-distribucion tbody tr').forEach(row => {
+                const cells = Array.from(row.cells);
+                const visible = filters.every((filtro, i) => !filtro || cells[i].textContent.toLowerCase().includes(filtro));
+                row.style.display = visible ? '' : 'none';
+              });
+            });
           });
         });
-      });
     </script>
   </body>
 </html>
