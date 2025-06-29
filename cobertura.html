@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Gestión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Lexend', sans-serif;
+        background-color: #1c2a45;
+        color: white;
+        display: flex;
+      }
+      aside {
+        background-color: #152035;
+        width: 220px;
+        height: 100vh;
+        padding: 40px 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 0;
+        top: 0;
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 40px;
+        text-align: center;
+      }
+      nav a {
+        color: white;
+        margin: 24px 0;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 12px;
+        border-radius: 6px;
+        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      nav a:hover {
+        background-color: #1c2a45;
+      }
+      .main-content {
+        flex-grow: 1;
+        padding: 60px;
+        padding-left: 260px;
+        box-sizing: border-box;
+      }
+      .hero {
+        text-align: center;
+        padding-top: 80px;
+      }
+      .hero h1 {
+        font-size: 48px;
+        margin-bottom: 20px;
+      }
+      .hero p {
+        font-size: 18px;
+        max-width: 600px;
+        margin: 0 auto 30px;
+        line-height: 1.6;
+      }
+      .hero button {
+        background-color: transparent;
+        color: white;
+        border: 2px solid white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .hero button:hover {
+        background-color: white;
+        color: #1c2a45;
+      }
+      .section {
+        margin-top: 100px;
+      }
+      .section h2 {
+        font-size: 32px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      table.coverage-table {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        border-collapse: collapse;
+        background-color: #2a3b5c;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      table.coverage-table th,
+      table.coverage-table td {
+        padding: 16px;
+        text-align: center;
+        border-bottom: 1px solid #3a4a6a;
+      }
+      table.coverage-table th {
+        background-color: #1f2d4a;
+      }
+      table.coverage-table tr:hover {
+        background-color: #324469;
+      }
+      table.coverage-table a {
+        color: #4fc3f7;
+        text-decoration: none;
+      }
+      table.coverage-table a[target="_blank"]::after {
+        content: " \2197";
+        font-size: 14px;
+      }
+      .flag {
+        width: 28px;
+        height: 20px;
+        border-radius: 4px;
+        object-fit: cover;
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+      .country-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div class="logo">📊 Gestión Center</div>
+      <nav>
+        <a href="index.html">🏠 Inicio</a>
+        <a href="#informes">📝 Informes</a>
+        <a href="#distribuciones">📋 Distribuciones</a>
+        <a href="#estadisticas">📈 Estadísticas</a>
+        <a href="#cobertura">🌎 Cobertura</a>
+        <a href="#contacto">📬 Contacto</a>
+      </nav>
+    </aside>
+    <div class="main-content">
+      <section class="section" id="cobertura">
+        <h2>🌎 Cobertura de Campañas</h2>
+        <table class="coverage-table">
+          <thead>
+            <tr>
+              <th>País</th>
+              <th>Última Actualización</th>
+              <th>Acceso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/cl.png" alt="Chile">Chile</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1xp1Z2h_2H-UhAetyvaTGdJPshpmA89aod51IP6UdoUY/edit?gid=1980937451#gid=1980937451" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/co.png" alt="Colombia">Colombia</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1DbCCUk8am0NFhBwZsv3OxB9sH1YgDGuQDexWr8Sq6RA/edit?gid=114472255#gid=114472255" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/cr.png" alt="Costa Rica">Costa Rica</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1rJGgjvpPjrLso9lMx1FWb_vkZ5AyA_AGR9-YnPe0q2A/edit?pli=1&gid=577202553#gid=577202553" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/ec.png" alt="Ecuador">Ecuador</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1gEs7RfH-4JkklOgJLPCVUVtiKo9-zCGG/edit?gid=1749403733#gid=1749403733" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/mx.png" alt="México">México</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/18A8RXs_YhPXEJ_bU2wnSaXvjoBm2xkIK8ZzYjDrgfhI/edit?gid=2009048853#gid=2009048853" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/py.png" alt="Paraguay">Paraguay</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1AC7l_mbaIv5ixzOuQ3BAqkX_rI2MJMemebSHIbSHFNA/edit?gid=221079964#gid=221079964" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/pe.png" alt="Perú">Perú</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1FSUI2NUv1epdilf465Z4yWmAcHcjNlmyOgGqSlH1KdA/edit?pli=1&gid=1957863499#gid=1957863499" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/uy.png" alt="Uruguay">Uruguay</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1qzgsxKX0oHDW3Vm1pMN_Uo-PPAzFRZYM1B4dy7CTiLM/edit?gid=1915480262#gid=1915480262" target="_blank">Ver Cobertura</a></td>
+            </tr>
+            <tr>
+              <td class="country-cell"><img class="flag" src="https://flagcdn.com/w40/ve.png" alt="Venezuela">Venezuela</td>
+              <td>28/06/2025</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/16iW6yivOrHZ_bRgWVbBqfTfoDloi-3UutvD9XeaxslY/edit?gid=1680339308#gid=1680339308" target="_blank">Ver Cobertura</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </body>
+</html>

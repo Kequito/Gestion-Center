@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Gestión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Lexend', sans-serif;
+        background-color: #1c2a45;
+        color: white;
+        display: flex;
+      }
+      aside {
+        background-color: #152035;
+        width: 220px;
+        height: 100vh;
+        padding: 40px 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 0;
+        top: 0;
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 40px;
+        text-align: center;
+      }
+      nav a {
+        color: white;
+        margin: 24px 0;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 12px;
+        border-radius: 6px;
+        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      nav a:hover {
+        background-color: #1c2a45;
+      }
+      .main-content {
+        flex-grow: 1;
+        padding: 60px;
+        padding-left: 260px;
+        box-sizing: border-box;
+      }
+      .section {
+        margin-top: 100px;
+      }
+      .section h2 {
+        font-size: 32px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      table.coverage-table,
+      table.distribution-table {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        border-collapse: collapse;
+        background-color: #2a3b5c;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      table th,
+      table td {
+        padding: 14px;
+        text-align: center;
+        border-bottom: 1px solid #3a4a6a;
+      }
+      table th {
+        background-color: #1f2d4a;
+      }
+      table tr:hover {
+        background-color: #324469;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div class="logo">📊 Gestión Center</div>
+      <nav>
+        <a href="index.html">🏠 Inicio</a>
+        <a href="#informes">📝 Informes</a>
+        <a href="#distribucion">📋 Distribuciones</a>
+        <a href="#estadisticas">📈 Estadísticas</a>
+        <a href="#cobertura">🌎 Cobertura</a>
+        <a href="#contacto">📬 Contacto</a>
+      </nav>
+    </aside>
+    <div class="main-content">
+      <section class="section" id="distribucion">
+        <h2>📋 Distribución de Operadores</h2>
+        <table class="distribution-table" id="tabla-distribucion">
+          <thead>
+            <tr>
+              <th>Team Leader</th>
+              <th>Operador</th>
+              <th>PEROP1AM</th>
+              <th>Campaña</th>
+              <th>Descanso</th>
+              <th>Turno</th>
+              <th>Empresa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Contenido dinámico aquí -->
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <script>
+      fetch('datadistribucion.json')
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector('#tabla-distribucion tbody');
+          data.forEach(op => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${op.teamleader}</td>
+              <td>${op.operador}</td>
+              <td>${op.perop1am}</td>
+              <td>${op.campania}</td>
+              <td>${op.descanso}</td>
+              <td>${op.turno}</td>
+              <td>${op.empresa}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        });
+    </script>
+  </body>
+</html>
