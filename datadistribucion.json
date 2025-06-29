@@ -1,12 +1,12 @@
 [
  {
-   "teamleader": "AIXA CASTELLANOS",
-   "operador": "ALEXANDRA INGRID TAPULLIMA URQUIA",
-   "perop1am": "PEROP1AM-37107",
-   "campania": "ECUADOR",
-   "descanso": "DOMINGO",
-   "turno": "13:00-22:00",
-   "empresa": "INTEGRAL"
+   "A": "AIXA CASTELLANOS",
+   "B": "ALEXANDRA INGRID TAPULLIMA URQUIA",
+   "C": "PEROP1AM-37107",
+   "E": "ECUADOR",
+   "F": "DOMINGO",
+   "G": "13:00-22:00",
+   "K": "INTEGRAL"
  },
  {
    "A": "AIXA CASTELLANOS",
