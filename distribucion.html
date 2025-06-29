@@ -166,7 +166,7 @@
           const filterRow = document.getElementById('filter-row');
           columnas.forEach((col, index) => {
             const th = document.createElement('th');
-            if ([3, 4, 5, 6].includes(index)) {
+            if ([0, 3, 4, 5, 6].includes(index)) {
               const select = document.createElement('select');
               select.classList.add('filter-input');
               const defaultOption = document.createElement('option');
