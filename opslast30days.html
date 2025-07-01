@@ -110,7 +110,8 @@
       table tr:hover {
         background-color: #324469;
       }
-      .filter-input {
+      .filter-input,
+      .filter-select {
         width: 100%;
         padding: 6px;
         border: none;
@@ -125,14 +126,10 @@
         -webkit-appearance: none;
         -moz-appearance: none;
       }
-      .filter-input:focus {
+      .filter-input:focus,
+      .filter-select:focus {
         outline: 2px solid #5a7bc2;
         background-color: #3b507a;
-      }
-      .stats-table td:nth-child(4) {
-        font-size: 12px;
-        word-wrap: break-word;
-        white-space: normal;
       }
     </style>
   </head>
@@ -165,9 +162,7 @@
               <th>BI-04 -> Operator / Country -> Last 30 Days</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Contenido dinámico aquí -->
-          </tbody>
+          <tbody></tbody>
         </table>
       </section>
     </div>
@@ -180,7 +175,7 @@
       }
 
       function resetStatsFilters() {
-        document.querySelectorAll('#tabla-stats .filter-input').forEach(input => {
+        document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select').forEach(input => {
           input.value = '';
         });
         document.querySelectorAll('#tabla-stats tbody tr').forEach(row => {
@@ -196,7 +191,7 @@
           const columnas = ['A', 'B', 'C', 'D'];
           data.forEach(op => {
             const row = document.createElement('tr');
-            const link = `<a href="${op.D}" target="_blank" style="color: #87cefa; text-decoration: underline;">Link al BI-04</a>`;
+            const link = `<a href="${op.D}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-04</a>`;
             row.innerHTML = `
               <td>${op.A}</td>
               <td>${op.B}</td>
@@ -208,33 +203,48 @@
 
           actualizarContadorStats();
 
-          const valoresUnicos = {};
-          columnas.forEach((col, index) => {
-            valoresUnicos[index] = [...new Set(data.map(op => op[col]))].sort();
-          });
+          const valoresUnicos = {
+            0: [...new Set(data.map(op => op.A))].sort(),
+          };
 
           const filterRow = document.getElementById('filter-row-stats');
-          columnas.forEach((col, index) => {
+
+          const thTeam = document.createElement('th');
+          const selectTeam = document.createElement('select');
+          selectTeam.classList.add('filter-select');
+          selectTeam.innerHTML = '<option value="">Filtrar...</option>' + valoresUnicos[0].map(v => `<option value="${v}">${v}</option>`).join('');
+          selectTeam.dataset.column = 0;
+          thTeam.appendChild(selectTeam);
+          filterRow.appendChild(thTeam);
+
+          for (let i = 1; i < 3; i++) {
             const th = document.createElement('th');
             const input = document.createElement('input');
             input.classList.add('filter-input');
             input.placeholder = 'Filtrar...';
-            input.dataset.column = index;
+            input.dataset.column = i;
             th.appendChild(input);
             filterRow.appendChild(th);
+          }
+
+          const thVacio = document.createElement('th');
+          filterRow.appendChild(thVacio);
+
+          document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select').forEach(input => {
+            input.addEventListener('input', filtrarStats);
+            input.addEventListener('change', filtrarStats);
           });
 
-          document.querySelectorAll('#tabla-stats .filter-input').forEach(input => {
-            input.addEventListener('input', function () {
-              const filters = Array.from(document.querySelectorAll('#tabla-stats .filter-input')).map(el => el.value.toLowerCase());
-              document.querySelectorAll('#tabla-stats tbody tr').forEach(row => {
-                const cells = Array.from(row.cells);
-                const visible = filters.every((filtro, i) => !filtro || cells[i].textContent.toLowerCase().includes(filtro));
-                row.style.display = visible ? '' : 'none';
-              });
-              actualizarContadorStats();
+          function filtrarStats() {
+            const filtros = Array.from(document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select'))
+              .map(el => el.value.toLowerCase());
+            document.querySelectorAll('#tabla-stats tbody tr').forEach(row => {
+              const cells = Array.from(row.cells);
+              const visible = filtros.every((filtro, i) => !filtro || cells[i].textContent.toLowerCase().includes(filtro));
+              row.style.display = visible ? '' : 'none';
             });
-          });
+            actualizarContadorStats();
+          }
         });
     </script>
   </body>
