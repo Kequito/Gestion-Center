@@ -196,11 +196,12 @@
           const columnas = ['A', 'B', 'C', 'D'];
           data.forEach(op => {
             const row = document.createElement('tr');
+            const link = `<a href="${op.D}" target="_blank" style="color: #87cefa; text-decoration: underline;">Link al BI-04</a>`;
             row.innerHTML = `
               <td>${op.A}</td>
               <td>${op.B}</td>
               <td>${op.C}</td>
-              <td>${op.D}</td>
+              <td>${link}</td>
             `;
             tbody.appendChild(row);
           });
