@@ -95,12 +95,14 @@
         background-color: #2a3b5c;
         border-radius: 8px;
         overflow: hidden;
+        table-layout: fixed;
       }
       table th,
       table td {
         padding: 14px;
         text-align: center;
         border-bottom: 1px solid #3a4a6a;
+        word-wrap: break-word;
       }
       table th {
         background-color: #1f2d4a;
@@ -126,6 +128,11 @@
       .filter-input:focus {
         outline: 2px solid #5a7bc2;
         background-color: #3b507a;
+      }
+      .stats-table td:nth-child(4) {
+        font-size: 12px;
+        word-wrap: break-word;
+        white-space: normal;
       }
     </style>
   </head>
