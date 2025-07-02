@@ -188,7 +188,7 @@
         .then(response => response.json())
         .then(data => {
           const tbody = document.querySelector('#tabla-distribucion tbody');
-          const columnas = ['A', 'B', 'C', 'E', 'F', 'G', 'K'];
+          const columnas = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
           data.forEach(op => {
             const row = document.createElement('tr');
             row.innerHTML = `
