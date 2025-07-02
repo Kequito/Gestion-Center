@@ -160,6 +160,10 @@
               <th>Operador</th>
               <th>PEROP1AM</th>
               <th>BI-04 -> Operator / Country -> Last 30 Days</th>
+              <th>BI-04 Current Month</th>
+              <th>BI-505 Current Month</th>
+              <th>BI-844 Current Month</th>
+              <th>BI-97 Current Month</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -188,15 +192,17 @@
         .then(response => response.json())
         .then(data => {
           const tbody = document.querySelector('#tabla-stats tbody');
-          const columnas = ['A', 'B', 'C', 'D'];
           data.forEach(op => {
             const row = document.createElement('tr');
-            const link = `<a href="${op.D}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-04</a>`;
             row.innerHTML = `
               <td>${op.A}</td>
               <td>${op.B}</td>
               <td>${op.C}</td>
-              <td>${link}</td>
+              <td><a href="${op.D}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-04</a></td>
+              <td><a href="${op.E}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-04</a></td>
+              <td><a href="${op.F}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-505</a></td>
+              <td><a href="${op.G}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-844</a></td>
+              <td><a href="${op.H}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-97</a></td>
             `;
             tbody.appendChild(row);
           });
@@ -227,8 +233,10 @@
             filterRow.appendChild(th);
           }
 
-          const thVacio = document.createElement('th');
-          filterRow.appendChild(thVacio);
+          for (let i = 3; i < 8; i++) {
+            const thVacio = document.createElement('th');
+            filterRow.appendChild(thVacio);
+          }
 
           document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select').forEach(input => {
             input.addEventListener('input', filtrarStats);
