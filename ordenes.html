@@ -125,7 +125,6 @@
     <aside>
       <div class="logo">📊 Gestión Center</div>
       <nav>
-        <a href="index.html">🏠 Inicio</a>
         <a href="#informes">📝 Informes</a>
         <a href="plandetrabajo.html">✅ Plan de trabajo</a>
         <a href="distribucion.html">📋 Distribución</a>
@@ -169,10 +168,69 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Contenido generado dinámicamente -->
           </tbody>
         </table>
       </section>
     </div>
+    <script>
+      let baseDatos = {};
+
+      fetch('datadistribucion.json')
+        .then(res => res.json())
+        .then(data => {
+          baseDatos = data.reduce((acc, row) => {
+            acc[row.C] = row; // PEROP1AM como clave
+            return acc;
+          }, {});
+        });
+
+      function procesarOrdenes() {
+        const texto = document.getElementById('ordenesInput').value.trim();
+        const lineas = texto.split(/\n/).map(l => l.trim()).filter(Boolean);
+        const tbody = document.querySelector('#tabla-ordenes tbody');
+        tbody.innerHTML = '';
+
+        for (let i = 0; i < lineas.length; i += 2) {
+          const l1 = lineas[i]?.split(/\t+/) || [];
+          const l2 = lineas[i + 1] || '';
+          const match = l2.match(/(.*)\s+(PEROP1AM-\d+)/i);
+          if (!match) continue;
+
+          const cliente = match[1].trim();
+          const operador = match[2].trim().toUpperCase();
+          const datos = baseDatos[operador] || {};
+
+          const fila = document.createElement('tr');
+          fila.innerHTML = `
+            <td>${l1[0] || ''}</td>
+            <td>${l1[1] || ''}</td>
+            <td>${l1[3] || ''}</td>
+            <td>${l1[5] || ''}</td>
+            <td>${l1[7] || ''}</td>
+            <td>${l1[8] || ''}</td>
+            <td>${cliente}</td>
+            <td>${operador}</td>
+            <td>${datos.A || ''}</td>
+            <td>${datos.F || ''}</td>
+          `;
+          tbody.appendChild(fila);
+        }
+
+        aplicarFiltros();
+      }
+
+      function aplicarFiltros() {
+        document.querySelectorAll('.filter-input').forEach(input => {
+          input.addEventListener('input', () => {
+            const filtros = Array.from(document.querySelectorAll('.filter-input')).map(el => el.value.toLowerCase());
+            document.querySelectorAll('#tabla-ordenes tbody tr').forEach(row => {
+              const celdas = Array.from(row.cells);
+              const visible = filtros.every((filtro, i) => !filtro || celdas[i].textContent.toLowerCase().includes(filtro));
+              row.style.display = visible ? '' : 'none';
+            });
+          });
+        });
+      }
+    </script>
   </body>
 </html>
