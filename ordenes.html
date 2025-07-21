@@ -190,14 +190,22 @@
         const tbody = document.querySelector('#tabla-ordenes tbody');
         tbody.innerHTML = '';
 
-        for (let i = 0; i < lineas.length; i += 2) {
+        for (let i = 0; i < lineas.length; i += 3) {
           const l1 = lineas[i]?.split(/\t+/) || [];
-          const l2 = lineas[i + 1] || '';
-          const match = l2.match(/(.*)\s+(PEROP1AM-\d+)/i);
-          if (!match) continue;
+          const l3 = lineas[i + 2] || '';
 
-          const cliente = match[1].trim();
-          const operador = match[2].trim().toUpperCase();
+          let cliente = '';
+          let operador = '';
+          const match = l3.match(/(.*?)\s+(PEROP1AM-\d+)/i);
+
+          if (match) {
+            cliente = match[1].trim();
+            operador = match[2].trim().toUpperCase();
+          } else {
+            operador = 'NO DETECTADO';
+            cliente = l3;
+          }
+
           const datos = baseDatos[operador] || {};
 
           const fila = document.createElement('tr');
