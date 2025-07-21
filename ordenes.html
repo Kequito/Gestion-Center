@@ -211,16 +211,16 @@
 
           const fila = document.createElement('tr');
           fila.innerHTML = `
+            <td>${datos.A || ''}</td>
+            <td>${operador}</td>
+            <td>${l1[3] || ''}</td>
+            <td>${datos.F || ''}</td>
             <td>${l1[0] || ''}</td>
             <td>${l1[1] || ''}</td>
-            <td>${l1[3] || ''}</td>
             <td>${l1[5] || ''}</td>
             <td>${l1[7] || ''}</td>
             <td>${l1[8] || ''}</td>
             <td>${cliente}</td>
-            <td>${operador}</td>
-            <td>${datos.A || ''}</td>
-            <td>${datos.F || ''}</td>
           `;
           tbody.appendChild(fila);
         }
@@ -240,6 +240,32 @@
           });
         });
       }
+    </script>
+    <script>
+      document.querySelector('.filter-row').innerHTML = `
+        <th><input class="filter-input" data-column="0" placeholder="Filtrar Team Leader"></th>
+        <th><input class="filter-input" data-column="1" placeholder="Filtrar Operador"></th>
+        <th><input class="filter-input" data-column="2" placeholder="Filtrar País"></th>
+        <th><input class="filter-input" data-column="3" placeholder="Filtrar Turno"></th>
+        <th><input class="filter-input" data-column="4" placeholder="Filtrar Index"></th>
+        <th><input class="filter-input" data-column="5" placeholder="Filtrar ID"></th>
+        <th><input class="filter-input" data-column="6" placeholder="Filtrar Status"></th>
+        <th><input class="filter-input" data-column="7" placeholder="Filtrar Sub-Status"></th>
+        <th><input class="filter-input" data-column="8" placeholder="Filtrar Comentario"></th>
+        <th><input class="filter-input" data-column="9" placeholder="Filtrar Cliente"></th>
+      `;
+      document.querySelector('#tabla-ordenes thead tr:last-child').innerHTML = `
+        <th>Team Leader</th>
+        <th>Last Call Operator</th>
+        <th>Country</th>
+        <th>Turno</th>
+        <th>Index</th>
+        <th>ID Order</th>
+        <th>Status</th>
+        <th>Sub-Status</th>
+        <th>CC Comment</th>
+        <th>Customer Full Name</th>
+      `;
     </script>
   </body>
 </html>
