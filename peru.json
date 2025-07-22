@@ -1,0 +1,3224 @@
+[
+ {
+   "A": "Contraentrega",
+   "B": "10201",
+   "C": "BAGUA",
+   "D": "BAGUA",
+   "E": "AMAZONAS",
+   "F": "4 DIAS",
+   "G": "SOLO JUEVES (09:00 AM - 14:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "10701",
+   "C": "BAGUA GRANDE",
+   "D": "UTCUBAMBA",
+   "E": "AMAZONAS",
+   "F": "4 DIAS",
+   "G": "solo VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "10101",
+   "C": "CHACHAPOYAS",
+   "D": "CHACHAPOYAS",
+   "E": "AMAZONAS",
+   "F": "3 DIAS",
+   "G": "VIERNES Y SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20801",
+   "C": "CASMA",
+   "D": "CASMA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21801",
+   "C": "CHIMBOTE",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21803",
+   "C": "COISHCO",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO LUNES Y VIERNES"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20101",
+   "C": "HUARAZ",
+   "D": "HUARAZ",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20105",
+   "C": "INDEPENDENCIA",
+   "D": "HUARAZ",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21809",
+   "C": "NUEVO CHIMBOTE",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21808",
+   "C": "SANTA",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO LUNES Y VIERNES"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20601",
+   "C": "CARHUAZ",
+   "D": "CARHUAZ",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20606",
+   "C": "MARCARA",
+   "D": "CARHUAZ",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20106",
+   "C": "JANGAS",
+   "D": "HUARAZ",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "20112",
+   "C": "TARICA",
+   "D": "HUARAZ",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21201",
+   "C": "CARAZ",
+   "D": "HUAYLAS",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21805",
+   "C": "MORO",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21806",
+   "C": "NEPEÑA",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "21807",
+   "C": "SAMANCO",
+   "D": "SANTA",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "22003",
+   "C": "MANCOS",
+   "D": "YUNGAY",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "22006",
+   "C": "RANRAHIRCA",
+   "D": "YUNGAY",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "22001",
+   "C": "YUNGAY",
+   "D": "YUNGAY",
+   "E": "ANCASH",
+   "F": "2 DIAS",
+   "G": "SOLO JUEVES Y SABADOS"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "30201",
+   "C": "ANDAHUAYLAS",
+   "D": "ANDAHUAYLAS",
+   "E": "APURIMAC",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "30209",
+   "C": "PACUCHA",
+   "D": "ANDAHUAYLAS",
+   "E": "APURIMAC",
+   "F": "4 DIAS",
+   "G": "SOLO SABADOS"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "30213",
+   "C": "SAN JERONIMO",
+   "D": "ANDAHUAYLAS",
+   "E": "APURIMAC",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "30216",
+   "C": "TALAVERA",
+   "D": "ANDAHUAYLAS",
+   "E": "APURIMAC",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "30109",
+   "C": "TAMBURCO",
+   "D": "ABANCAY",
+   "E": "APURIMAC",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "30101",
+   "C": "ABANCAY",
+   "D": "ABANCAY",
+   "E": "APURIMAC",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40102",
+   "C": "ALTO SELVA ALEGRE",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40101",
+   "C": "AREQUIPA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40103",
+   "C": "CAYMA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40104",
+   "C": "CERRO COLORADO",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40108",
+   "C": "LA JOYA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40105",
+   "C": "CHARACATO",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40107",
+   "C": "JACOBO HUNTER",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40110",
+   "C": "MIRAFLORES",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40117",
+   "C": "SACHACA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40109",
+   "C": "MARIANO MELGAR",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40123",
+   "C": "TIABAYA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40111",
+   "C": "MOLLEBAYA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "SOLO SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40124",
+   "C": "UCHUMAYO",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40112",
+   "C": "PAUCARPATA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40115",
+   "C": "QUEQUEÑA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "SOLO SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40116",
+   "C": "SABANDIA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40125",
+   "C": "VITOR",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40122",
+   "C": "SOCABAYA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40128",
+   "C": "YURA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40201",
+   "C": "CAMANA",
+   "D": "CAMANA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40520",
+   "C": "MAJES",
+   "D": "CAYLLOMA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40126",
+   "C": "YANAHUARA",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40129",
+   "C": "JOSE LUIS BUSTAMANTE Y RIVERO",
+   "D": "AREQUIPA",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40701",
+   "C": "MOLLENDO",
+   "D": "ISLAY",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40707",
+   "C": "MATARANI",
+   "D": "ISLAY",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "40112",
+   "C": "LA JOYA",
+   "D": "AEROPUERTO MARIANO MELGAR",
+   "E": "AREQUIPA",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "50116",
+   "C": "ANDRES AVELINO CACERES",
+   "D": "HUAMANGA",
+   "E": "AYACUCHO",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "50101",
+   "C": "AYACUCHO",
+   "D": "HUAMANGA",
+   "E": "AYACUCHO",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "50104",
+   "C": "CARMEN ALTO",
+   "D": "HUAMANGA",
+   "E": "AYACUCHO",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "50115",
+   "C": "JESUS NAZARENO",
+   "D": "HUAMANGA",
+   "E": "AYACUCHO",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "50110",
+   "C": "SAN JUAN BAUTISTA",
+   "D": "HUAMANGA",
+   "E": "AYACUCHO",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "60101",
+   "C": "CAJAMARCA",
+   "D": "CAJAMARCA",
+   "E": "CAJAMARCA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "60801",
+   "C": "JAEN",
+   "D": "JAEN",
+   "E": "CAJAMARCA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES (08:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "60108",
+   "C": "LOS BAÑOS DEL INCA",
+   "D": "CAJAMARCA",
+   "E": "CAJAMARCA",
+   "F": "2 DIAS",
+   "G": "SOLO LUNES Y VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "60802",
+   "C": "BELLAVISTA",
+   "D": "JAEN",
+   "E": "CAJAMARCA",
+   "F": "2 DIAS",
+   "G": "SOLO LUNES Y VIERNES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80301",
+   "C": "ANTA",
+   "D": "ANTA",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80303",
+   "C": "CACHIMAYO",
+   "D": "ANTA",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80401",
+   "C": "CALCA",
+   "D": "CALCA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80402",
+   "C": "COYA",
+   "D": "CALCA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80101",
+   "C": "CUSCO",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (8:30 AM- 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80305",
+   "C": "HUAROCONDO",
+   "D": "ANTA",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "81303",
+   "C": "HUAYLLABAMBA",
+   "D": "URUBAMBA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80403",
+   "C": "LAMAY",
+   "D": "CALCA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80904",
+   "C": "MARANURA",
+   "D": "LA CONVENCION",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80905",
+   "C": "OCOBAMBA",
+   "D": "LA CONVENCION",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "81306",
+   "C": "OLLANTAYTAMBO",
+   "D": "URUBAMBA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80405",
+   "C": "PISAC",
+   "D": "CALCA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80103",
+   "C": "POROY",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (8:30 AM- 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80308",
+   "C": "PUCYURA",
+   "D": "ANTA",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80104",
+   "C": "SAN JERONIMO",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (8:30 AM- 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80406",
+   "C": "SAN SALVADOR",
+   "D": "CALCA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80105",
+   "C": "SAN SEBASTIAN",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (8:30 AM- 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80901",
+   "C": "SANTA ANA QUILLABAMBA",
+   "D": "LA CONVENCION",
+   "E": "CUSCO",
+   "F": "4 DIAS",
+   "G": "LUNES A SABADO (09:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80106",
+   "C": "SANTIAGO",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (8:30 AM- 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80107",
+   "C": "SAYLLA",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80407",
+   "C": "TARAY",
+   "D": "CALCA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "81301",
+   "C": "URUBAMBA",
+   "D": "URUBAMBA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80909",
+   "C": "VILCABAMBA",
+   "D": "LA CONVENCION",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80108",
+   "C": "WANCHAQ",
+   "D": "CUSCO",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (8:30 AM- 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "81307",
+   "C": "YUCAY",
+   "D": "URUBAMBA",
+   "E": "CUSCO",
+   "F": "5 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "80309",
+   "C": "ZURITE",
+   "D": "ANTA",
+   "E": "CUSCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "90101",
+   "C": "HUANCAVELICA",
+   "D": "HUANCAVELICA",
+   "E": "HUANCAVELICA",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO(09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "100102",
+   "C": "AMARILIS",
+   "D": "AMARILIS",
+   "E": "HUANUCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "100101",
+   "C": "HUANUCO",
+   "D": "HUANUCO",
+   "E": "HUANUCO",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "100111",
+   "C": "PILLCO MARCA",
+   "D": "PILLCO MARCA",
+   "E": "HUANUCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "100601",
+   "C": "RUPA-RUPA(TINGO MARIA)",
+   "D": "LEONCIO PRADO",
+   "E": "HUANUCO",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110202",
+   "C": "ALTO LARAN",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110302",
+   "C": "CHANGUILLO",
+   "D": "NAZCA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110201",
+   "C": "CHINCHA ALTA",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110204",
+   "C": "CHINCHA BAJA",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110205",
+   "C": "EL CARMEN",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110303",
+   "C": "EL INGENIO",
+   "D": "NAZCA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110206",
+   "C": "GROCIO PRADO",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110503",
+   "C": "HUMAY",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110101",
+   "C": "ICA",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110504",
+   "C": "INDEPENDENCIA",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110102",
+   "C": "LA TINGUIÑA",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110103",
+   "C": "LOS AQUIJES",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110304",
+   "C": "MARCONA",
+   "D": "NAZCA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110301",
+   "C": "NAZCA",
+   "D": "NAZCA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110104",
+   "C": "OCUCAJE",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110105",
+   "C": "PACHACUTEC",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110505",
+   "C": "PARACAS",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110106",
+   "C": "PARCONA",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110501",
+   "C": "PISCO",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110107",
+   "C": "PUEBLO NUEVO",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110207",
+   "C": "PUEBLO NUEVO",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110108",
+   "C": "SALAS",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110506",
+   "C": "SAN ANDRES",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110507",
+   "C": "SAN CLEMENTE",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110109",
+   "C": "SAN JOSE DE LOS MOLINOS",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110110",
+   "C": "SAN JUAN BAUTISTA",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110111",
+   "C": "SANTIAGO",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110112",
+   "C": "SUBTANJALLA",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110210",
+   "C": "SUNAMPE",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110211",
+   "C": "TAMBO DE MORA",
+   "D": "CHINCHA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110113",
+   "C": "TATE",
+   "D": "ICA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110508",
+   "C": "TUPAC AMARU INCA",
+   "D": "PISCO",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "LUNES , MIERCOLES Y VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO Arequipa",
+   "B": "110305",
+   "C": "VISTA ALEGRE",
+   "D": "NAZCA",
+   "E": "ICA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120107",
+   "C": "CHILCA",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO(09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120903",
+   "C": "CHONGOS BAJO",
+   "D": "CHUPACA",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES Y JUEVES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120117",
+   "C": "HUALHUAS",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120119",
+   "C": "HUANCAN",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120121",
+   "C": "HUAYUCACHI",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120114",
+   "C": "EL TAMBO",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120125",
+   "C": "PILCOMAYO",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120126",
+   "C": "PUCARA",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120128",
+   "C": "QUILCAS",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120129",
+   "C": "SAN AGUSTIN",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120130",
+   "C": "SAN JERONIMO DE TUNAN",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120132",
+   "C": "SAÑO",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120133",
+   "C": "SAPALLANGA",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120134",
+   "C": "SICAYA",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120301",
+   "C": "LA MERCED",
+   "D": "CHANCHAMAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120302",
+   "C": "PERENE",
+   "D": "CHANCHAMAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120305",
+   "C": "SAN RAMON",
+   "D": "CHANCHAMAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120101",
+   "C": "HUANCAYO",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "120111",
+   "C": "CHUPURO",
+   "D": "HUANCAYO",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120201",
+   "C": "CONCEPCION",
+   "D": "CONCEPCION",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120401",
+   "C": "JAUJA",
+   "D": "JAUJA",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A JUEVES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "120901",
+   "C": "CHUPACA",
+   "D": "CHUPACA",
+   "E": "JUNIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130201",
+   "C": "ASCOPE",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130202",
+   "C": "CHICAMA",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130203",
+   "C": "CHOCOPE",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130204",
+   "C": "MAGDALENA DE CAO",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130205",
+   "C": "PAIJAN",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130207",
+   "C": "SANTIAGO DE CAO",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130208",
+   "C": "CASA GRANDE",
+   "D": "ASCOPE",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130401",
+   "C": "CHEPEN",
+   "D": "CHEPEN",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130601",
+   "C": "OTUZCO",
+   "D": "OTUZCO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130901",
+   "C": "HUAMACHUCO",
+   "D": "SANCHEZ CARRION",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130101",
+   "C": "TRUJILLO",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130102",
+   "C": "EL PORVENIR",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130103",
+   "C": "FLORENCIA DE MORA",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130104",
+   "C": "HUANCHACO",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130105",
+   "C": "LA ESPERANZA",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130106",
+   "C": "LAREDO",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130107",
+   "C": "MOCHE",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES, MIERCOLES Y SABADOS (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130109",
+   "C": "SALAVERRY",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES, MIERCOLES Y SABADOS (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130110",
+   "C": "SIMBAL",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130111",
+   "C": "VICTOR LARCO HERRERA",
+   "D": "TRUJILLO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "131201",
+   "C": "VIRU",
+   "D": "VIRU",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "131202",
+   "C": "CHAO",
+   "D": "VIRU",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "131203",
+   "C": "GUADALUPITO",
+   "D": "VIRU",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS (9:00 AM- 17:00 PM) SABADO HASTA 15:00"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130702",
+   "C": "GUADALUPE",
+   "D": "PACASMAYO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "SOLO SABADOS (9:00 AM- 15:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130704",
+   "C": "PACASMAYO",
+   "D": "PACASMAYO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "SOLO SABADOS (9:00 AM- 15:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130706",
+   "C": "CIUDAD DE DIOS",
+   "D": "PACASMAYO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "SOLO SABADOS (9:00 AM- 15:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "130707",
+   "C": "SAN MARTIN DE PORRES",
+   "D": "PACASMAYO",
+   "E": "LA LIBERTAD",
+   "F": "2 DIAS",
+   "G": "SOLO SABADOS (9:00 AM- 15:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140101",
+   "C": "CHICLAYO",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140102",
+   "C": "CHONGOYAPE",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140103",
+   "C": "ETEN",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "Miercoles (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140105",
+   "C": "JOSE LEONARDO ORTIZ",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140106",
+   "C": "LA VICTORIA",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140108",
+   "C": "MONSEFU",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "Miercoles (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140110",
+   "C": "OYOTUN",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140111",
+   "C": "PICSI",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO MARTES Y JUEVES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140112",
+   "C": "PIMENTEL",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "Miercoles (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140113",
+   "C": "REQUE",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "Miercoles (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140114",
+   "C": "SANTA ROSA",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "Miercoles (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140117",
+   "C": "PATAPO",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140118",
+   "C": "POMALCA",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140120",
+   "C": "TUMAN",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140201",
+   "C": "FERREÑAFE",
+   "D": "FERREÑAFE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140206",
+   "C": "PUEBLO NUEVO",
+   "D": "FERREÑAFE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140301",
+   "C": "LAMBAYEQUE",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140303",
+   "C": "ILLIMO",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140304",
+   "C": "JAYANCA",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140305",
+   "C": "MOCHUMI",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140306",
+   "C": "MORROPE",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140307",
+   "C": "MOTUPE",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140309",
+   "C": "PACORA",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140311",
+   "C": "SAN JOSE",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140312",
+   "C": "TUCUME",
+   "D": "LAMBAYEQUE",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "LUNES Y JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140115",
+   "C": "SAÑA",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO LIBERTAD",
+   "B": "140116",
+   "C": "CAYALTI",
+   "D": "CHICLAYO",
+   "E": "LAMBAYEQUE",
+   "F": "2 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70101",
+   "C": "CALLAO",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70102",
+   "C": "BELLAVISTA",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70103",
+   "C": "CARMEN DE LA LEGUA",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70104",
+   "C": "LA PERLA",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70105",
+   "C": "LA PUNTA",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70106",
+   "C": "VENTANILLA",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO (9:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "70107",
+   "C": "MI PERU",
+   "D": "CALLAO",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MARTES JUEVES Y SABADO 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150201",
+   "C": "BARRANCA",
+   "D": "BARRANCA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150202",
+   "C": "PARAMONGA",
+   "D": "BARRANCA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150203",
+   "C": "PATIVILCA",
+   "D": "BARRANCA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150204",
+   "C": "SUPE",
+   "D": "BARRANCA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150205",
+   "C": "SUPE PUERTO",
+   "D": "BARRANCA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADO"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150501",
+   "C": "SAN VICENTE DE CAÑETE",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150502",
+   "C": "ASIA",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150504",
+   "C": "CERRO AZUL",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150505",
+   "C": "CHILCA",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150507",
+   "C": "IMPERIAL",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150509",
+   "C": "MALA",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150510",
+   "C": "NUEVO IMPERIAL",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150512",
+   "C": "QUILMANA",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150514",
+   "C": "SAN LUIS",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150515",
+   "C": "SANTA CRUZ DE FLORES",
+   "D": "CAÑETE",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150601",
+   "C": "HUARAL",
+   "D": "HUARAL",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150605",
+   "C": "CHANCAY",
+   "D": "HUARAL",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150604",
+   "C": "AUCALLAMA",
+   "D": "HUARAL",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150714",
+   "C": "RICARDO PALMA",
+   "D": "HUAROCHIRI",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150716",
+   "C": "SAN ANTONIO",
+   "D": "HUAROCHIRI",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MIERCOLES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150803",
+   "C": "CALETA DE CARQUIN",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150805",
+   "C": "HUALMAY",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150806",
+   "C": "HUAURA",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150810",
+   "C": "SANTA MARIA",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150811",
+   "C": "SAYAN",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150812",
+   "C": "VEGUETA",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150801",
+   "C": "HUACHO",
+   "D": "HUAURA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "TODOS LOS DIAS"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150101",
+   "C": "LIMA CERCADO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150102",
+   "C": "ANCON",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150103",
+   "C": "ATE",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES, MIERCOLES Y SABADO 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150104",
+   "C": "BARRANCO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150105",
+   "C": "BREÑA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150106",
+   "C": "CARABAYLLO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150107",
+   "C": "CHACLACAYO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150108",
+   "C": "CHORRILLOS",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150109",
+   "C": "CIENEGUILLA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150110",
+   "C": "COMAS",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150111",
+   "C": "EL AGUSTINO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150112",
+   "C": "INDEPENDENCIA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150113",
+   "C": "JESUS MARIA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150114",
+   "C": "LA MOLINA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150115",
+   "C": "LA VICTORIA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150116",
+   "C": "LINCE",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150117",
+   "C": "LOS OLIVOS",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150118",
+   "C": "LURIGANCHO - CHOSICA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO LUNES MIERCOLES Y SABADO 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150119",
+   "C": "LURIN",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150120",
+   "C": "MAGDALENA DEL MAR",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150121",
+   "C": "PUEBLO LIBRE",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150122",
+   "C": "MIRAFLORES",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150123",
+   "C": "PACHACAMAC",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150124",
+   "C": "PUCUSANA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150125",
+   "C": "PUENTE PIEDRA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MARTES, JUEVES Y SABADO (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150126",
+   "C": "PUNTA HERMOSA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150127",
+   "C": "PUNTA NEGRA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150128",
+   "C": "RIMAC",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150129",
+   "C": "SAN BARTOLO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150130",
+   "C": "SAN BORJA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150131",
+   "C": "SAN ISIDRO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150132",
+   "C": "SAN JUAN DE LURIGANCHO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150133",
+   "C": "SAN JUAN DE MIRAFLORES",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MARTES, JUEVES Y SABADOS (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150134",
+   "C": "SAN LUIS",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150135",
+   "C": "SAN MARTIN DE PORRES",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150136",
+   "C": "SAN MIGUEL",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150137",
+   "C": "SANTA ANITA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150138",
+   "C": "SANTA MARIA DEL MAR",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "MIERCOLES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150139",
+   "C": "SANTA ROSA",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MARTES JUEVES Y SABADOS 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150140",
+   "C": "SANTIAGO DE SURCO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150141",
+   "C": "SURQUILLO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "LUNES A VIERNES 09:00AM -05:00 PM"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150142",
+   "C": "VILLA EL SALVADOR",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MARTES, JUEVES Y SABADOS (08:30 AM - 18:00 PM)"
+ },
+ {
+   "A": "TAKE & GO",
+   "B": "150143",
+   "C": "VILLA MARIA DEL TRIUNFO",
+   "D": "LIMA",
+   "E": "LIMA",
+   "F": "2 DIAS",
+   "G": "SOLO MARTES, JUEVES Y SABADOS (08:30 AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "160112",
+   "C": "BELEN",
+   "D": "MAYNAS",
+   "E": "LORETO",
+   "F": "4 DIAS",
+   "G": "SOLO LUNES A VIERNES (8:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "160101",
+   "C": "IQUITOS",
+   "D": "MAYNAS",
+   "E": "LORETO",
+   "F": "4 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "160108",
+   "C": "PUNCHANA",
+   "D": "MAYNAS",
+   "E": "LORETO",
+   "F": "4 DIAS",
+   "G": "SOLO LUNES A VIERNES (8:00AM - 17:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "160113",
+   "C": "SAN JUAN BAUTISTA",
+   "D": "MAYNAS",
+   "E": "LORETO",
+   "F": "4 DIAS",
+   "G": "SOLO LUNES A VIERNES (8:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "170001",
+   "C": "PUERTO MALDONADO",
+   "D": "MADRE DE DIOS",
+   "E": "MADRE DE DIOS",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (9:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "180302",
+   "C": "EL ALGARROBAL",
+   "D": "ILO",
+   "E": "MOQUEGUA",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES(09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "180301",
+   "C": "ILO",
+   "D": "ILO",
+   "E": "MOQUEGUA",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES(09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "180101",
+   "C": "MOQUEGUA",
+   "D": "MARISCAL NIETO",
+   "E": "MOQUEGUA",
+   "F": "4 DIAS",
+   "G": "LUNES, MARTES, MIERCOLES, VIERNES Y SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "180303",
+   "C": "PACOCHA",
+   "D": "ILO",
+   "E": "MOQUEGUA",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES(09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "180104",
+   "C": "SAMEGUA",
+   "D": "MARISCAL NIETO",
+   "E": "MOQUEGUA",
+   "F": "4 DIAS",
+   "G": "LUNES, MARTES, MIERCOLES, VIERNES Y SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "190101",
+   "C": "CHAUPIMARCA",
+   "D": "PASCO",
+   "E": "PASCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "190113",
+   "C": "YANACANCHA",
+   "D": "PASCO",
+   "E": "PASCO",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200101",
+   "C": "PIURA",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200104",
+   "C": "CASTILLA",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200105",
+   "C": "CATACAOS",
+   "D": "CATACAOS",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200107",
+   "C": "CURA MORI",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "JUEVES Y VIERNES (9:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200109",
+   "C": "LA ARENA",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200110",
+   "C": "LA UNION",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (08:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200115",
+   "C": "26 DE OCTUBRE",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (09:00AM - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200401",
+   "C": "CHULUCANAS",
+   "D": "MORROPON",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO JUEVES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200501",
+   "C": "PAITA",
+   "D": "PAITA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200601",
+   "C": "SULLANA",
+   "D": "SULLANA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO VIERNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200701",
+   "C": "PARIÑAS",
+   "D": "TALARA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200702",
+   "C": "EL ALTO",
+   "D": "TALARA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "200703",
+   "C": "LA BREA",
+   "D": "TALARA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (07:00AM - 16:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200704",
+   "C": "LOBITOS",
+   "D": "TALARA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200705",
+   "C": "LOS ORGANOS",
+   "D": "TALARA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200706",
+   "C": "MANCORA",
+   "D": "TALARA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "JUEVES (9:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200801",
+   "C": "SECHURA",
+   "D": "SECHURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200803",
+   "C": "BERNAL",
+   "D": "SECHURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200805",
+   "C": "VICE",
+   "D": "SECHURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "200111",
+   "C": "LAS LOMAS",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "4 DIAS",
+   "G": "SOLO SABADO (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "200114",
+   "C": "TAMBO GRANDE",
+   "D": "PIURA",
+   "E": "PIURA",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "210101",
+   "C": "PUNO",
+   "D": "PUNO",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "LUNES,MIERCOLES Y SABADO"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "210106",
+   "C": "CHUCUITO",
+   "D": "PUNO",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "LUNES,MIERCOLES Y SABADO"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "210112",
+   "C": "PLATERIA",
+   "D": "PUNO",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "LUNES,MIERCOLES Y SABADO"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "211102",
+   "C": "Paucarcolla",
+   "D": "PUNO",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "LUNES,MIERCOLES Y SABADO"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "211101",
+   "C": "JULIACA",
+   "D": "SAN ROMAN",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO(08:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "211105",
+   "C": "SAN MIGUEL",
+   "D": "SAN ROMAN",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "LUNES A SABADO (9:00 AM - 18:00 PM)"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "210201",
+   "C": "AZANGARO",
+   "D": "AZANGARO",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "MARTES Y VIERNES"
+ },
+ {
+   "A": "Take and go Puno",
+   "B": "210702",
+   "C": "CABANILLAS",
+   "D": "LAMPA",
+   "E": "PUNO",
+   "F": "2 DIAS",
+   "G": "MARTES Y JUEVES"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210804",
+   "C": "LLALLI",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210803",
+   "C": "CUPI",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210809",
+   "C": "UMACHIRI",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210801",
+   "C": "AYAVIRI",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210805",
+   "C": "MACARI",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210808",
+   "C": "SANTA ROSA",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210806",
+   "C": "NUÑOA",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210501",
+   "C": "ILAVE",
+   "D": "EL COLLAO",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210807",
+   "C": "ORURILLO",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210802",
+   "C": "ANTAUTA",
+   "D": "MELGAR",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "210402",
+   "C": "DESAGUADERO",
+   "D": "CHUCUITO",
+   "E": "PUNO",
+   "F": "3 DIAS",
+   "G": "ENTREGA SOLO SABADO (9:00 AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "220201",
+   "C": "BELLAVISTA",
+   "D": "BELLAVISTA",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "SOLO MIERCOLES"
+ },
+ {
+   "A": "JER",
+   "B": "220903",
+   "C": "CACATACHI",
+   "D": "SAN MARTIN",
+   "E": "SAN MARTIN",
+   "F": "3 DIAS",
+   "G": "SOLO LOS VIERNES (08:00AM - 12:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "220601",
+   "C": "JUANJUI",
+   "D": "MARISCAL CACERES",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "SOLO MIERCOLES"
+ },
+ {
+   "A": "JER",
+   "B": "220909",
+   "C": "LA BANDA DE SHILCAYO",
+   "D": "SAN MARTIN",
+   "E": "SAN MARTIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "220910",
+   "C": "MORALES",
+   "D": "SAN MARTIN",
+   "E": "SAN MARTIN",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "220101",
+   "C": "MOYOBAMBA",
+   "D": "MOYOBAMBA",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "220804",
+   "C": "NUEVA CAJAMARCA",
+   "D": "RIOJA",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "SOLO MARTES Y JUEVES (08:30 AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "220701",
+   "C": "PICOTA",
+   "D": "PICOTA",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "SOLO MARTES Y JUEVES (08:30 AM - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "220801",
+   "C": "RIOJA",
+   "D": "RIOJA",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "SOLO VIERNES"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "220901",
+   "C": "TARAPOTO",
+   "D": "SAN MARTIN",
+   "E": "SAN MARTIN",
+   "F": "3 DIAS",
+   "G": "LUNES A SABADO (09:00AM - 17:00 PM)"
+ },
+ {
+   "A": "Eisegmi",
+   "B": "221001",
+   "C": "TOCACHE",
+   "D": "TOCACHE",
+   "E": "SAN MARTIN",
+   "F": "4 DIAS",
+   "G": "SOLO MARTES Y JUEVES (08:30 AM - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "230102",
+   "C": "ALTO DE LA ALIANZA",
+   "D": "TACNA",
+   "E": "TACNA",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "230104",
+   "C": "CIUDAD NUEVA",
+   "D": "TACNA",
+   "E": "TACNA",
+   "F": "3 DIAS",
+   "G": "SOLO LUNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "230110",
+   "C": "CORONEL GREGORIO ALBARRACIN LANCHIPA",
+   "D": "TACNA",
+   "E": "TACNA",
+   "F": "3 DIAS",
+   "G": "JUEVES Y VIERNES, SABADO(9:00 - 18:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "230108",
+   "C": "POCOLLAY",
+   "D": "TACNA",
+   "E": "TACNA",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "JER",
+   "B": "230101",
+   "C": "TACNA",
+   "D": "TACNA",
+   "E": "TACNA",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240102",
+   "C": "CORRALES",
+   "D": "TUMBES",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240201",
+   "C": "ZORRITOS",
+   "D": "CONTRALMIRANTE VILLAR",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "SOLO LUNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240301",
+   "C": "ZARUMILLA",
+   "D": "ZARUMILLA",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "DE LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240302",
+   "C": "AGUAS VERDES",
+   "D": "ZARUMILLA",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "DE LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240101",
+   "C": "TUMBES",
+   "D": "TUMBES",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "DE LUNES A SABADO (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240103",
+   "C": "LA CRUZ",
+   "D": "TUMBES",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "SOLO LUNES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240104",
+   "C": "PAMPAS DE HOSPITAL",
+   "D": "TUMBES",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "SOLO MARTES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "240105",
+   "C": "SAN JACINTO",
+   "D": "TUMBES",
+   "E": "TUMBES",
+   "F": "3 DIAS",
+   "G": "SOLO MIERCOLES (9:00 - 18:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "250101",
+   "C": "CALLERIA",
+   "D": "CORONEL PORTILLO / PUCALLPA",
+   "E": "UCAYALI",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "250107",
+   "C": "MANANTAY",
+   "D": "CORONEL PORTILLO / PUCALLPA",
+   "E": "UCAYALI",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ },
+ {
+   "A": "Contraentrega",
+   "B": "250105",
+   "C": "YARINACOCHA",
+   "D": "CORONEL PORTILLO / PUCALLPA",
+   "E": "UCAYALI",
+   "F": "3 DIAS",
+   "G": "LUNES A VIERNES (08:30AM - 17:00 PM)"
+ }
+]
