@@ -162,19 +162,16 @@
           <th><input type="text" placeholder="Filtrar..." oninput="filtrarTabla(3)"></th>
           <th><input type="text" placeholder="Filtrar..." oninput="filtrarTabla(4)"></th>
           <th><input type="text" placeholder="Filtrar..." oninput="filtrarTabla(5)"></th>
-          <th><input type="text" placeholder="Filtrar..." oninput="filtrarTabla(6)"></th>
         </tr>
         <tr>
           <th>PAQUETERIA</th>
-          <th>ZONA POSTAL</th>
-          <th>ESTADO</th>
-          <th>CIUDAD</th>
-          <th>MUNICIPIO</th>
-          <th>PARROQUIA</th>
-          <th>ZONAS</th>
-          <th>ÁREA DE PUNTO DE ENCUENTRO</th>
+          <th>CÓDIGO POSTAL</th>
+          <th>LOCALIDAD</th>
+          <th>COMUNA</th>
+          <th>PROVINCIA</th>
+          <th>REGION</th>
           <th>TIEMPO DE ENTREGA</th>
-          <th>DIAS DE ENTREGA</th>
+          <th>DIAS DE ENTREGA</th>  
         </tr>
       </thead>
       <tbody id="cuerpo-tabla">
@@ -186,7 +183,7 @@
     let filtros = ["", "", "", "", "", "", ""];
 
     async function cargarDatos() {
-      const res = await fetch("venezuela.json");
+      const res = await fetch("chile.json");
       const datos = await res.json();
       mostrarDatos(datos);
     }
@@ -205,8 +202,6 @@
           <td>${item.F}</td>
           <td>${item.G}</td>
           <td>${item.H}</td>
-          <td>${item.I}</td>
-          <td>${item.J}</td>
         `;
         cuerpo.appendChild(fila);
       });
