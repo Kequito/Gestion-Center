@@ -162,11 +162,11 @@
     <datalist id="campaniaList"></datalist>
   </div>
 <script>
-  const datadistribucion = [
-    { A: "JOSÉ RAMÍREZ", B: "MARTA LÓPEZ", C: "PEROP1AM-4060", D: "MEXICO", E: "DOMINGO", F: "13:00-22:00", G: "INTEGRAL" },
-    { A: "CARLA TÁVILA", B: "ROBERTO LUNA", C: "PEROP1AM-4124", D: "CHILE", E: "SÁBADO", F: "07:00-16:00", G: "INTEGRAL" },
-    // Añadir aquí todos los datos del JSON real...
-  ];
+  fetch('datadistribucion.json')
+    .then(res => res.json())
+    .then(data => {
+      window.datadistribucion = data;
+    });
 
   function resetFilters() {
     document.querySelectorAll('.filter-input').forEach(input => input.value = '');
@@ -197,7 +197,7 @@
 
       fullData = rows.slice(1).map(row => {
         const perop = row[0];
-        const match = datadistribucion.find(d => d.C === perop);
+        const match = window.datadistribucion?.find(d => d.C === perop);
         return {
           teamLeader: match?.A || '—',
           nombre: match?.B || '—',
