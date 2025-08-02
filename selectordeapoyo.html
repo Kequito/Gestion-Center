@@ -171,7 +171,8 @@
   function resetFilters() {
     document.querySelectorAll('.filter-input').forEach(input => input.value = '');
     renderTable(fullData);
-    attachFilterListeners();
+      attachFilterListeners();
+      populateDropdownFilters();
   }
 
   let fullData = [];
@@ -189,6 +190,8 @@
       const workbook = XLSX.read(data, { type: 'array' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const headers = rows[0];
+
       const now = new Date();
       const fecha = now.toLocaleDateString();
       const hora = now.toLocaleTimeString();
@@ -216,7 +219,6 @@
       });
 
       renderTable(fullData);
-      attachFilterListeners();
     };
     reader.readAsArrayBuffer(file);
   });
@@ -225,6 +227,7 @@
     tbody.innerHTML = '';
     data.forEach(row => {
       const tr = document.createElement('tr');
+
       const approveVal = parseFloat(row.approveP.replace('%',''));
       let classColor = '';
       if (approveVal >= 30) classColor = 'approve-green';
@@ -247,7 +250,6 @@
       tbody.appendChild(tr);
     });
   }
-
   function attachFilterListeners() {
     const inputs = document.querySelectorAll('.filter-input');
     inputs.forEach(input => {
@@ -265,6 +267,17 @@
         });
         renderTable(filtered);
       });
+    });
+  }
+
+  function populateDropdownFilters() {
+    const campos = ["teamLeader", "descanso", "turno", "campania"];
+    const listas = ["tlList", "descansoList", "turnoList", "campaniaList"];
+
+    campos.forEach((campo, index) => {
+      const values = [...new Set(fullData.map(d => d[campo]).filter(v => v && v !== '—'))].sort();
+      const datalist = document.getElementById(listas[index]);
+      datalist.innerHTML = values.map(val => `<option value="${val}">`).join('');
     });
   }
 </script>
