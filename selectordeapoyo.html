@@ -171,8 +171,8 @@
   function resetFilters() {
     document.querySelectorAll('.filter-input').forEach(input => input.value = '');
     renderTable(fullData);
-      attachFilterListeners();
-      populateDropdownFilters();
+    attachFilterListeners();
+    populateDropdownFilters();
   }
 
   let fullData = [];
@@ -219,6 +219,8 @@
       });
 
       renderTable(fullData);
+      attachFilterListeners();
+      populateDropdownFilters();
     };
     reader.readAsArrayBuffer(file);
   });
@@ -250,6 +252,7 @@
       tbody.appendChild(tr);
     });
   }
+
   function attachFilterListeners() {
     const inputs = document.querySelectorAll('.filter-input');
     inputs.forEach(input => {
@@ -271,13 +274,18 @@
   }
 
   function populateDropdownFilters() {
-    const campos = ["teamLeader", "descanso", "turno", "campania"];
-    const listas = ["tlList", "descansoList", "turnoList", "campaniaList"];
-
-    campos.forEach((campo, index) => {
-      const values = [...new Set(fullData.map(d => d[campo]).filter(v => v && v !== '—'))].sort();
-      const datalist = document.getElementById(listas[index]);
-      datalist.innerHTML = values.map(val => `<option value="${val}">`).join('');
+    const filtros = [
+      { campo: 'teamLeader', col: 0 },
+      { campo: 'descanso', col: 3 },
+      { campo: 'turno', col: 4 },
+      { campo: 'campania', col: 5 },
+    ];
+    filtros.forEach(f => {
+      const select = document.querySelector(`select[data-col="${f.col}"]`);
+      if (select) {
+        const opciones = [...new Set(fullData.map(d => d[f.campo]).filter(v => v && v !== '—'))].sort();
+        select.innerHTML = '<option value="">Filtrar...</option>' + opciones.map(val => `<option value="${val}">${val}</option>`).join('');
+      }
     });
   }
 </script>
