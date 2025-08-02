@@ -207,10 +207,11 @@
           campania: row[1],
           total: row[2] || 0,
           approve: row[4] || 0,
-          approveP: (row[5] || '0%'),
+          approveP: typeof row[5] === 'string' && row[5].includes('%') ? row[5] : (row[5] ? `${parseFloat(row[5]).toFixed(1)}%` : '0%'),
           reject: row[10] || 0,
-          rejectP: (row[11] || '0%'),
-          trashP: (row[13] || '0%'),
+          rejectP: typeof row[11] === 'string' && row[11].includes('%') ? row[11] : (row[11] ? `${parseFloat(row[11]).toFixed(1)}%` : '0%'),
+          trash: row[12] || 0,
+          trashP: typeof row[13] === 'string' && row[13].includes('%') ? row[13] : (row[13] ? `${parseFloat(row[13]).toFixed(1)}%` : '0%'),
           avgCheck: row[15] || 0
         };
       });
