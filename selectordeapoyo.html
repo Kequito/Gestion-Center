@@ -1,0 +1,253 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👥 Selector de Apoyo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Lexend', sans-serif;
+      background-color: #1c2a45;
+      color: white;
+      display: flex;
+    }
+    aside {
+      background-color: #152035;
+      width: 220px;
+      height: 100vh;
+      padding: 40px 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    nav a {
+      color: white;
+      margin: 24px 0;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    nav a:hover {
+      background-color: #1c2a45;
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 40px;
+      padding-left: 260px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .file-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .file-section input[type="file"] {
+      margin: 10px auto;
+      display: block;
+    }
+    .file-info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    .reset-btn {
+      margin: 10px auto 30px auto;
+      padding: 10px 15px;
+      background-color: #ff6666;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #ffffff;
+      color: #000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #0066cc;
+      color: white;
+    }
+    .filter-input {
+      width: 95%;
+      padding: 4px;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+    .approve-green { background-color: #d4edda; }
+    .approve-yellow { background-color: #fff3cd; }
+    .approve-red { background-color: #f8d7da; }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="logo">📊 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="#informes">📝 Informes</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="#contacto">📬 Contacto</a>
+    </nav>
+  </aside>
+
+  <div class="main-content">
+    <h1>👥 Selector de Apoyo</h1>
+
+    <div class="file-section">
+      <input type="file" id="fileInput" accept=".xlsx" />
+      <div class="file-info" id="fileInfo">📂 Ningún archivo cargado</div>
+    </div>
+
+    <button class="reset-btn" onclick="resetFilters()">🧹 Restablecer filtros</button>
+
+    <table id="tablaApoyo">
+      <thead>
+        <tr>
+          <th>Team Leader<br><input class="filter-input" data-col="0" list="tlList"></th>
+          <th>Nombre<br><input class="filter-input" data-col="1" placeholder="Buscar..."></th>
+          <th>PEROP1AM<br><input class="filter-input" data-col="2" placeholder="Buscar..."></th>
+          <th>Descanso<br><input class="filter-input" data-col="3" list="descansoList"></th>
+          <th>Turno<br><input class="filter-input" data-col="4" list="turnoList"></th>
+          <th>Campaña<br><input class="filter-input" data-col="5" list="campaniaList"></th>
+          <th>Total Orders</th>
+          <th>%Approve</th>
+          <th>%Reject</th>
+          <th>%Trash</th>
+          <th>Avg Check</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aquí se llenarán las filas dinámicamente -->
+      </tbody>
+    </table>
+
+    <datalist id="tlList"></datalist>
+    <datalist id="descansoList"></datalist>
+    <datalist id="turnoList"></datalist>
+    <datalist id="campaniaList"></datalist>
+  </div>
+<script>
+  const datadistribucion = [
+    { A: "JOSÉ RAMÍREZ", B: "MARTA LÓPEZ", C: "PEROP1AM-4060", D: "MEXICO", E: "DOMINGO", F: "13:00-22:00", G: "INTEGRAL" },
+    { A: "CARLA TÁVILA", B: "ROBERTO LUNA", C: "PEROP1AM-4124", D: "CHILE", E: "SÁBADO", F: "07:00-16:00", G: "INTEGRAL" },
+    // Añadir aquí todos los datos del JSON real...
+  ];
+
+  function resetFilters() {
+    document.querySelectorAll('.filter-input').forEach(input => input.value = '');
+    renderTable(fullData);
+  }
+
+  let fullData = [];
+
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const tbody = document.querySelector('#tablaApoyo tbody');
+
+  fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const headers = rows[0];
+
+      const now = new Date();
+      const fecha = now.toLocaleDateString();
+      const hora = now.toLocaleTimeString();
+      fileInfo.textContent = `📄 Archivo cargado: ${file.name} | ⏰ ${fecha} ${hora}`;
+
+      fullData = rows.slice(1).map(row => {
+        const perop = row[0];
+        const match = datadistribucion.find(d => d.C === perop);
+        return {
+          teamLeader: match?.A || '—',
+          nombre: match?.B || '—',
+          perop: perop,
+          descanso: match?.E || '—',
+          turno: match?.F || '—',
+          campania: row[1],
+          total: row[2] || 0,
+          approve: row[4] || 0,
+          approveP: (row[5] || '0%'),
+          reject: row[10] || 0,
+          rejectP: (row[11] || '0%'),
+          trashP: (row[13] || '0%'),
+          avgCheck: row[15] || 0
+        };
+      });
+
+      renderTable(fullData);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  function renderTable(data) {
+    tbody.innerHTML = '';
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+
+      const approveVal = parseFloat(row.approveP.replace('%',''));
+      let classColor = '';
+      if (approveVal >= 30) classColor = 'approve-green';
+      else if (approveVal >= 25) classColor = 'approve-yellow';
+      else classColor = 'approve-red';
+
+      tr.innerHTML = `
+        <td>${row.teamLeader}</td>
+        <td>${row.nombre}</td>
+        <td>${row.perop}</td>
+        <td>${row.descanso}</td>
+        <td>${row.turno}</td>
+        <td>${row.campania}</td>
+        <td>${row.total}</td>
+        <td class="${classColor}">${row.approveP}</td>
+        <td>${row.rejectP}</td>
+        <td>${row.trashP}</td>
+        <td>${row.avgCheck}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+</script>
+
+</body>
+</html>
