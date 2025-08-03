@@ -13,7 +13,6 @@
       color: white;
       display: flex;
     }
-
     aside {
       background-color: #152035;
       width: 220px;
@@ -26,14 +25,12 @@
       left: 0;
       top: 0;
     }
-
     .logo {
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 40px;
       text-align: center;
     }
-
     nav a {
       color: white;
       margin: 24px 0;
@@ -46,49 +43,40 @@
       align-items: center;
       gap: 10px;
     }
-
     nav a:hover {
       background-color: #1c2a45;
     }
-
     .main-content {
       flex-grow: 1;
       padding: 60px;
       padding-left: 260px;
       box-sizing: border-box;
     }
-
     .section {
       margin-top: 100px;
     }
-
     .section h2 {
       font-size: 32px;
       margin-bottom: 20px;
       text-align: center;
     }
-
     .reset-container {
       text-align: center;
       margin-bottom: 16px;
     }
-
     .reset-button {
       padding: 10px 20px;
       background-color: #5a7bc2;
       border: none;
       border-radius: 6px;
       color: white;
-      font-family: 'Lexend', sans-serif;
       font-size: 14px;
       cursor: pointer;
       transition: background-color 0.3s;
     }
-
     .reset-button:hover {
       background-color: #3e5da8;
     }
-
     .counter-box {
       text-align: center;
       font-size: 16px;
@@ -96,7 +84,6 @@
       font-weight: bold;
       color: #a5c5f7;
     }
-
     table {
       width: 100%;
       max-width: 1200px;
@@ -106,21 +93,18 @@
       border-radius: 8px;
       overflow: hidden;
     }
-
     th, td {
       padding: 14px;
       text-align: center;
       border-bottom: 1px solid #3a4a6a;
+      cursor: pointer;
     }
-
     th {
       background-color: #1f2d4a;
     }
-
     tr:hover {
       background-color: #324469;
     }
-
     .filter-input {
       width: 100%;
       padding: 6px;
@@ -130,14 +114,15 @@
       margin-bottom: 6px;
       background-color: #34476a;
       color: white;
-      font-family: 'Lexend', sans-serif;
       font-size: 14px;
     }
-
     .filter-input:focus {
       outline: 2px solid #5a7bc2;
       background-color: #3b507a;
     }
+    .rojo { color: #d46a6a; font-weight: bold; }
+    .amarillo { color: #d4bd6a; font-weight: bold; }
+    .verde { color: #6ad47a; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -155,26 +140,26 @@
 
   <div class="main-content">
     <section class="section">
-      <h2>👥 Selector de Apoyo</h2>
+      <h2>📊 Rendimiento por Campaña</h2>
       <div class="reset-container">
-        <button class="reset-button" onclick="resetFilters()">🔄 Restablecer filtros</button>
+        <button class="reset-button" onclick="location.reload()">🔄 Restablecer filtros</button>
       </div>
       <div class="counter-box" id="counter">Mostrando 0 registros</div>
       <table id="camprev-table">
         <thead>
           <tr id="filter-row"></tr>
-          <tr>
-            <th>Team Leader</th>
+          <tr id="header-row">
+            <th data-sort="teamLeader">Team Leader</th>
             <th>Nombre</th>
             <th>PEROP1AM</th>
-            <th>Descanso</th>
-            <th>Turno</th>
-            <th>Campaña</th>
-            <th>Total Orders</th>
-            <th>%Approve</th>
-            <th>%Reject</th>
-            <th>%Trash</th>
-            <th>Avg Check</th>
+            <th data-sort="descanso">Descanso</th>
+            <th data-sort="turno">Turno</th>
+            <th data-sort="campania">Campaña</th>
+            <th data-sort="orders">Total Orders</th>
+            <th data-sort="approve">%Approve</th>
+            <th data-sort="reject">%Reject</th>
+            <th data-sort="trash">%Trash</th>
+            <th data-sort="avg">Avg Check</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -183,13 +168,9 @@
   </div>
 
   <script>
+    const sortState = {};
+    let dataOriginal = [];
     const filtrosTipoSelect = [0, 3, 4, 5];
-
-    function resetFilters() {
-      document.querySelectorAll('.filter-input').forEach(input => input.value = '');
-      document.querySelectorAll('#camprev-table tbody tr').forEach(row => row.style.display = '');
-      actualizarContador();
-    }
 
     function actualizarContador() {
       const total = Array.from(document.querySelectorAll('#camprev-table tbody tr'))
@@ -197,34 +178,17 @@
       document.getElementById('counter').textContent = `Mostrando ${total} registros`;
     }
 
-    Promise.all([
-      fetch('datadistribucion.json').then(r => r.json()),
-      fetch('camprev.json').then(r => r.json())
-    ]).then(([distribucion, camprev]) => {
+    function getColorClass(porc) {
+      const valor = parseInt(porc.replace('%', ''));
+      if (valor <= 24) return 'rojo';
+      if (valor <= 29) return 'amarillo';
+      return 'verde';
+    }
+
+    function renderTabla(data) {
       const tbody = document.querySelector('#camprev-table tbody');
-      const dataFinal = [];
-
-      camprev.forEach(row => {
-        const operador = distribucion.find(op => op.C === row.A);
-        if (operador) {
-          dataFinal.push({
-            teamLeader: operador.A,
-            nombre: operador.B,
-            perop: row.A,
-            descanso: operador.E,
-            turno: operador.F,
-            campania: row.B,
-            orders: row.C,
-            approve: row.E,
-            reject: row.M,
-            trash: row.O,
-            avg: "$" + row.P
-          });
-        }
-      });
-
-      // Crear filas
-      dataFinal.forEach(item => {
+      tbody.innerHTML = '';
+      data.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${item.teamLeader}</td>
@@ -234,61 +198,107 @@
           <td>${item.turno}</td>
           <td>${item.campania}</td>
           <td>${item.orders}</td>
-          <td>${item.approve}</td>
+          <td class="${getColorClass(item.approve)}">${item.approve}</td>
           <td>${item.reject}</td>
           <td>${item.trash}</td>
-          <td>${item.avg}</td>
+          <td>$${item.avg}</td>
         `;
         tbody.appendChild(tr);
       });
-
       actualizarContador();
+    }
 
-      // Filtros
-      const columnas = ['teamLeader', 'nombre', 'perop', 'descanso', 'turno', 'campania'];
-      const filterRow = document.getElementById('filter-row');
-
-      columnas.forEach((col, index) => {
-        const th = document.createElement('th');
-        if (filtrosTipoSelect.includes(index)) {
-          const select = document.createElement('select');
-          select.classList.add('filter-input');
-          const opciones = [...new Set(dataFinal.map(item => item[col]))].sort();
-          select.innerHTML = `<option value="">Filtrar...</option>` + opciones.map(o => `<option value="${o}">${o}</option>`).join('');
-          select.addEventListener('input', aplicarFiltros);
-          th.appendChild(select);
-        } else {
-          const input = document.createElement('input');
-          input.classList.add('filter-input');
-          input.placeholder = 'Filtrar...';
-          input.addEventListener('input', aplicarFiltros);
-          th.appendChild(input);
-        }
-        filterRow.appendChild(th);
-      });
-
-      // Columnas sin filtro
-      for (let i = columnas.length; i < 11; i++) {
-        filterRow.appendChild(document.createElement('th'));
-      }
-
-      function aplicarFiltros() {
-        const filtros = Array.from(document.querySelectorAll('.filter-input'));
-        const filas = document.querySelectorAll('#camprev-table tbody tr');
-        filas.forEach(fila => {
-          const celdas = fila.querySelectorAll('td');
-          let visible = true;
-          filtros.forEach((filtro, i) => {
-            if (filtro.value) {
-              const texto = celdas[i].textContent.toLowerCase();
-              const valor = filtro.value.toLowerCase();
-              if (!texto.includes(valor)) visible = false;
-            }
-          });
-          fila.style.display = visible ? '' : 'none';
+    function aplicarFiltros() {
+      const filtros = Array.from(document.querySelectorAll('.filter-input'));
+      const filas = document.querySelectorAll('#camprev-table tbody tr');
+      filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        let visible = true;
+        filtros.forEach((filtro, i) => {
+          if (filtro.value) {
+            const texto = celdas[i].textContent.toLowerCase();
+            const valor = filtro.value.toLowerCase();
+            if (!texto.includes(valor)) visible = false;
+          }
         });
-        actualizarContador();
-      }
+        fila.style.display = visible ? '' : 'none';
+      });
+      actualizarContador();
+    }
+
+    function ordenar(columna, tipo = 'string') {
+      const estado = sortState[columna] || 'none';
+      let nuevoEstado = estado === 'asc' ? 'desc' : estado === 'desc' ? 'none' : 'asc';
+      sortState[columna] = nuevoEstado;
+      let datos = [...dataOriginal];
+      if (nuevoEstado === 'none') return renderTabla(dataOriginal);
+      datos.sort((a, b) => {
+        const valA = tipo === 'number' ? parseFloat(a[columna]) : a[columna].toLowerCase();
+        const valB = tipo === 'number' ? parseFloat(b[columna]) : b[columna].toLowerCase();
+        return nuevoEstado === 'asc' ? valA > valB ? 1 : -1 : valA < valB ? 1 : -1;
+      });
+      renderTabla(datos);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      Promise.all([
+        fetch('datadistribucion.json').then(r => r.json()),
+        fetch('camprev.json').then(r => r.json())
+      ]).then(([distribucion, camprev]) => {
+        const dataFinal = [];
+        camprev.forEach(row => {
+          const operador = distribucion.find(op => op.C === row.A);
+          if (operador) {
+            dataFinal.push({
+              teamLeader: operador.A,
+              nombre: operador.B,
+              perop: row.A,
+              descanso: operador.E,
+              turno: operador.F,
+              campania: row.B,
+              orders: row.C,
+              approve: row.E,
+              reject: row.M,
+              trash: row.O,
+              avg: row.P
+            });
+          }
+        });
+        dataOriginal = [...dataFinal];
+        renderTabla(dataFinal);
+
+        const columnas = ['teamLeader', 'nombre', 'perop', 'descanso', 'turno', 'campania'];
+        const filterRow = document.getElementById('filter-row');
+        columnas.forEach((col, index) => {
+          const th = document.createElement('th');
+          if (filtrosTipoSelect.includes(index)) {
+            const select = document.createElement('select');
+            select.classList.add('filter-input');
+            const opciones = [...new Set(dataFinal.map(item => item[col]))].sort();
+            select.innerHTML = `<option value="">Filtrar...</option>` + opciones.map(o => `<option value="${o}">${o}</option>`).join('');
+            select.addEventListener('input', aplicarFiltros);
+            th.appendChild(select);
+          } else {
+            const input = document.createElement('input');
+            input.classList.add('filter-input');
+            input.placeholder = 'Filtrar...';
+            input.addEventListener('input', aplicarFiltros);
+            th.appendChild(input);
+          }
+          filterRow.appendChild(th);
+        });
+        for (let i = columnas.length; i < 11; i++) {
+          filterRow.appendChild(document.createElement('th'));
+        }
+
+        document.querySelectorAll('#header-row th').forEach(th => {
+          const key = th.dataset.sort;
+          if (key) {
+            const tipo = ['orders', 'avg'].includes(key) || key.includes('%') || key === 'approve' || key === 'reject' || key === 'trash' ? 'number' : 'string';
+            th.addEventListener('click', () => ordenar(key, tipo));
+          }
+        });
+      });
     });
   </script>
 </body>
