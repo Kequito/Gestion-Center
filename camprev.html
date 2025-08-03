@@ -170,6 +170,7 @@
   <script>
     const sortState = {};
     let dataOriginal = [];
+    let dataFiltrada = [];
     const filtrosTipoSelect = [0, 3, 4, 5];
 
     function actualizarContador() {
@@ -210,28 +211,22 @@
 
     function aplicarFiltros() {
       const filtros = Array.from(document.querySelectorAll('.filter-input'));
-      const filas = document.querySelectorAll('#camprev-table tbody tr');
-      filas.forEach(fila => {
-        const celdas = fila.querySelectorAll('td');
-        let visible = true;
-        filtros.forEach((filtro, i) => {
-          if (filtro.value) {
-            const texto = celdas[i].textContent.toLowerCase();
-            const valor = filtro.value.toLowerCase();
-            if (!texto.includes(valor)) visible = false;
-          }
+      dataFiltrada = dataOriginal.filter(item => {
+        return filtros.every((filtro, i) => {
+          if (!filtro.value) return true;
+          const valor = Object.values(item)[i]?.toLowerCase?.() || '';
+          return valor.includes(filtro.value.toLowerCase());
         });
-        fila.style.display = visible ? '' : 'none';
       });
-      actualizarContador();
+      renderTabla(dataFiltrada);
     }
 
     function ordenar(columna, tipo = 'string') {
       const estado = sortState[columna] || 'none';
       let nuevoEstado = estado === 'asc' ? 'desc' : estado === 'desc' ? 'none' : 'asc';
       sortState[columna] = nuevoEstado;
-      let datos = [...dataOriginal];
-      if (nuevoEstado === 'none') return renderTabla(dataOriginal);
+      let datos = [...dataFiltrada];
+      if (nuevoEstado === 'none') return renderTabla(dataFiltrada);
       datos.sort((a, b) => {
         const valA = tipo === 'number' ? parseFloat(a[columna]) : a[columna].toLowerCase();
         const valB = tipo === 'number' ? parseFloat(b[columna]) : b[columna].toLowerCase();
@@ -265,7 +260,8 @@
           }
         });
         dataOriginal = [...dataFinal];
-        renderTabla(dataFinal);
+        dataFiltrada = [...dataFinal];
+        renderTabla(dataFiltrada);
 
         const columnas = ['teamLeader', 'nombre', 'perop', 'descanso', 'turno', 'campania'];
         const filterRow = document.getElementById('filter-row');
