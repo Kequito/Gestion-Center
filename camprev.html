@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte por Campaña</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Lexend', sans-serif;
+      background-color: #1c2a45;
+      color: white;
+      display: flex;
+    }
+
+    aside {
+      background-color: #152035;
+      width: 220px;
+      height: 100vh;
+      padding: 40px 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      margin: 24px 0;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    nav a:hover {
+      background-color: #1c2a45;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 60px;
+      padding-left: 260px;
+      box-sizing: border-box;
+    }
+
+    .section {
+      margin-top: 100px;
+    }
+
+    .section h2 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .reset-container {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .reset-button {
+      padding: 10px 20px;
+      background-color: #5a7bc2;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-family: 'Lexend', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .reset-button:hover {
+      background-color: #3e5da8;
+    }
+
+    .counter-box {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #a5c5f7;
+    }
+
+    table {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: #2a3b5c;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px;
+      text-align: center;
+      border-bottom: 1px solid #3a4a6a;
+    }
+
+    th {
+      background-color: #1f2d4a;
+    }
+
+    tr:hover {
+      background-color: #324469;
+    }
+
+    .filter-input {
+      width: 100%;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+      margin-bottom: 6px;
+      background-color: #34476a;
+      color: white;
+      font-family: 'Lexend', sans-serif;
+      font-size: 14px;
+    }
+
+    .filter-input:focus {
+      outline: 2px solid #5a7bc2;
+      background-color: #3b507a;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="logo">📊 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">📊 Campañas</a>
+    </nav>
+  </aside>
+
+  <div class="main-content">
+    <section class="section">
+      <h2>📊 Rendimiento por Campaña</h2>
+      <div class="reset-container">
+        <button class="reset-button" onclick="resetFilters()">🔄 Restablecer filtros</button>
+      </div>
+      <div class="counter-box" id="counter">Mostrando 0 registros</div>
+      <table id="camprev-table">
+        <thead>
+          <tr id="filter-row"></tr>
+          <tr>
+            <th>Team Leader</th>
+            <th>Nombre</th>
+            <th>PEROP1AM</th>
+            <th>Descanso</th>
+            <th>Turno</th>
+            <th>Campaña</th>
+            <th>Total Orders</th>
+            <th>%Approve</th>
+            <th>%Reject</th>
+            <th>%Trash</th>
+            <th>Avg Check</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    const filtrosTipoSelect = [0, 3, 4, 5];
+
+    function resetFilters() {
+      document.querySelectorAll('.filter-input').forEach(input => input.value = '');
+      document.querySelectorAll('#camprev-table tbody tr').forEach(row => row.style.display = '');
+      actualizarContador();
+    }
+
+    function actualizarContador() {
+      const total = Array.from(document.querySelectorAll('#camprev-table tbody tr'))
+        .filter(row => row.style.display !== 'none').length;
+      document.getElementById('counter').textContent = `Mostrando ${total} registros`;
+    }
+
+    Promise.all([
+      fetch('datadistribucion.json').then(r => r.json()),
+      fetch('camprev.json').then(r => r.json())
+    ]).then(([distribucion, camprev]) => {
+      const tbody = document.querySelector('#camprev-table tbody');
+      const dataFinal = [];
+
+      camprev.forEach(row => {
+        const operador = distribucion.find(op => op.C === row.A);
+        if (operador) {
+          dataFinal.push({
+            teamLeader: operador.A,
+            nombre: operador.B,
+            perop: row.A,
+            descanso: operador.E,
+            turno: operador.F,
+            campania: row.B,
+            orders: row.C,
+            approve: row.E,
+            reject: row.M,
+            trash: row.O,
+            avg: "$" + row.P
+          });
+        }
+      });
+
+      // Crear filas
+      dataFinal.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.teamLeader}</td>
+          <td>${item.nombre}</td>
+          <td>${item.perop}</td>
+          <td>${item.descanso}</td>
+          <td>${item.turno}</td>
+          <td>${item.campania}</td>
+          <td>${item.orders}</td>
+          <td>${item.approve}</td>
+          <td>${item.reject}</td>
+          <td>${item.trash}</td>
+          <td>${item.avg}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      actualizarContador();
+
+      // Filtros
+      const columnas = ['teamLeader', 'nombre', 'perop', 'descanso', 'turno', 'campania'];
+      const filterRow = document.getElementById('filter-row');
+
+      columnas.forEach((col, index) => {
+        const th = document.createElement('th');
+        if (filtrosTipoSelect.includes(index)) {
+          const select = document.createElement('select');
+          select.classList.add('filter-input');
+          const opciones = [...new Set(dataFinal.map(item => item[col]))].sort();
+          select.innerHTML = `<option value="">Filtrar...</option>` + opciones.map(o => `<option value="${o}">${o}</option>`).join('');
+          select.addEventListener('input', aplicarFiltros);
+          th.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.classList.add('filter-input');
+          input.placeholder = 'Filtrar...';
+          input.addEventListener('input', aplicarFiltros);
+          th.appendChild(input);
+        }
+        filterRow.appendChild(th);
+      });
+
+      // Columnas sin filtro
+      for (let i = columnas.length; i < 11; i++) {
+        filterRow.appendChild(document.createElement('th'));
+      }
+
+      function aplicarFiltros() {
+        const filtros = Array.from(document.querySelectorAll('.filter-input'));
+        const filas = document.querySelectorAll('#camprev-table tbody tr');
+        filas.forEach(fila => {
+          const celdas = fila.querySelectorAll('td');
+          let visible = true;
+          filtros.forEach((filtro, i) => {
+            if (filtro.value) {
+              const texto = celdas[i].textContent.toLowerCase();
+              const valor = filtro.value.toLowerCase();
+              if (!texto.includes(valor)) visible = false;
+            }
+          });
+          fila.style.display = visible ? '' : 'none';
+        });
+        actualizarContador();
+      }
+    });
+  </script>
+</body>
+</html>
