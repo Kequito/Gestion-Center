@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte Consolidado - Supervisor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #1a1a1a;
+      --primary-color: #7b1e1e;
+      --accent-color: #b92a2a;
+      --text-color: #ffffff;
+      --table-bg: #2b2b2b;
+      --table-border: #444;
+      --header-bg: #7b1e1e;
+      --green-color: #66bb6a;
+      --red-color: #c62828;
+      --orange-color: #ffa726;
+    }
+    body.light-theme {
+      --bg-color: #f4f8ff;
+      --primary-color: #0d47a1;
+      --accent-color: #42a5f5;
+      --text-color: #000000;
+      --table-bg: #ffffff;
+      --table-border: #ccc;
+      --header-bg: #0d47a1;
+      --green-color: #2e7d32;
+      --red-color: #c62828;
+      --orange-color: #f57c00;
+    }
+    body {
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .datetime { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+    .header-title { text-align: center; font-size: 28px; font-weight: bold; margin: 20px 0 10px; }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      font-family: monospace;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid var(--accent-color);
+      background: var(--table-bg);
+      color: var(--text-color);
+    }
+    .btn-group { margin: 10px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      padding: 10px 15px; font-size: 15px; cursor: pointer; border: none; border-radius: 8px;
+      background: var(--primary-color); color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: background 0.3s;
+    }
+    button:hover { background: var(--accent-color); }
+
+    table {
+      margin-top: 20px; border-collapse: separate; border-spacing: 0; width: 100%;
+      background: var(--table-bg); border: 1px solid var(--table-border); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    th, td { border: 1px solid var(--table-border); padding: 10px; text-align: center; }
+    th { background-color: var(--header-bg); color: white; cursor: pointer; }
+
+    .green { background-color: var(--green-color); color: white; }
+    .red { background-color: var(--red-color); color: white; }
+    .orange { background-color: var(--orange-color); color: white; }
+    .bold { font-weight: bold; }
+    .bandera { width: 20px; height: 14px; margin-right: 6px; vertical-align: middle; }
+    .orden-icono { margin-left: 6px; font-size: 12px; }
+
+    canvas { background: white; border-radius: 10px; margin-top: 20px; padding: 10px; }
+    select {
+      padding: 6px 10px; margin: 5px; border-radius: 5px; border: 1px solid var(--primary-color);
+      background: var(--table-bg); color: var(--text-color);
+    }
+    label { font-weight: bold; margin-right: 10px; }
+
+    #toast {
+      position: fixed; bottom: 20px; right: 20px; background: #333; color: white;
+      padding: 12px 18px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      display: none; z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📊 Reporte Consolidado por Países</h2>
+  <p>Pega aquí los datos desde el Panel (incluye encabezados):</p>
+  <textarea id="inputData" placeholder="Pega aquí tu tabla..."></textarea>
+
+  <div class="btn-group">
+    <button onclick="toggleTheme()">🎨 Cambiar Tema</button>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+    }
+  </script>
+
+  <div class="btn-group">
+    <button onclick="procesar('numerico')">📦 Vista Numérica</button>
+    <button onclick="procesar('porcentaje')">📈 Vista Porcentual</button>
+    <button onclick="procesar('mixto')">🔁 Vista Mixta</button>
+    <button onclick="borrarTodo()">🧹 Borrar</button>
+    <button onclick="restablecerOrden()">🔄 Restablecer</button>
+  </div>
+
+  <div class="header-title">📊 New Report CC Perú</div>
+
+  <div class="datetime" id="fechaHora"></div>
+  <script>
+    function actualizarFechaHora() {
+      const ahora = new Date();
+      const fecha = ahora.toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const hora = ahora.toLocaleTimeString('es-PE');
+      document.getElementById('fechaHora').textContent = `📅 ${fecha} – 🕒 ${hora}`;
+    }
+    actualizarFechaHora();
+    setInterval(actualizarFechaHora, 1000);
+  </script>
+
+  <table id="tablaReporte">
+    <thead>
+      <tr id="encabezadoTabla"></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let vistaActual = 'numerico';
+    let dataGlobal = {};
+    let dataOriginal = [];
+    let estadoOrdenColumna = {};
+    let columnaOrdenActual = null;
+
+    const codigos = {
+      "Chile": "cl", "Colombia": "co", "Costa Rica": "cr",
+      "Ecuador": "ec", "Mexico": "mx", "Paraguay": "py",
+      "Peru": "pe", "Uruguay": "uy", "Venezuela": "ve"
+    };
+
+    function mostrarToast(mensaje) {
+      const toast = document.getElementById("toast");
+      toast.textContent = mensaje;
+      toast.style.display = "block";
+      toast.style.opacity = 1;
+      setTimeout(() => { toast.style.transition = "opacity 0.5s ease"; toast.style.opacity = 0; }, 2500);
+      setTimeout(() => { toast.style.display = "none"; toast.style.transition = ""; }, 3000);
+    }
+
+    function borrarTodo() {
+      document.getElementById("inputData").value = "";
+      document.querySelector("#tablaReporte tbody").innerHTML = "";
+      document.querySelector("#encabezadoTabla").innerHTML = "";
+      dataGlobal = {};
+      dataOriginal = [];
+      estadoOrdenColumna = {};
+      columnaOrdenActual = null;
+    }
+
+    function procesar(vista) {
+      vistaActual = vista;
+      estadoOrdenColumna = {};
+      columnaOrdenActual = null;
+
+      const input = document.getElementById("inputData").value.trim();
+      if (!input) return;
+      const filas = input.split("\n");
+      const headers = filas[0].split("\t");
+      const idx = (col) => headers.indexOf(col);
+
+      dataGlobal = {};
+
+      for (let i = 1; i < filas.length; i++) {
+        const fila = filas[i].split("\t");
+        const pais = fila[idx("Country")];
+        if (!pais) continue;
+
+        if (!dataGlobal[pais]) {
+          dataGlobal[pais] = {
+            total: 0, news: 0, recall: 0, noAnswer: 0,
+            approved: 0, reject: 0, trash: 0
+          };
+        }
+
+        dataGlobal[pais].total    += parseInt(fila[idx("Total")]) || 0;
+        dataGlobal[pais].news     += parseInt(fila[idx("New")]) || 0;
+        dataGlobal[pais].recall   += parseInt(fila[idx("Recall")]) || 0;
+        dataGlobal[pais].noAnswer += parseInt(fila[idx("No answer")]) || 0;
+        dataGlobal[pais].approved += parseInt(fila[idx("Call center (approved)")]) || 0;
+        dataGlobal[pais].reject   += parseInt(fila[idx("Reject")]) || 0;
+        dataGlobal[pais].trash    += parseInt(fila[idx("Trash")]) || 0;
+      }
+
+      dataOriginal = Object.entries(dataGlobal);
+      renderTabla();
+    }
+
+    function renderTabla() {
+      const encabezado = document.getElementById("encabezadoTabla");
+      const cuerpo = document.querySelector("#tablaReporte tbody");
+      encabezado.innerHTML = "";
+      cuerpo.innerHTML = "";
+
+      let columnas = ["País", "Leads"];
+      if (vistaActual === "numerico") {
+        columnas.push("New", "Recall", "No Answer", "Approve", "Reject", "Trash");
+      } else if (vistaActual === "porcentaje") {
+        columnas.push("% New", "% Recall", "% No Answer", "% Approve", "% Reject", "% Trash");
+      } else {
+        columnas.push(
+          "New", "% New", "Recall", "% Recall", "No Answer", "% No Answer",
+          "Approve", "% Approve", "Reject", "% Reject", "Trash", "% Trash"
+        );
+      }
+
+      // construir encabezado
+      columnas.forEach((col) => {
+        const th = document.createElement("th");
+        th.style.position = "relative";
+        th.textContent = col;
+
+        if (col !== "País") {
+          th.style.cursor = "pointer";
+          th.onclick = () => cambiarOrdenColumna(col);
+
+          const icon = document.createElement("span");
+          icon.className = "orden-icono";
+          icon.style.position = "absolute";
+          icon.style.right = "6px";
+          icon.textContent = getIconoOrden(col);
+
+          th.appendChild(icon);
+        }
+
+        encabezado.appendChild(th);
+      });
+
+      // 🔧 FIX principal: usar spread correcto
+      let datos = [...dataOriginal];
+
+      if (columnaOrdenActual) {
+        const estado = estadoOrdenColumna[columnaOrdenActual] || 0;
+        datos.sort((a, b) => {
+          const valorA = getValorOrdenable(a[1], columnaOrdenActual);
+          const valorB = getValorOrdenable(b[1], columnaOrdenActual);
+          if (estado === 1) return valorB - valorA;
+          if (estado === 2) return valorA - valorB;
+          return 0;
+        });
+      }
+
+      for (const [pais, d] of datos) {
+        const t = d.total || 1;
+        const row = document.createElement("tr");
+        const bandera = codigos[pais] ? `<img class="bandera" src="https://flagcdn.com/w40/${codigos[pais]}.png">` : "";
+        let contenido = `<td class="bold">${bandera} ${pais}</td><td>${d.total}</td>`;
+
+        if (vistaActual === "numerico") {
+          contenido += `<td>${d.news}</td><td>${d.recall}</td><td>${d.noAnswer}</td><td>${d.approved}</td><td>${d.reject}</td><td>${d.trash}</td>`;
+        } else if (vistaActual === "porcentaje") {
+          contenido += `
+            <td>${pct(d.news, t)}</td>
+            <td>${pct(d.recall, t)}</td>
+            <td>${pct(d.noAnswer, t)}</td>
+            <td class="${colorearPct(d.approved / t * 100)}">${pct(d.approved, t)}</td>
+            <td>${pct(d.reject, t)}</td>
+            <td>${pct(d.trash, t)}</td>
+          `;
+        } else {
+          contenido += `
+            <td>${d.news}</td><td>${pct(d.news, t)}</td>
+            <td>${d.recall}</td><td>${pct(d.recall, t)}</td>
+            <td>${d.noAnswer}</td><td>${pct(d.noAnswer, t)}</td>
+            <td>${d.approved}</td><td class="${colorearPct(d.approved / t * 100)}">${pct(d.approved, t)}</td>
+            <td>${d.reject}</td><td>${pct(d.reject, t)}</td>
+            <td>${d.trash}</td><td>${pct(d.trash, t)}</td>
+          `;
+        }
+
+        row.innerHTML = contenido;
+        cuerpo.appendChild(row);
+      }
+    }
+
+    function cambiarOrdenColumna(col) {
+      estadoOrdenColumna[col] = (estadoOrdenColumna[col] || 0) + 1;
+      if (estadoOrdenColumna[col] > 2) estadoOrdenColumna[col] = 0;
+      columnaOrdenActual = estadoOrdenColumna[col] === 0 ? null : col;
+      renderTabla();
+    }
+
+    function restablecerOrden() {
+      estadoOrdenColumna = {};
+      columnaOrdenActual = null;
+      renderTabla();
+    }
+
+    function getIconoOrden(col) {
+      const estado = estadoOrdenColumna[col] || 0;
+      return estado === 1 ? "🔽" : estado === 2 ? "🔼" : "➖";
+    }
+
+    function getValorOrdenable(d, col) {
+      const t = d.total || 1;
+      const base = {
+        "Leads": d.total,
+        "New": d.news, "% New": (d.news / t) * 100,
+        "Recall": d.recall, "% Recall": (d.recall / t) * 100,
+        "No Answer": d.noAnswer, "% No Answer": (d.noAnswer / t) * 100,
+        "Approve": d.approved, "% Approve": (d.approved / t) * 100,
+        "Reject": d.reject, "% Reject": (d.reject / t) * 100,
+        "Trash": d.trash, "% Trash": (d.trash / t) * 100
+      };
+      return base[col] || 0;
+    }
+
+    function pct(value, total) { return ((value / total) * 100).toFixed(1) + "%"; }
+    function colorearPct(p) { return p <= 25 ? "red" : p >= 30 ? "green" : "orange"; }
+  </script>
+
+  <div class="btn-group">
+    <button onclick="registrarAvance()">📌 Registrar avance ahora</button>
+    <button onclick="borrarHistorial()">🗑️ Borrar historial</button>
+  </div>
+
+  <label for="filtroPais"><strong>🌎 Filtrar por país:</strong></label>
+  <select id="filtroPais" onchange="renderTablaHistorico()">
+    <option value="todos">🌍 Todos</option>
+  </select>
+
+  <label for="filtroFecha"><strong>📅 Filtrar por día:</strong></label>
+  <select id="filtroFecha" onchange="renderTablaHistorico()">
+    <option value="todos">📆 Todos</option>
+  </select>
+
+  <h3>📋 Registro histórico por hora</h3>
+  <table id="tablaHistorico">
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>País</th>
+        <th>Leads</th>
+        <th>News</th>
+        <th>Recall</th>
+        <th>No Answer</th>
+        <th>Approve</th>
+        <th>% Approve</th>
+        <th>Reject</th>
+        <th>Trash</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <canvas id="graficoAvance" height="200"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let historico = JSON.parse(localStorage.getItem('historicoAvance')) || [];
+
+    function borrarHistorial() {
+      const confirmar = confirm("¿Estás seguro de que deseas borrar todo el historial guardado?");
+      if (confirmar) {
+        localStorage.removeItem('historicoAvance');
+        historico = [];
+        renderTablaHistorico();
+        renderGrafico();
+        mostrarToast("✅ Historial borrado correctamente.");
+      }
+    }
+
+    function registrarAvance() {
+      const now = new Date();
+      const hora = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const fecha = now.toLocaleDateString('es-PE');
+
+      for (const [pais, d] of Object.entries(dataGlobal)) {
+        const total = d.total || 1;
+        historico.push({
+          fecha,
+          hora,
+          pais,
+          leads: d.total,
+          approve: d.approved,
+          pctApprove: ((d.approved / total) * 100).toFixed(1),
+          reject: d.reject,
+          trash: d.trash,
+          recall: d.recall,
+          noAnswer: d.noAnswer,
+          news: d.news
+        });
+      }
+
+      localStorage.setItem('historicoAvance', JSON.stringify(historico));
+      renderTablaHistorico();
+      renderGrafico();
+    }
+
+    function renderTablaHistorico() {
+      const filtroPais = document.getElementById("filtroPais").value;
+      const filtroFecha = document.getElementById("filtroFecha").value;
+      const tbody = document.querySelector("#tablaHistorico tbody");
+      tbody.innerHTML = "";
+
+      // Inicializar opciones únicas
+      const paisesUnicos = [...new Set(historico.map(r => r.pais))];
+      const selectPais = document.getElementById("filtroPais");
+      if (selectPais.options.length === 1) {
+        paisesUnicos.forEach(pais => {
+          const opt = document.createElement("option");
+          opt.value = pais; opt.textContent = pais;
+          selectPais.appendChild(opt);
+        });
+      }
+
+      const fechasUnicas = [...new Set(historico.map(r => r.fecha))];
+      const selectFecha = document.getElementById("filtroFecha");
+      if (selectFecha.options.length === 1) {
+        fechasUnicas.forEach(fecha => {
+          const opt = document.createElement("option");
+          opt.value = fecha; opt.textContent = fecha;
+          selectFecha.appendChild(opt);
+        });
+      }
+
+      historico.forEach(r => {
+        if ((filtroPais !== "todos" && r.pais !== filtroPais) ||
+            (filtroFecha !== "todos" && r.fecha !== filtroFecha)) return;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.hora}</td>
+          <td>${r.pais}</td>
+          <td>${r.leads}</td>
+          <td>${r.news}</td>
+          <td>${r.recall}</td>
+          <td>${r.noAnswer}</td>
+          <td>${r.approve}</td>
+          <td>${Number(r.pctApprove).toFixed(1)}%</td>
+          <td>${r.reject}</td>
+          <td>${r.trash}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderGrafico() {
+      const ctx = document.getElementById('graficoAvance').getContext('2d');
+      const agrupado = {};
+      historico.forEach(r => {
+        if (!agrupado[r.pais]) agrupado[r.pais] = [];
+        agrupado[r.pais].push({ hora: r.hora, pct: r.pctApprove });
+      });
+
+      const datasets = Object.keys(agrupado).map(pais => {
+        return {
+          label: pais,
+          data: agrupado[pais].map(p => ({ x: p.hora, y: p.pct })),
+          fill: false,
+          tension: 0.2
+        };
+      });
+
+      if (window.graficoAvance) window.graficoAvance.destroy();
+      window.graficoAvance = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            x: { title: { display: true, text: 'Hora' }, type: 'category' },
+            y: { title: { display: true, text: '% Approve' }, beginAtZero: true, max: 100 }
+          }
+        }
+      });
+    }
+
+    // Render inicial
+    renderTablaHistorico();
+    renderGrafico();
+  </script>
+
+  <div id="toast"></div>
+
+</body>
+</html>
