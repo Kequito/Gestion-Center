@@ -28,6 +28,7 @@
     button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
     button:hover{ background:var(--accent-color); }
     button:active{ transform:translateY(1px); }
+    button[disabled]{ opacity:.55; cursor:not-allowed; }
 
     textarea{ width:100%; min-height:150px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:12px; border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; box-sizing:border-box; }
 
@@ -54,9 +55,6 @@
     .history-actions{ display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px; justify-content:flex-start; }
 
     #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
-
-    @media (max-width:960px){ aside{width:200px;} main{margin-left:200px; width:calc(100% - 200px);} }
-    @media (max-width:760px){ aside{position:static;width:100%;height:auto;} main{margin-left:0;width:100%;} .filter-group select,.filter-group input[type="date"]{min-width:120px;} }
   </style>
 </head>
 <body>
@@ -100,7 +98,7 @@
 
     <!-- Acciones de histórico -->
     <div class="history-actions">
-      <button onclick="registrarAvance()">📌 Registrar avance ahora</button>
+      <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
       <button onclick="borrarHistorial()">🗑️ Borrar historial</button>
       <button onclick="exportarHistoricoCSV()">⬇️ Exportar histórico (CSV)</button>
     </div>
@@ -148,13 +146,11 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Toda la lógica + Firebase en módulo -->
+  <!-- Lógica + Firebase (ESM) -->
   <script type="module">
-    /* =========================
-       Firebase v12 (ESM CDN)
-       ========================= */
+    /* ========= Firebase v12 ========= */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -169,34 +165,44 @@
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    signInAnonymously(auth).catch(console.error);
     const db   = getFirestore(app);
 
-    /* =========================
-       Utilidades UI / estado
-       ========================= */
+    // Esperamos a que Auth esté lista antes de permitir escribir
+    let authReadyResolve;
+    const authReady = new Promise(res => (authReadyResolve = res));
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+        authReadyResolve(user);
+      } else {
+        signInAnonymously(auth).catch(e=>{
+          console.error('Auth error:', e);
+          mostrarToast('⚠️ Error de autenticación: ' + (e.code || e.message));
+        });
+      }
+    });
+
+    /* ========= Utilidades ========= */
     const PREF_VISTA  = 'gc_vista';
     const PREF_ORDEN  = 'gc_orden';
     const PREF_FPAIS  = 'gc_filtro_pais';
-    const PREF_FFECHA = 'gc_filtro_fecha_iso'; // yyyy-mm-dd
+    const PREF_FFECHA = 'gc_filtro_fecha_iso';
 
     const savePref = (k,v)=>localStorage.setItem(k, JSON.stringify(v));
     const readPref = (k,def=null)=>{ try{ const v=JSON.parse(localStorage.getItem(k)); return (v===undefined||v===null)?def:v; }catch{ return def; } };
 
-    // Fechas helpers
     const pad2 = n => String(n).padStart(2,'0');
-    function formatDDMMYYYY(d){ return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`; }
-    function formatISO(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+    const formatDDMMYYYY = d => `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
+    const formatISO = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     function ddmmyyyyToISO(s){
       if(!s) return "";
-      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; // ya ISO
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
       const m = /^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s);
       if(!m) return "";
-      const d = pad2(+m[1]), mo = pad2(+m[2]), y = m[3];
-      return `${y}-${mo}-${d}`;
+      return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`;
     }
 
-    // Fecha/hora en título
     function actualizarFechaHora(){
       const ahora=new Date();
       const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -205,39 +211,23 @@
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // Estado de tablas
     let vistaActual = readPref(PREF_VISTA, 'numerico');
-    let dataGlobal={};
-    let dataOriginal=[];
-    let estadoOrdenColumna=readPref(PREF_ORDEN, {});
-    let columnaOrdenActual=null;
+    let dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN, {}), columnaOrdenActual=null;
 
-    // Banderas
     const codigos={
-      "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec",
-      "Mexico":"mx","Paraguay":"py","Peru":"pe","Uruguay":"uy",
-      "Venezuela":"ve","Bolivia":"bo"
+      "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","Paraguay":"py","Peru":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo"
     };
 
     function mostrarToast(msg){
       const t=document.getElementById("toast");
       t.textContent=msg; t.style.display="block"; t.style.opacity=1;
-      setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2400);
-      setTimeout(()=>{t.style.display="none"; t.style.transition="";},3000);
+      setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600);
+      setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200);
     }
 
-    /* =========================
-       Parser tolerante (Approved)
-       ========================= */
     const COLMAP = {
-      country:  ["Country"],
-      total:    ["Total"],
-      news:     ["New"],
-      recall:   ["Recall"],
-      noAnswer: ["No answer","No Answer"],
-      approved: ["Approved","Call center (approved)","Call center approved"],
-      reject:   ["Reject"],
-      trash:    ["Trash"]
+      country:["Country"], total:["Total"], news:["New"], recall:["Recall"],
+      noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"]
     };
 
     function borrarTodo(){
@@ -259,77 +249,43 @@
       const filas=input.split("\n");
       const headersRaw=filas[0].split("\t").map(h=>h.trim());
       const headersLC=headersRaw.map(h=>h.toLowerCase());
+      const idx=(names)=> (Array.isArray(names)?names:[names]).reduce((r,n)=> r>=0?r:(headersRaw.indexOf(n)>=0?headersRaw.indexOf(n):headersLC.indexOf(n.toLowerCase())), -1);
 
-      const idx = (names)=>{
-        for(const n of (Array.isArray(names)?names:[names])){
-          let i=headersRaw.indexOf(n);
-          if(i!==-1) return i;
-          i=headersLC.indexOf(n.toLowerCase());
-          if(i!==-1) return i;
-        }
-        return -1;
-      };
+      const IDX={ country:idx(COLMAP.country), total:idx(COLMAP.total), news:idx(COLMAP.news), recall:idx(COLMAP.recall), noAnswer:idx(COLMAP.noAnswer), approved:idx(COLMAP.approved), reject:idx(COLMAP.reject), trash:idx(COLMAP.trash) };
 
-      const IDX={
-        country:  idx(COLMAP.country),
-        total:    idx(COLMAP.total),
-        news:     idx(COLMAP.news),
-        recall:   idx(COLMAP.recall),
-        noAnswer: idx(COLMAP.noAnswer),
-        approved: idx(COLMAP.approved),
-        reject:   idx(COLMAP.reject),
-        trash:    idx(COLMAP.trash)
-      };
-
-      if(IDX.country===-1 || IDX.total===-1){
-        mostrarToast("⚠️ No encuentro las columnas básicas (Country y/o Total).");
-        return;
-      }
-      if(IDX.approved===-1){
-        mostrarToast("ℹ️ No encuentro 'Approved' (antes 'Call center (approved)'); usaré 0.");
-      }
+      if(IDX.country===-1 || IDX.total===-1){ mostrarToast("⚠️ No encuentro las columnas básicas (Country/Total)."); return; }
+      if(IDX.approved===-1){ mostrarToast("ℹ️ No encuentro ‘Approved’ (antes ‘Call center (approved)’); usaré 0."); }
 
       dataGlobal={};
       for(let i=1;i<filas.length;i++){
         const f=filas[i].split("\t");
-        const pais=(f[IDX.country]||"").trim();
-        if(!pais) continue;
+        const pais=(f[IDX.country]||"").trim(); if(!pais) continue;
         if(!dataGlobal[pais]) dataGlobal[pais]={total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0};
-
-        const val = (j)=> j===-1 ? 0 : (parseInt(f[j])||0);
-
-        dataGlobal[pais].total    += val(IDX.total);
-        dataGlobal[pais].news     += val(IDX.news);
-        dataGlobal[pais].recall   += val(IDX.recall);
-        dataGlobal[pais].noAnswer += val(IDX.noAnswer);
-        dataGlobal[pais].approved += val(IDX.approved);
-        dataGlobal[pais].reject   += val(IDX.reject);
-        dataGlobal[pais].trash    += val(IDX.trash);
+        const val=j=> j===-1?0:(parseInt(f[j])||0);
+        dataGlobal[pais].total+=val(IDX.total);
+        dataGlobal[pais].news+=val(IDX.news);
+        dataGlobal[pais].recall+=val(IDX.recall);
+        dataGlobal[pais].noAnswer+=val(IDX.noAnswer);
+        dataGlobal[pais].approved+=val(IDX.approved);
+        dataGlobal[pais].reject+=val(IDX.reject);
+        dataGlobal[pais].trash+=val(IDX.trash);
       }
-
-      dataOriginal = Object.entries(dataGlobal);
+      dataOriginal=Object.entries(dataGlobal);
       renderTabla();
       mostrarToast("✅ Datos procesados");
     }
 
     function renderTabla(){
-      const enc=document.getElementById("encabezadoTabla");
-      const cuerpo=document.querySelector("#tablaReporte tbody");
-      const tfoot=document.getElementById("filaTotales");
+      const enc=document.getElementById("encabezadoTabla"), cuerpo=document.querySelector("#tablaReporte tbody"), tfoot=document.getElementById("filaTotales");
       enc.innerHTML=""; cuerpo.innerHTML=""; tfoot.innerHTML="";
-
       let cols=["País","Leads"];
       if(vistaActual==="numerico"){ cols.push("New","Recall","No Answer","Approve","Reject","Trash");
       }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
       }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
-
-      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.style.cursor="pointer"; th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
+      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
 
       let datos=[...dataOriginal];
-      if(columnaOrdenActual){
-        const e=estadoOrdenColumna[columnaOrdenActual]||0;
-        datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual); const B=getValorOrdenable(b[1],columnaOrdenActual); if(e===1) return B-A; if(e===2) return A-B; return 0; });
-      }
+      if(columnaOrdenActual){ const e=estadoOrdenColumna[columnaOrdenActual]||0; datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual); return e===1?B-A:e===2?A-B:0; }); }
 
       const flag=p=>codigos[p]?`<img class="bandera" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
 
@@ -361,29 +317,25 @@
       renderTabla();
     }
     function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN, {}); renderTabla(); }
+    function getValorOrdenable(d,col){ const t=d.total||1; const base={ "Leads":d.total, "New":d.news, "% New":(d.news/t)*100, "Recall":d.recall, "% Recall":(d.recall/t)*100, "No Answer":d.noAnswer, "% No Answer":(d.noAnswer/t)*100, "Approve":d.approved, "% Approve":(d.approved/t)*100, "Reject":d.reject, "% Reject":(d.reject/t)*100, "Trash":d.trash, "% Trash":(d.trash/t)*100 }; return base[col]||0; }
+    const pct=(v,t)=>((v/t)*100).toFixed(1)+"%";
+    const colorPct=p=>p<=25?"red":p>=30?"green":"orange";
 
-    function getValorOrdenable(d,col){
-      const t=d.total||1;
-      const base={ "Leads":d.total, "New":d.news, "% New":(d.news/t)*100, "Recall":d.recall, "% Recall":(d.recall/t)*100, "No Answer":d.noAnswer, "% No Answer":(d.noAnswer/t)*100, "Approve":d.approved, "% Approve":(d.approved/t)*100, "Reject":d.reject, "% Reject":(d.reject/t)*100, "Trash":d.trash, "% Trash":(d.trash/t)*100 };
-      return base[col]||0;
-    }
-    function pct(v,t){ return ((v/t)*100).toFixed(1)+"%"; }
-    function colorPct(p){ return p<=25?"red":p>=30?"green":"orange"; }
-
-    /* =========================
-       Firestore: histórico cloud
-       ========================= */
-    let cloudHistorico = []; // último fetch (filtrado)
+    /* ======== Firestore: cloud ======== */
+    let cloudHistorico=[];
 
     async function registrarAvance(){
       if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
+      // Esperar a que Auth esté listo
+      try{ await authReady; }catch(e){ mostrarToast("⚠️ Auth no disponible."); return; }
+
       const now=new Date();
       const hora=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      const fecha=formatDDMMYYYY(now);     // "20/08/2025"
-      const fechaISO=formatISO(now);       // "2025-08-20"
+      const fecha=formatDDMMYYYY(now);
+      const fechaISO=formatISO(now);
 
-      const colRef = collection(db,'historico');
-      const writes = [];
+      const colRef=collection(db,'historico');
+      const writes=[];
       for(const [pais,d] of Object.entries(dataGlobal)){
         const total=d.total||1;
         writes.push(addDoc(colRef,{
@@ -391,7 +343,7 @@
           leads:d.total, news:d.news, recall:d.recall, noAnswer:d.noAnswer,
           approve:d.approved, pctApprove:((d.approved/total)*100).toFixed(1),
           reject:d.reject, trash:d.trash,
-          createdAt: new Date()
+          createdAt:new Date()
         }));
       }
       try{
@@ -400,68 +352,54 @@
         await renderTablaHistorico(true);
         renderGrafico();
       }catch(e){
-        console.error(e);
-        mostrarToast("⚠️ Error guardando en la nube.");
+        console.error('Firestore write error:', e);
+        mostrarToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
       }
     }
 
-    // Borrado de histórico (nube) – opcional. Si no quieres permitir borrar a nadie, puedes quitar esta función.
     async function borrarHistorial(){
-      if(!confirm("¿Borrar TODO el historial de la nube? Esta acción es irreversible.")) return;
+      if(!confirm("¿Borrar TODO el historial de la nube?")) return;
       try{
-        // Leer todo (cuidado con cuotas; para pocos docs está ok)
-        const snap = await getDocs(collection(db,'historico'));
-        const ops = [];
-        snap.forEach(d => ops.push(deleteDoc(doc(db,'historico', d.id))));
+        const snap=await getDocs(collection(db,'historico'));
+        const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
         await Promise.all(ops);
         mostrarToast("🗑️ Historial borrado.");
-        await renderTablaHistorico(true);
-        renderGrafico();
-      }catch(err){
-        console.error(err);
-        mostrarToast("❌ No se pudo borrar el historial (revisa reglas).");
+        await renderTablaHistorico(true); renderGrafico();
+      }catch(e){
+        console.error('Delete error:', e);
+        mostrarToast("❌ No se pudo borrar: " + (e.code || e.message));
       }
     }
 
     async function fetchHistoricoCloud(fp, ffISO){
-      const base = collection(db,'historico');
-      const constraints = [];
-      if(ffISO)          constraints.push(where('fechaISO','==',ffISO));
-      if(fp!=='todos')   constraints.push(where('pais','==',fp));
-      const qy = constraints.length ? query(base, ...constraints) : base;
-      const snap = await getDocs(qy);
-      const rows = [];
-      snap.forEach(d => rows.push(d.data()));
+      const base=collection(db,'historico');
+      const cs=[]; if(ffISO) cs.push(where('fechaISO','==',ffISO)); if(fp!=='todos') cs.push(where('pais','==',fp));
+      const qy=cs.length?query(base,...cs):base;
+      const snap=await getDocs(qy);
+      const rows=[]; snap.forEach(d=>rows.push(d.data()));
       rows.sort((a,b)=>((a.fechaISO||'')+' '+(a.hora||'')).localeCompare((b.fechaISO||'')+' '+(b.hora||'')));
       return rows;
     }
 
     async function ensurePaisesOptions(){
-      const sel = document.getElementById("filtroPais");
+      const sel=document.getElementById("filtroPais");
       if(sel.options.length>1) return;
       try{
-        const snap = await getDocs(collection(db,'historico'));
-        const set = new Set();
-        snap.forEach(d => set.add(d.data().pais||""));
-        [...set].filter(Boolean).forEach(p=>{
-          const o=document.createElement("option");o.value=p;o.textContent=p;sel.appendChild(o);
-        });
+        const snap=await getDocs(collection(db,'historico'));
+        const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
+        [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;sel.appendChild(o); });
       }catch{}
     }
 
-    async function renderTablaHistorico(force=false){
+    async function renderTablaHistorico(){
       await ensurePaisesOptions();
-
       const filtroPaisEl=document.getElementById("filtroPais");
       const filtroFechaEl=document.getElementById("filtroFecha");
-      const tbody=document.querySelector("#tablaHistorico tbody");
-      tbody.innerHTML="";
+      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
 
-      // Restaurar prefs (y compat dd/mm/aaaa)
-      const prefPais  = readPref(PREF_FPAIS,'todos');
-      const prefFecha = readPref(PREF_FFECHA,'todos');
-      const prefFechaISO = (prefFecha && prefFecha!=='todos') ? (ddmmyyyyToISO(prefFecha) || prefFecha) : "";
-
+      const prefPais=readPref(PREF_FPAIS,'todos');
+      const prefFecha=readPref(PREF_FFECHA,'todos');
+      const prefFechaISO=(prefFecha && prefFecha!=='todos')?(ddmmyyyyToISO(prefFecha) || prefFecha):"";
       if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
       if(prefFechaISO) filtroFechaEl.value=prefFechaISO;
 
@@ -469,45 +407,29 @@
       const ffISO=filtroFechaEl.value;
 
       try{
-        cloudHistorico = await fetchHistoricoCloud(fp, ffISO);
+        cloudHistorico=await fetchHistoricoCloud(fp, ffISO);
       }catch(e){
-        console.error(e);
-        mostrarToast("⚠️ No se pudo leer la nube.");
-        cloudHistorico = [];
+        console.error('Fetch error:', e);
+        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code || e.message));
+        cloudHistorico=[];
       }
 
       cloudHistorico.forEach(r=>{
         const tr=document.createElement("tr");
-        tr.innerHTML=`
-          <td>${r.hora||""}</td>
-          <td>${r.fecha||""}</td>
-          <td>${r.pais||""}</td>
-          <td>${r.leads||0}</td>
-          <td>${r.news||0}</td>
-          <td>${r.recall||0}</td>
-          <td>${r.noAnswer||0}</td>
-          <td>${r.approve||0}</td>
-          <td>${Number(r.pctApprove||0).toFixed(1)}%</td>
-          <td>${r.reject||0}</td>
-          <td>${r.trash||0}</td>`;
+        tr.innerHTML=`<td>${r.hora||""}</td><td>${r.fecha||""}</td><td>${r.pais||""}</td><td>${r.leads||0}</td><td>${r.news||0}</td><td>${r.recall||0}</td><td>${r.noAnswer||0}</td><td>${r.approve||0}</td><td>${Number(r.pctApprove||0).toFixed(1)}%</td><td>${r.reject||0}</td><td>${r.trash||0}</td>`;
         tbody.appendChild(tr);
       });
 
-      // Actualiza gráfico sincronizado al filtro
       renderGrafico();
     }
 
     function onFiltroChange(){
-      const paisSel = document.getElementById("filtroPais").value;
-      const fechaISO = document.getElementById("filtroFecha").value || "todos";
+      const paisSel=document.getElementById("filtroPais").value;
+      const fechaISO=document.getElementById("filtroFecha").value || "todos";
       savePref(PREF_FPAIS, paisSel); savePref(PREF_FFECHA, fechaISO);
       renderTablaHistorico();
     }
-    function limpiarFecha(){
-      document.getElementById("filtroFecha").value="";
-      savePref(PREF_FFECHA,"todos");
-      renderTablaHistorico();
-    }
+    function limpiarFecha(){ document.getElementById("filtroFecha").value=""; savePref(PREF_FFECHA,"todos"); renderTablaHistorico(); }
 
     function exportarHistoricoCSV(){
       if(!cloudHistorico.length){ mostrarToast("ℹ️ No hay registros para exportar."); return; }
@@ -518,50 +440,20 @@
       const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`historico_gc_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
-    /* =========================
-       Gráfico (sin colores fijos)
-       ========================= */
     function renderGrafico(){
       const ctx=document.getElementById('graficoAvance').getContext('2d');
-      const agrupado={};
-      cloudHistorico.forEach(r=>{
-        if(!agrupado[r.pais]) agrupado[r.pais]=[];
-        agrupado[r.pais].push({hora:r.hora,pct:r.pctApprove});
-      });
-      const datasets=Object.keys(agrupado).map(pais=>({
-        label:pais,
-        data:agrupado[pais].map(p=>({x:p.hora,y:p.pct})),
-        fill:false,
-        tension:.2
-      }));
+      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
+      const datasets=Object.keys(agr).map(k=>({label:k,data:agr[k],fill:false,tension:.2}));
       if(window.graficoAvance) window.graficoAvance.destroy();
-      window.graficoAvance=new Chart(ctx,{
-        type:'line',
-        data:{datasets},
-        options:{
-          responsive:true,
-          plugins:{legend:{position:'top'}},
-          scales:{
-            x:{title:{display:true,text:'Hora'},type:'category'},
-            y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}
-          }
-        }
-      });
+      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
     }
 
-    // Exponer funciones para los botones (por ser módulo)
-    window.procesar = procesar;
-    window.borrarTodo = borrarTodo;
-    window.restablecerOrden = restablecerOrden;
-    window.registrarAvance = registrarAvance;
-    window.borrarHistorial = borrarHistorial;
-    window.exportarHistoricoCSV = exportarHistoricoCSV;
-    window.onFiltroChange = onFiltroChange;
-    window.limpiarFecha = limpiarFecha;
+    // Exponer a botones
+    window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
+    window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
+    window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.limpiarFecha=limpiarFecha;
 
-    // Primer render (carga inicial desde la nube)
     document.addEventListener('DOMContentLoaded', ()=>{ renderTablaHistorico(); });
-
   </script>
 </body>
 </html>
