@@ -253,4 +253,315 @@
       vistaActual=vista; savePref(PREF_VISTA, vista);
       estadoOrdenColumna={}; savePref(PREF_ORDEN, {}); columnaOrdenActual=null;
 
-      const input=document.getElementById("inputData").value.
+      const input=document.getElementById("inputData").value.trim();
+      if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
+
+      const filas=input.split("\n");
+      const headersRaw=filas[0].split("\t").map(h=>h.trim());
+      const headersLC=headersRaw.map(h=>h.toLowerCase());
+
+      const idx = (names)=>{
+        for(const n of (Array.isArray(names)?names:[names])){
+          let i=headersRaw.indexOf(n);
+          if(i!==-1) return i;
+          i=headersLC.indexOf(n.toLowerCase());
+          if(i!==-1) return i;
+        }
+        return -1;
+      };
+
+      const IDX={
+        country:  idx(COLMAP.country),
+        total:    idx(COLMAP.total),
+        news:     idx(COLMAP.news),
+        recall:   idx(COLMAP.recall),
+        noAnswer: idx(COLMAP.noAnswer),
+        approved: idx(COLMAP.approved),
+        reject:   idx(COLMAP.reject),
+        trash:    idx(COLMAP.trash)
+      };
+
+      if(IDX.country===-1 || IDX.total===-1){
+        mostrarToast("⚠️ No encuentro las columnas básicas (Country y/o Total).");
+        return;
+      }
+      if(IDX.approved===-1){
+        mostrarToast("ℹ️ No encuentro 'Approved' (antes 'Call center (approved)'); usaré 0.");
+      }
+
+      dataGlobal={};
+      for(let i=1;i<filas.length;i++){
+        const f=filas[i].split("\t");
+        const pais=(f[IDX.country]||"").trim();
+        if(!pais) continue;
+        if(!dataGlobal[pais]) dataGlobal[pais]={total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0};
+
+        const val = (j)=> j===-1 ? 0 : (parseInt(f[j])||0);
+
+        dataGlobal[pais].total    += val(IDX.total);
+        dataGlobal[pais].news     += val(IDX.news);
+        dataGlobal[pais].recall   += val(IDX.recall);
+        dataGlobal[pais].noAnswer += val(IDX.noAnswer);
+        dataGlobal[pais].approved += val(IDX.approved);
+        dataGlobal[pais].reject   += val(IDX.reject);
+        dataGlobal[pais].trash    += val(IDX.trash);
+      }
+
+      dataOriginal = Object.entries(dataGlobal);
+      renderTabla();
+      mostrarToast("✅ Datos procesados");
+    }
+
+    function renderTabla(){
+      const enc=document.getElementById("encabezadoTabla");
+      const cuerpo=document.querySelector("#tablaReporte tbody");
+      const tfoot=document.getElementById("filaTotales");
+      enc.innerHTML=""; cuerpo.innerHTML=""; tfoot.innerHTML="";
+
+      let cols=["País","Leads"];
+      if(vistaActual==="numerico"){ cols.push("New","Recall","No Answer","Approve","Reject","Trash");
+      }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
+      }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
+
+      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.style.cursor="pointer"; th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
+
+      let datos=[...dataOriginal];
+      if(columnaOrdenActual){
+        const e=estadoOrdenColumna[columnaOrdenActual]||0;
+        datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual); const B=getValorOrdenable(b[1],columnaOrdenActual); if(e===1) return B-A; if(e===2) return A-B; return 0; });
+      }
+
+      const flag=p=>codigos[p]?`<img class="bandera" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
+
+      for(const [pais,d] of datos){
+        const t=d.total||1;
+        const tr=document.createElement("tr");
+        let html=`<td class="bold">${flag(pais)} ${pais}</td><td>${d.total}</td>`;
+        if(vistaActual==="numerico"){ html+=`<td>${d.news}</td><td>${d.recall}</td><td>${d.noAnswer}</td><td>${d.approved}</td><td>${d.reject}</td><td>${d.trash}</td>`;
+        }else if(vistaActual==="porcentaje"){ html+=`<td>${pct(d.news,t)}</td><td>${pct(d.recall,t)}</td><td>${pct(d.noAnswer,t)}</td><td class="${colorPct(d.approved/t*100)}">${pct(d.approved,t)}</td><td>${pct(d.reject,t)}</td><td>${pct(d.trash,t)}</td>`;
+        }else{ html+=`<td>${d.news}</td><td>${pct(d.news,t)}</td><td>${d.recall}</td><td>${pct(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pct(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${colorPct(d.approved/t*100)}">${pct(d.approved,t)}</td><td>${d.reject}</td><td>${pct(d.reject,t)}</td><td>${d.trash}</td><td>${pct(d.trash,t)}</td>`; }
+        tr.innerHTML=html; cuerpo.appendChild(tr);
+      }
+
+      const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.reject+=d.reject; a.trash+=d.trash; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0});
+      if(Object.keys(dataGlobal).length){
+        let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||1;
+        if(vistaActual==="numerico"){ foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
+        }else if(vistaActual==="porcentaje"){ foot+=`<td>${pct(tot.news,t)}</td><td>${pct(tot.recall,t)}</td><td>${pct(tot.noAnswer,t)}</td><td class="${colorPct(tot.approved/t*100)}">${pct(tot.approved,t)}</td><td>${pct(tot.reject,t)}</td><td>${pct(tot.trash,t)}</td>`;
+        }else{ foot+=`<td>${tot.news}</td><td>${pct(tot.news,t)}</td><td>${tot.recall}</td><td>${pct(tot.recall,t)}</td><td>${tot.noAnswer}</td><td>${pct(tot.noAnswer,t)}</td><td>${tot.approved}</td><td class="${colorPct(tot.approved/t*100)}">${pct(tot.approved,t)}</td><td>${tot.reject}</td><td>${pct(tot.reject,t)}</td><td>${tot.trash}</td><td>${pct(tot.trash,t)}</td>`; }
+        tfoot.innerHTML=foot;
+      }
+    }
+
+    function cambiarOrdenColumna(col){
+      estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1;
+      if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0;
+      columnaOrdenActual=estadoOrdenColumna[col]===0?null:col;
+      savePref(PREF_ORDEN, estadoOrdenColumna);
+      renderTabla();
+    }
+    function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN, {}); renderTabla(); }
+
+    function getValorOrdenable(d,col){
+      const t=d.total||1;
+      const base={ "Leads":d.total, "New":d.news, "% New":(d.news/t)*100, "Recall":d.recall, "% Recall":(d.recall/t)*100, "No Answer":d.noAnswer, "% No Answer":(d.noAnswer/t)*100, "Approve":d.approved, "% Approve":(d.approved/t)*100, "Reject":d.reject, "% Reject":(d.reject/t)*100, "Trash":d.trash, "% Trash":(d.trash/t)*100 };
+      return base[col]||0;
+    }
+    function pct(v,t){ return ((v/t)*100).toFixed(1)+"%"; }
+    function colorPct(p){ return p<=25?"red":p>=30?"green":"orange"; }
+
+    /* =========================
+       Firestore: histórico cloud
+       ========================= */
+    let cloudHistorico = []; // último fetch (filtrado)
+
+    async function registrarAvance(){
+      if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
+      const now=new Date();
+      const hora=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      const fecha=formatDDMMYYYY(now);     // "20/08/2025"
+      const fechaISO=formatISO(now);       // "2025-08-20"
+
+      const colRef = collection(db,'historico');
+      const writes = [];
+      for(const [pais,d] of Object.entries(dataGlobal)){
+        const total=d.total||1;
+        writes.push(addDoc(colRef,{
+          fecha, fechaISO, hora, pais,
+          leads:d.total, news:d.news, recall:d.recall, noAnswer:d.noAnswer,
+          approve:d.approved, pctApprove:((d.approved/total)*100).toFixed(1),
+          reject:d.reject, trash:d.trash,
+          createdAt: new Date()
+        }));
+      }
+      try{
+        await Promise.all(writes);
+        mostrarToast("✅ Avance registrado en la nube.");
+        await renderTablaHistorico(true);
+        renderGrafico();
+      }catch(e){
+        console.error(e);
+        mostrarToast("⚠️ Error guardando en la nube.");
+      }
+    }
+
+    // Borrado de histórico (nube) – opcional. Si no quieres permitir borrar a nadie, puedes quitar esta función.
+    async function borrarHistorial(){
+      if(!confirm("¿Borrar TODO el historial de la nube? Esta acción es irreversible.")) return;
+      try{
+        // Leer todo (cuidado con cuotas; para pocos docs está ok)
+        const snap = await getDocs(collection(db,'historico'));
+        const ops = [];
+        snap.forEach(d => ops.push(deleteDoc(doc(db,'historico', d.id))));
+        await Promise.all(ops);
+        mostrarToast("🗑️ Historial borrado.");
+        await renderTablaHistorico(true);
+        renderGrafico();
+      }catch(err){
+        console.error(err);
+        mostrarToast("❌ No se pudo borrar el historial (revisa reglas).");
+      }
+    }
+
+    async function fetchHistoricoCloud(fp, ffISO){
+      const base = collection(db,'historico');
+      const constraints = [];
+      if(ffISO)          constraints.push(where('fechaISO','==',ffISO));
+      if(fp!=='todos')   constraints.push(where('pais','==',fp));
+      const qy = constraints.length ? query(base, ...constraints) : base;
+      const snap = await getDocs(qy);
+      const rows = [];
+      snap.forEach(d => rows.push(d.data()));
+      rows.sort((a,b)=>((a.fechaISO||'')+' '+(a.hora||'')).localeCompare((b.fechaISO||'')+' '+(b.hora||'')));
+      return rows;
+    }
+
+    async function ensurePaisesOptions(){
+      const sel = document.getElementById("filtroPais");
+      if(sel.options.length>1) return;
+      try{
+        const snap = await getDocs(collection(db,'historico'));
+        const set = new Set();
+        snap.forEach(d => set.add(d.data().pais||""));
+        [...set].filter(Boolean).forEach(p=>{
+          const o=document.createElement("option");o.value=p;o.textContent=p;sel.appendChild(o);
+        });
+      }catch{}
+    }
+
+    async function renderTablaHistorico(force=false){
+      await ensurePaisesOptions();
+
+      const filtroPaisEl=document.getElementById("filtroPais");
+      const filtroFechaEl=document.getElementById("filtroFecha");
+      const tbody=document.querySelector("#tablaHistorico tbody");
+      tbody.innerHTML="";
+
+      // Restaurar prefs (y compat dd/mm/aaaa)
+      const prefPais  = readPref(PREF_FPAIS,'todos');
+      const prefFecha = readPref(PREF_FFECHA,'todos');
+      const prefFechaISO = (prefFecha && prefFecha!=='todos') ? (ddmmyyyyToISO(prefFecha) || prefFecha) : "";
+
+      if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
+      if(prefFechaISO) filtroFechaEl.value=prefFechaISO;
+
+      const fp=filtroPaisEl.value;
+      const ffISO=filtroFechaEl.value;
+
+      try{
+        cloudHistorico = await fetchHistoricoCloud(fp, ffISO);
+      }catch(e){
+        console.error(e);
+        mostrarToast("⚠️ No se pudo leer la nube.");
+        cloudHistorico = [];
+      }
+
+      cloudHistorico.forEach(r=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
+          <td>${r.hora||""}</td>
+          <td>${r.fecha||""}</td>
+          <td>${r.pais||""}</td>
+          <td>${r.leads||0}</td>
+          <td>${r.news||0}</td>
+          <td>${r.recall||0}</td>
+          <td>${r.noAnswer||0}</td>
+          <td>${r.approve||0}</td>
+          <td>${Number(r.pctApprove||0).toFixed(1)}%</td>
+          <td>${r.reject||0}</td>
+          <td>${r.trash||0}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Actualiza gráfico sincronizado al filtro
+      renderGrafico();
+    }
+
+    function onFiltroChange(){
+      const paisSel = document.getElementById("filtroPais").value;
+      const fechaISO = document.getElementById("filtroFecha").value || "todos";
+      savePref(PREF_FPAIS, paisSel); savePref(PREF_FFECHA, fechaISO);
+      renderTablaHistorico();
+    }
+    function limpiarFecha(){
+      document.getElementById("filtroFecha").value="";
+      savePref(PREF_FFECHA,"todos");
+      renderTablaHistorico();
+    }
+
+    function exportarHistoricoCSV(){
+      if(!cloudHistorico.length){ mostrarToast("ℹ️ No hay registros para exportar."); return; }
+      const encabezados=["Fecha","Hora","País","Leads","News","Recall","No Answer","Approve","% Approve","Reject","Trash"];
+      const filas=cloudHistorico.map(r=>[ r.fecha||"", r.hora||"", r.pais||"", r.leads||0, r.news||0, r.recall||0, r.noAnswer||0, r.approve||0, r.pctApprove||0, r.reject||0, r.trash||0 ]);
+      const csv=[encabezados,...filas].map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`historico_gc_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    /* =========================
+       Gráfico (sin colores fijos)
+       ========================= */
+    function renderGrafico(){
+      const ctx=document.getElementById('graficoAvance').getContext('2d');
+      const agrupado={};
+      cloudHistorico.forEach(r=>{
+        if(!agrupado[r.pais]) agrupado[r.pais]=[];
+        agrupado[r.pais].push({hora:r.hora,pct:r.pctApprove});
+      });
+      const datasets=Object.keys(agrupado).map(pais=>({
+        label:pais,
+        data:agrupado[pais].map(p=>({x:p.hora,y:p.pct})),
+        fill:false,
+        tension:.2
+      }));
+      if(window.graficoAvance) window.graficoAvance.destroy();
+      window.graficoAvance=new Chart(ctx,{
+        type:'line',
+        data:{datasets},
+        options:{
+          responsive:true,
+          plugins:{legend:{position:'top'}},
+          scales:{
+            x:{title:{display:true,text:'Hora'},type:'category'},
+            y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}
+          }
+        }
+      });
+    }
+
+    // Exponer funciones para los botones (por ser módulo)
+    window.procesar = procesar;
+    window.borrarTodo = borrarTodo;
+    window.restablecerOrden = restablecerOrden;
+    window.registrarAvance = registrarAvance;
+    window.borrarHistorial = borrarHistorial;
+    window.exportarHistoricoCSV = exportarHistoricoCSV;
+    window.onFiltroChange = onFiltroChange;
+    window.limpiarFecha = limpiarFecha;
+
+    // Primer render (carga inicial desde la nube)
+    document.addEventListener('DOMContentLoaded', ()=>{ renderTablaHistorico(); });
+
+  </script>
+</body>
+</html>
