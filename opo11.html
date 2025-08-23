@@ -314,7 +314,7 @@
     const pct=(v,t)=>((v/t)*100).toFixed(1)+"%";
     const colorPct=p=>p<=25?"red":p>=30?"green":"orange";
 
-    /* ===== Cloud histórico ===== */
+    /* ===== Cloud histórico con FALLBACK ===== */
     let cloudHistorico=[];
     const filtroPaisEl=document.getElementById("filtroPais");
     const filtroFechaEl=document.getElementById("filtroFecha");
@@ -336,6 +336,59 @@
         return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))};
       }
       return {start:null, end:null};
+    }
+
+    function normalizeRows(rows){
+      rows.forEach(r=>{
+        const iso  = r.fechaISO || ddmmyyyyToISO(r.fecha);
+        const hhmm = r.hora24 || toHora24(r.hora);
+        if(!r.ts && iso && hhmm){
+          r.ts = new Date(`${iso}T${hhmm}:00`).getTime();
+        }
+        r.hora = hhmm || r.hora;
+      });
+      // Orden horario: temprano → tarde
+      rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
+      return rows;
+    }
+
+    // ← ESTA FUNCIÓN incluye fallback si falta el índice compuesto
+    async function fetchHistoricoCloud(fp, startTs, endTs){
+      const base = collection(db,'historico');
+      try {
+        // consulta óptima (puede requerir índice)
+        let qy;
+        if(fp !== 'todos' && startTs != null && endTs != null){
+          qy = query(base,
+            where('pais','==',fp),
+            where('ts','>=',startTs),
+            where('ts','<', endTs)
+          );
+        } else if(startTs != null && endTs != null){
+          qy = query(base, where('ts','>=',startTs), where('ts','<', endTs));
+        } else if(fp !== 'todos'){
+          qy = query(base, where('pais','==',fp));
+        } else {
+          qy = base;
+        }
+        const snap = await getDocs(qy);
+        const rows = []; snap.forEach(d=>rows.push(d.data()));
+        return normalizeRows(rows);
+
+      } catch (e) {
+        if (e.code === 'failed-precondition') {
+          // fallback: consultar por rango y filtrar país en cliente
+          let q2 = base;
+          if (startTs != null && endTs != null){
+            q2 = query(base, where('ts','>=',startTs), where('ts','<', endTs));
+          }
+          const snap = await getDocs(q2);
+          let rows = []; snap.forEach(d=>rows.push(d.data()));
+          if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
+          return normalizeRows(rows);
+        }
+        throw e;
+      }
     }
 
     async function registrarAvance(){
@@ -375,26 +428,6 @@
         const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
         await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(true); renderGrafico();
       }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
-    }
-
-    async function fetchHistoricoCloud(fp, startTs, endTs){
-      const base=collection(db,'historico');
-      const cs=[];
-      if(fp!=='todos') cs.push(where('pais','==',fp));
-      if(startTs!=null) cs.push(where('ts','>=',startTs));
-      if(endTs!=null)   cs.push(where('ts','<', endTs));
-      const qy=cs.length?query(base,...cs):base;
-      const snap=await getDocs(qy);
-      const rows=[]; snap.forEach(d=>rows.push(d.data()));
-      rows.forEach(r=>{
-        const iso = r.fechaISO || ddmmyyyyToISO(r.fecha);
-        const hhmm = r.hora24 || toHora24(r.hora);
-        if(!r.ts && iso && hhmm){ r.ts = new Date(`${iso}T${hhmm}:00`).getTime(); }
-        r.hora = hhmm || r.hora;
-      });
-      // Orden: temprano → tarde (ascendente)
-      rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
-      return rows;
     }
 
     async function ensurePaisesOptions(){
@@ -510,7 +543,6 @@
     window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
 
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Prefs iniciales
       const prefPreset=readPref(PREF_PRESET,'dia');
       presetEl.value=prefPreset;
       filtroFechaEl.disabled = (prefPreset!=='dia');
