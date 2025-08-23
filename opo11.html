@@ -89,21 +89,18 @@
 
     <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…"></textarea>
 
-    <!-- Tabla principal -->
     <table id="tablaReporte">
       <thead><tr id="encabezadoTabla"></tr></thead>
       <tbody></tbody>
       <tfoot><tr id="filaTotales"></tr></tfoot>
     </table>
 
-    <!-- Acciones de histórico -->
     <div class="history-actions">
       <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
       <button onclick="borrarHistorial()">🗑️ Borrar historial</button>
       <button onclick="exportarHistoricoCSV()">⬇️ Exportar histórico (CSV)</button>
     </div>
 
-    <!-- Filtros histórico -->
     <div class="filters">
       <div class="filter-group">
         <label for="filtroPais">🌎 Filtrar por país:</label>
@@ -143,12 +140,10 @@
 
   <div id="toast"></div>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Lógica + Firebase (ESM) -->
   <script type="module">
-    /* ========= Firebase v12 ========= */
+    /* ===== Firebase v12 ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
@@ -163,44 +158,51 @@
       measurementId: "G-NBFZYTN094"
     };
 
-    const app  = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    // Esperamos a que Auth esté lista antes de permitir escribir
+    // Esperar auth para habilitar botón
     let authReadyResolve;
     const authReady = new Promise(res => (authReadyResolve = res));
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
-        authReadyResolve(user);
-      } else {
-        signInAnonymously(auth).catch(e=>{
-          console.error('Auth error:', e);
-          mostrarToast('⚠️ Error de autenticación: ' + (e.code || e.message));
-        });
-      }
+    onAuthStateChanged(auth, (u)=>{
+      if(u){ document.getElementById('btnRegistrar')?.removeAttribute('disabled'); authReadyResolve(u); }
+      else  signInAnonymously(auth).catch(e=> mostrarToast('⚠️ Auth: ' + (e.code||e.message)));
     });
 
-    /* ========= Utilidades ========= */
-    const PREF_VISTA  = 'gc_vista';
-    const PREF_ORDEN  = 'gc_orden';
-    const PREF_FPAIS  = 'gc_filtro_pais';
-    const PREF_FFECHA = 'gc_filtro_fecha_iso';
-
-    const savePref = (k,v)=>localStorage.setItem(k, JSON.stringify(v));
-    const readPref = (k,def=null)=>{ try{ const v=JSON.parse(localStorage.getItem(k)); return (v===undefined||v===null)?def:v; }catch{ return def; } };
-
-    const pad2 = n => String(n).padStart(2,'0');
-    const formatDDMMYYYY = d => `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
-    const formatISO = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    /* ===== Utils ===== */
+    const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais', PREF_FFECHA='gc_filtro_fecha_iso';
+    const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+    const readPref=(k,d=null)=>{ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{ return d;} };
+    const pad2=n=>String(n).padStart(2,'0');
+    const formatDDMMYYYY=d=>`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
+    const formatISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     function ddmmyyyyToISO(s){
       if(!s) return "";
       if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      const m = /^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s);
-      if(!m) return "";
+      const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return "";
       return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`;
+    }
+    // Normaliza "04:59 p. m." / "07:05 pm" / "14:02" -> "HH:mm"
+    function toHora24(str){
+      if(!str) return "";
+      let s=str.toString().trim().toLowerCase().replace(/\s+/g,'');
+      const m24=s.match(/^(\d{1,2}):(\d{2})$/);
+      if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
+      // 12h variantes
+      const m12=s.match(/^(\d{1,2}):(\d{2})(am|pm|a\.m\.|p\.m\.)$/);
+      if(m12){
+        let h=+m12[1]%12, min=+m12[2], isPm=/p/.test(m12[3]);
+        if(isPm) h+=12;
+        return `${pad2(h)}:${pad2(min)}`;
+      }
+      // última chance: quitar puntos sueltos
+      s=s.replace(/[\.]/g,'');
+      const m12b=s.match(/^(\d{1,2}):(\d{2})(am|pm)$/);
+      if(m12b){
+        let h=+m12b[1]%12, min=+m12b[2]; if(m12b[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`;
+      }
+      return str; // fallback
     }
 
     function actualizarFechaHora(){
@@ -211,68 +213,39 @@
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    let vistaActual = readPref(PREF_VISTA, 'numerico');
-    let dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN, {}), columnaOrdenActual=null;
+    let vistaActual=readPref(PREF_VISTA,'numerico'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
 
-    const codigos={
-      "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","Paraguay":"py","Peru":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo"
-    };
+    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","Paraguay":"py","Peru":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
+    function mostrarToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.style.display="block"; t.style.opacity=1; setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600); setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200); }
 
-    function mostrarToast(msg){
-      const t=document.getElementById("toast");
-      t.textContent=msg; t.style.display="block"; t.style.opacity=1;
-      setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600);
-      setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200);
-    }
-
-    const COLMAP = {
-      country:["Country"], total:["Total"], news:["New"], recall:["Recall"],
-      noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"]
-    };
+    const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
 
     function borrarTodo(){
       document.getElementById("inputData").value="";
       document.querySelector("#tablaReporte tbody").innerHTML="";
       document.querySelector("#encabezadoTabla").innerHTML="";
       document.querySelector("#filaTotales").innerHTML="";
-      dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null;
-      savePref(PREF_ORDEN, {});
+      dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{});
     }
 
     function procesar(vista){
-      vistaActual=vista; savePref(PREF_VISTA, vista);
-      estadoOrdenColumna={}; savePref(PREF_ORDEN, {}); columnaOrdenActual=null;
-
-      const input=document.getElementById("inputData").value.trim();
-      if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
-
-      const filas=input.split("\n");
-      const headersRaw=filas[0].split("\t").map(h=>h.trim());
-      const headersLC=headersRaw.map(h=>h.toLowerCase());
+      vistaActual=vista; savePref(PREF_VISTA,vista); estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
+      const input=document.getElementById("inputData").value.trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
+      const filas=input.split("\n"), headersRaw=filas[0].split("\t").map(h=>h.trim()), headersLC=headersRaw.map(h=>h.toLowerCase());
       const idx=(names)=> (Array.isArray(names)?names:[names]).reduce((r,n)=> r>=0?r:(headersRaw.indexOf(n)>=0?headersRaw.indexOf(n):headersLC.indexOf(n.toLowerCase())), -1);
-
       const IDX={ country:idx(COLMAP.country), total:idx(COLMAP.total), news:idx(COLMAP.news), recall:idx(COLMAP.recall), noAnswer:idx(COLMAP.noAnswer), approved:idx(COLMAP.approved), reject:idx(COLMAP.reject), trash:idx(COLMAP.trash) };
-
-      if(IDX.country===-1 || IDX.total===-1){ mostrarToast("⚠️ No encuentro las columnas básicas (Country/Total)."); return; }
-      if(IDX.approved===-1){ mostrarToast("ℹ️ No encuentro ‘Approved’ (antes ‘Call center (approved)’); usaré 0."); }
-
+      if(IDX.country===-1||IDX.total===-1){ mostrarToast("⚠️ Falta Country/Total."); return; }
+      if(IDX.approved===-1){ mostrarToast("ℹ️ No encuentro ‘Approved’; usaré 0."); }
       dataGlobal={};
       for(let i=1;i<filas.length;i++){
-        const f=filas[i].split("\t");
-        const pais=(f[IDX.country]||"").trim(); if(!pais) continue;
+        const f=filas[i].split("\t"), pais=(f[IDX.country]||"").trim(); if(!pais) continue;
         if(!dataGlobal[pais]) dataGlobal[pais]={total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0};
         const val=j=> j===-1?0:(parseInt(f[j])||0);
-        dataGlobal[pais].total+=val(IDX.total);
-        dataGlobal[pais].news+=val(IDX.news);
-        dataGlobal[pais].recall+=val(IDX.recall);
-        dataGlobal[pais].noAnswer+=val(IDX.noAnswer);
-        dataGlobal[pais].approved+=val(IDX.approved);
-        dataGlobal[pais].reject+=val(IDX.reject);
-        dataGlobal[pais].trash+=val(IDX.trash);
+        dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall);
+        dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
       }
       dataOriginal=Object.entries(dataGlobal);
-      renderTabla();
-      mostrarToast("✅ Datos procesados");
+      renderTabla(); mostrarToast("✅ Datos procesados");
     }
 
     function renderTabla(){
@@ -283,12 +256,9 @@
       }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
       }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
       cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
-
       let datos=[...dataOriginal];
       if(columnaOrdenActual){ const e=estadoOrdenColumna[columnaOrdenActual]||0; datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual); return e===1?B-A:e===2?A-B:0; }); }
-
       const flag=p=>codigos[p]?`<img class="bandera" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
-
       for(const [pais,d] of datos){
         const t=d.total||1;
         const tr=document.createElement("tr");
@@ -298,7 +268,6 @@
         }else{ html+=`<td>${d.news}</td><td>${pct(d.news,t)}</td><td>${d.recall}</td><td>${pct(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pct(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${colorPct(d.approved/t*100)}">${pct(d.approved,t)}</td><td>${d.reject}</td><td>${pct(d.reject,t)}</td><td>${d.trash}</td><td>${pct(d.trash,t)}</td>`; }
         tr.innerHTML=html; cuerpo.appendChild(tr);
       }
-
       const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.reject+=d.reject; a.trash+=d.trash; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0});
       if(Object.keys(dataGlobal).length){
         let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||1;
@@ -308,42 +277,38 @@
         tfoot.innerHTML=foot;
       }
     }
-
-    function cambiarOrdenColumna(col){
-      estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1;
-      if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0;
-      columnaOrdenActual=estadoOrdenColumna[col]===0?null:col;
-      savePref(PREF_ORDEN, estadoOrdenColumna);
-      renderTabla();
-    }
-    function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN, {}); renderTabla(); }
-    function getValorOrdenable(d,col){ const t=d.total||1; const base={ "Leads":d.total, "New":d.news, "% New":(d.news/t)*100, "Recall":d.recall, "% Recall":(d.recall/t)*100, "No Answer":d.noAnswer, "% No Answer":(d.noAnswer/t)*100, "Approve":d.approved, "% Approve":(d.approved/t)*100, "Reject":d.reject, "% Reject":(d.reject/t)*100, "Trash":d.trash, "% Trash":(d.trash/t)*100 }; return base[col]||0; }
+    function cambiarOrdenColumna(col){ estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1; if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0; columnaOrdenActual=estadoOrdenColumna[col]===0?null:col; savePref(PREF_ORDEN,estadoOrdenColumna); renderTabla(); }
+    function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); renderTabla(); }
+    function getValorOrdenable(d,col){ const t=d.total||1; const base={"Leads":d.total,"New":d.news,"% New":(d.news/t)*100,"Recall":d.recall,"% Recall":(d.recall/t)*100,"No Answer":d.noAnswer,"% No Answer":(d.noAnswer/t)*100,"Approve":d.approved,"% Approve":(d.approved/t)*100,"Reject":d.reject,"% Reject":(d.reject/t)*100,"Trash":d.trash,"% Trash":(d.trash/t)*100}; return base[col]||0; }
     const pct=(v,t)=>((v/t)*100).toFixed(1)+"%";
     const colorPct=p=>p<=25?"red":p>=30?"green":"orange";
 
-    /* ======== Firestore: cloud ======== */
+    /* ===== Cloud histórico ===== */
     let cloudHistorico=[];
 
     async function registrarAvance(){
       if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
-      // Esperar a que Auth esté listo
-      try{ await authReady; }catch(e){ mostrarToast("⚠️ Auth no disponible."); return; }
+      try{ await authReady; }catch{ mostrarToast("⚠️ Auth no disponible."); return; }
 
       const now=new Date();
-      const hora=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;  // ← uniforme
       const fecha=formatDDMMYYYY(now);
       const fechaISO=formatISO(now);
+      const ts=now.getTime(); // ← para ordenar
 
       const colRef=collection(db,'historico');
       const writes=[];
       for(const [pais,d] of Object.entries(dataGlobal)){
         const total=d.total||1;
         writes.push(addDoc(colRef,{
-          fecha, fechaISO, hora, pais,
+          fecha, fechaISO,
+          hora: hora24,     // display
+          hora24: hora24,   // redundancia explícita
+          ts,               // orden cronológico
+          pais,
           leads:d.total, news:d.news, recall:d.recall, noAnswer:d.noAnswer,
           approve:d.approved, pctApprove:((d.approved/total)*100).toFixed(1),
-          reject:d.reject, trash:d.trash,
-          createdAt:new Date()
+          reject:d.reject, trash:d.trash
         }));
       }
       try{
@@ -362,13 +327,8 @@
       try{
         const snap=await getDocs(collection(db,'historico'));
         const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
-        await Promise.all(ops);
-        mostrarToast("🗑️ Historial borrado.");
-        await renderTablaHistorico(true); renderGrafico();
-      }catch(e){
-        console.error('Delete error:', e);
-        mostrarToast("❌ No se pudo borrar: " + (e.code || e.message));
-      }
+        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(true); renderGrafico();
+      }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
     }
 
     async function fetchHistoricoCloud(fp, ffISO){
@@ -377,7 +337,18 @@
       const qy=cs.length?query(base,...cs):base;
       const snap=await getDocs(qy);
       const rows=[]; snap.forEach(d=>rows.push(d.data()));
-      rows.sort((a,b)=>((a.fechaISO||'')+' '+(a.hora||'')).localeCompare((b.fechaISO||'')+' '+(b.hora||'')));
+      // Normaliza antiguos: calcula ts si no existe y homogeniza hora
+      rows.forEach(r=>{
+        if(!r.hora) r.hora = r.hora24 || r.hora;
+        const iso = r.fechaISO || ddmmyyyyToISO(r.fecha);
+        const hhmm = r.hora24 || toHora24(r.hora);
+        if(!r.ts && iso && hhmm){
+          r.ts = new Date(`${iso}T${hhmm}:00`).getTime();
+        }
+        r.hora = hhmm; // mostrar formato 24h siempre
+      });
+      // Orden: más reciente primero
+      rows.sort((a,b)=>(b.ts||0)-(a.ts||0));
       return rows;
     }
 
@@ -410,7 +381,7 @@
         cloudHistorico=await fetchHistoricoCloud(fp, ffISO);
       }catch(e){
         console.error('Fetch error:', e);
-        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code || e.message));
+        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
         cloudHistorico=[];
       }
 
@@ -423,12 +394,7 @@
       renderGrafico();
     }
 
-    function onFiltroChange(){
-      const paisSel=document.getElementById("filtroPais").value;
-      const fechaISO=document.getElementById("filtroFecha").value || "todos";
-      savePref(PREF_FPAIS, paisSel); savePref(PREF_FFECHA, fechaISO);
-      renderTablaHistorico();
-    }
+    function onFiltroChange(){ const paisSel=document.getElementById("filtroPais").value; const fechaISO=document.getElementById("filtroFecha").value || "todos"; savePref(PREF_FPAIS,paisSel); savePref(PREF_FFECHA,fechaISO); renderTablaHistorico(); }
     function limpiarFecha(){ document.getElementById("filtroFecha").value=""; savePref(PREF_FFECHA,"todos"); renderTablaHistorico(); }
 
     function exportarHistoricoCSV(){
@@ -448,12 +414,20 @@
       window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
     }
 
-    // Exponer a botones
+    // HORA en header
+    function actualizarFechaHora(){
+      const ahora=new Date();
+      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
+    }
+
+    // Exponer
     window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
     window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
     window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.limpiarFecha=limpiarFecha;
 
-    document.addEventListener('DOMContentLoaded', ()=>{ renderTablaHistorico(); });
+    document.addEventListener('DOMContentLoaded', ()=>{ actualizarFechaHora(); setInterval(actualizarFechaHora,1000); renderTablaHistorico(); });
   </script>
 </body>
 </html>
