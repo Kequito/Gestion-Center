@@ -20,8 +20,12 @@
     .spacer{ flex:1; }
 
     main{ margin-left:220px; padding:28px; width:calc(100% - 220px); box-sizing:border-box; }
-    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 6px; }
-    .subtitle{ margin:0 0 16px; color:var(--txt-muted); font-size:14px; }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .badge{ font-size:12px; padding:4px 8px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+    .badge.ok{ background:#1b5e20; border-color:#1b5e20; }
+    .badge.warn{ background:#8d2a2a; border-color:#8d2a2a; }
+
     .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; }
 
     .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
@@ -74,8 +78,11 @@
   </aside>
 
   <main>
-    <h1 class="page-title">🧰 New Report CC Perú</h1>
-    <p class="subtitle">Pega la tabla desde tu Panel y visualiza las métricas por país · Vista numérica, porcentual o mixta · Historial por hora + gráfico (compartido)</p>
+    <div class="page-title">🧰 New Report CC Perú</div>
+    <p class="subtitle">
+      Pega la tabla desde tu Panel y visualiza las métricas · Historial por hora compartido
+      <span id="fbBadge" class="badge">Conectando…</span>
+    </p>
 
     <div class="datetime" id="fechaHora"></div>
 
@@ -162,47 +169,47 @@
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    // Esperar auth para habilitar botón
-    let authReadyResolve;
-    const authReady = new Promise(res => (authReadyResolve = res));
+    /* ===== Estado UI ===== */
+    const fbBadge = document.getElementById('fbBadge');
+    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
+
+    // Arranque de auth: si falla, seguimos en solo lectura
+    (async ()=>{
+      try{
+        await signInAnonymously(auth);
+      }catch(e){
+        console.error('Auth error', e);
+        setBadge('Solo lectura (auth falló)', 'warn');
+        mostrarToast('⚠️ Autenticación: ' + (e.code||e.message));
+      }
+    })();
+
     onAuthStateChanged(auth, (u)=>{
-      if(u){ document.getElementById('btnRegistrar')?.removeAttribute('disabled'); authReadyResolve(u); }
-      else  signInAnonymously(auth).catch(e=> mostrarToast('⚠️ Auth: ' + (e.code||e.message)));
+      if(u){
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+        setBadge('Conectado ✓','ok');
+      }else{
+        setBadge('Solo lectura','');
+      }
     });
 
     /* ===== Utils ===== */
     const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais', PREF_FFECHA='gc_filtro_fecha_iso';
     const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
     const readPref=(k,d=null)=>{ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{ return d;} };
+
     const pad2=n=>String(n).padStart(2,'0');
     const formatDDMMYYYY=d=>`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
     const formatISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    function ddmmyyyyToISO(s){
-      if(!s) return "";
-      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return "";
-      return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`;
-    }
-    // Normaliza "04:59 p. m." / "07:05 pm" / "14:02" -> "HH:mm"
+    function ddmmyyyyToISO(s){ if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; }
+
     function toHora24(str){
       if(!str) return "";
       let s=str.toString().trim().toLowerCase().replace(/\s+/g,'');
-      const m24=s.match(/^(\d{1,2}):(\d{2})$/);
-      if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
-      // 12h variantes
-      const m12=s.match(/^(\d{1,2}):(\d{2})(am|pm|a\.m\.|p\.m\.)$/);
-      if(m12){
-        let h=+m12[1]%12, min=+m12[2], isPm=/p/.test(m12[3]);
-        if(isPm) h+=12;
-        return `${pad2(h)}:${pad2(min)}`;
-      }
-      // última chance: quitar puntos sueltos
-      s=s.replace(/[\.]/g,'');
-      const m12b=s.match(/^(\d{1,2}):(\d{2})(am|pm)$/);
-      if(m12b){
-        let h=+m12b[1]%12, min=+m12b[2]; if(m12b[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`;
-      }
-      return str; // fallback
+      const m24=s.match(/^(\d{1,2}):(\d{2})$/); if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
+      const m12=s.replace(/[\.]/g,'').match(/^(\d{1,2}):(\d{2})(am|pm)$/); // 07:05pm / 04:59pm
+      if(m12){ let h=+m12[1]%12, min=+m12[2]; if(m12[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`; }
+      return str;
     }
 
     function actualizarFechaHora(){
@@ -220,13 +227,7 @@
 
     const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
 
-    function borrarTodo(){
-      document.getElementById("inputData").value="";
-      document.querySelector("#tablaReporte tbody").innerHTML="";
-      document.querySelector("#encabezadoTabla").innerHTML="";
-      document.querySelector("#filaTotales").innerHTML="";
-      dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{});
-    }
+    function borrarTodo(){ document.getElementById("inputData").value=""; document.querySelector("#tablaReporte tbody").innerHTML=""; document.querySelector("#encabezadoTabla").innerHTML=""; document.querySelector("#filaTotales").innerHTML=""; dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); }
 
     function procesar(vista){
       vistaActual=vista; savePref(PREF_VISTA,vista); estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
@@ -241,8 +242,7 @@
         const f=filas[i].split("\t"), pais=(f[IDX.country]||"").trim(); if(!pais) continue;
         if(!dataGlobal[pais]) dataGlobal[pais]={total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0};
         const val=j=> j===-1?0:(parseInt(f[j])||0);
-        dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall);
-        dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
+        dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall); dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
       }
       dataOriginal=Object.entries(dataGlobal);
       renderTabla(); mostrarToast("✅ Datos procesados");
@@ -288,24 +288,18 @@
 
     async function registrarAvance(){
       if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
-      try{ await authReady; }catch{ mostrarToast("⚠️ Auth no disponible."); return; }
+      if(!auth.currentUser){ mostrarToast("⚠️ Sin autenticación (solo lectura)."); return; }
 
       const now=new Date();
-      const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;  // ← uniforme
-      const fecha=formatDDMMYYYY(now);
-      const fechaISO=formatISO(now);
-      const ts=now.getTime(); // ← para ordenar
+      const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+      const fecha=formatDDMMYYYY(now), fechaISO=formatISO(now), ts=now.getTime();
 
       const colRef=collection(db,'historico');
       const writes=[];
       for(const [pais,d] of Object.entries(dataGlobal)){
         const total=d.total||1;
         writes.push(addDoc(colRef,{
-          fecha, fechaISO,
-          hora: hora24,     // display
-          hora24: hora24,   // redundancia explícita
-          ts,               // orden cronológico
-          pais,
+          fecha, fechaISO, hora:hora24, hora24:hora24, ts, pais,
           leads:d.total, news:d.news, recall:d.recall, noAnswer:d.noAnswer,
           approve:d.approved, pctApprove:((d.approved/total)*100).toFixed(1),
           reject:d.reject, trash:d.trash
@@ -337,17 +331,12 @@
       const qy=cs.length?query(base,...cs):base;
       const snap=await getDocs(qy);
       const rows=[]; snap.forEach(d=>rows.push(d.data()));
-      // Normaliza antiguos: calcula ts si no existe y homogeniza hora
       rows.forEach(r=>{
-        if(!r.hora) r.hora = r.hora24 || r.hora;
         const iso = r.fechaISO || ddmmyyyyToISO(r.fecha);
         const hhmm = r.hora24 || toHora24(r.hora);
-        if(!r.ts && iso && hhmm){
-          r.ts = new Date(`${iso}T${hhmm}:00`).getTime();
-        }
-        r.hora = hhmm; // mostrar formato 24h siempre
+        if(!r.ts && iso && hhmm){ r.ts = new Date(`${iso}T${hhmm}:00`).getTime(); }
+        r.hora = hhmm || r.hora;
       });
-      // Orden: más reciente primero
       rows.sort((a,b)=>(b.ts||0)-(a.ts||0));
       return rows;
     }
@@ -414,20 +403,12 @@
       window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
     }
 
-    // HORA en header
-    function actualizarFechaHora(){
-      const ahora=new Date();
-      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
-    }
-
     // Exponer
     window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
     window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
     window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.limpiarFecha=limpiarFecha;
 
-    document.addEventListener('DOMContentLoaded', ()=>{ actualizarFechaHora(); setInterval(actualizarFechaHora,1000); renderTablaHistorico(); });
+    document.addEventListener('DOMContentLoaded', ()=>{ renderTablaHistorico(); });
   </script>
 </body>
 </html>
