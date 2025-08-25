@@ -1,274 +1,269 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel de Gestión</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Lexend', sans-serif;
-        background-color: #1c2a45;
-        color: white;
-        display: flex;
-      }
-      aside {
-        background-color: #152035;
-        width: 220px;
-        height: 100vh;
-        padding: 40px 20px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        left: 0;
-        top: 0;
-      }
-      .logo {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 40px;
-        text-align: center;
-      }
-      nav a {
-        color: white;
-        margin: 24px 0;
-        text-decoration: none;
-        font-size: 16px;
-        padding: 12px;
-        border-radius: 6px;
-        transition: background-color 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      nav a:hover {
-        background-color: #1c2a45;
-      }
-      .main-content {
-        flex-grow: 1;
-        padding: 60px;
-        padding-left: 260px;
-        box-sizing: border-box;
-      }
-      .section {
-        margin-top: 100px;
-      }
-      .section h2 {
-        font-size: 32px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      .reset-container {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .reset-button {
-        padding: 10px 20px;
-        background-color: #5a7bc2;
-        border: none;
-        border-radius: 6px;
-        color: white;
-        font-family: 'Lexend', sans-serif;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .reset-button:hover {
-        background-color: #3e5da8;
-      }
-      .counter-box {
-        text-align: center;
-        font-size: 16px;
-        margin-bottom: 10px;
-        font-weight: bold;
-        color: #a5c5f7;
-      }
-      table.coverage-table,
-      table.distribution-table,
-      table.stats-table {
-        width: 100%;
-        max-width: 1000px;
-        margin: 0 auto;
-        border-collapse: collapse;
-        background-color: #2a3b5c;
-        border-radius: 8px;
-        overflow: hidden;
-        table-layout: fixed;
-      }
-      table th,
-      table td {
-        padding: 14px;
-        text-align: center;
-        border-bottom: 1px solid #3a4a6a;
-        word-wrap: break-word;
-      }
-      table th {
-        background-color: #1f2d4a;
-      }
-      table tr:hover {
-        background-color: #324469;
-      }
-      .filter-input,
-      .filter-select {
-        width: 100%;
-        padding: 6px;
-        border: none;
-        border-radius: 4px;
-        text-align: center;
-        margin-bottom: 6px;
-        background-color: #34476a;
-        color: white;
-        font-family: 'Lexend', sans-serif;
-        font-size: 14px;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-      }
-      .filter-input:focus,
-      .filter-select:focus {
-        outline: 2px solid #5a7bc2;
-        background-color: #3b507a;
-      }
-      .stats-table td:nth-child(1),
-      .stats-table th:nth-child(1) {
-        width: 105px;
-      }
-      .stats-table td:nth-child(2),
-      .stats-table th:nth-child(2) {
-        width: 300px;
-      }
-      .stats-table td:nth-child(3),
-      .stats-table th:nth-child(3) {
-        width: 105px;
-      }
-    </style>
-  </head>
-  <body>
-    <aside>
-      <div class="logo">📊 Gestión Center</div>
-      <nav>
-        <a href="index.html">🏠 Inicio</a>
-        <a href="#informes">📝 Informes</a>
-        <a href="plandetrabajo.html">✅ Plan de trabajo</a>
-        <a href="distribucion.html">📋 Distribución</a>
-        <a href="estadisticas.html">📈 Estadísticas</a>
-        <a href="cobertura.html">🌎 Cobertura</a>
-        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-        <a href="#contacto">📬 Contacto</a>
-      </nav>
-    </aside>
-    <div class="main-content">
-      <section class="section" id="stats">
-        <h2>📈 Stats Operadores</h2>
-        <div class="reset-container">
-          <button class="reset-button" onclick="resetStatsFilters()">🔄 Restablecer filtros</button>
-        </div>
-        <div class="counter-box" id="stats-counter">Mostrando 0 operadores</div>
-        <table class="stats-table" id="tabla-stats">
-          <thead>
-            <tr id="filter-row-stats"></tr>
-            <tr>
-              <th>Team Leader</th>
-              <th>Operador</th>
-              <th>PEROP1AM</th>
-              <th>BI-04 Last 30 Days</th>
-              <th>BI-04 Current Month</th>
-              <th>BI-505 Current Month</th>
-              <th>BI-844 Current Month</th>
-              <th>BI-97 Current Month</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – Estadísticas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Tema base: consistente con opo11/distribución/camprev ===== */
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+
+    /* ===== Sidebar (idéntico) ===== */
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
+
+    /* ===== Main ===== */
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
+
+    /* ===== Filtros / acciones ===== */
+    .filters{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 16px; }
+    .filter-group{ display:flex; flex-direction:column; gap:6px; }
+    .filter-group label{ font-size:12px; color:var(--txt-muted); }
+    .filter-group select, .filter-group input[type="text"]{ padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color); background:var(--table-bg); color:var(--txt); min-width:170px; height:38px; }
+    .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    button:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
+
+    /* ===== Tabla ===== */
+    table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); position:relative; }
+    thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
+    tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
+    thead th:first-child, tbody td:first-child{ text-align:left; }
+    .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.95; cursor:copy; }
+
+    /* Orden 3 estados */
+    .sort-none::after{ content:""; }
+    .sort-desc::after{ content:" ↓"; font-weight:900; }
+    .sort-asc::after{ content:" ↑"; font-weight:900; }
+
+    /* Toast */
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+    @media (max-width: 960px){
+      .filter-group select,.filter-group input{ min-width:130px; }
+      main{ padding:18px; }
+      .page-title{ font-size:20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Sidebar (copiado 1:1 del estilo) ===== -->
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a class="active" href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a href="#contacto">📬 Contacto</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
+
+  <!-- ===== Contenido ===== -->
+  <main>
+    <h1 class="page-title">📈 Estadísticas de Operadores</h1>
+    <p class="subtitle">Links directos a BI (04/505/844/97) · filtros rápidos y orden 3 estados</p>
+    <div id="fechaHora" class="datetime"></div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label for="fltTL">Team Leader</label>
+        <select id="fltTL"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltSearch">Buscar</label>
+        <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
+      </div>
+      <div class="counter" id="rowCounter">Mostrando 0 operadores</div>
     </div>
 
-    <script>
-      function actualizarContadorStats() {
-        const total = Array.from(document.querySelectorAll('#tabla-stats tbody tr'))
-          .filter(row => row.style.display !== 'none').length;
-        document.getElementById('stats-counter').textContent = `Mostrando ${total} operadores`;
+    <div class="toolbar">
+      <button id="btnReset">🧹 Restablecer filtros</button>
+      <button id="btnExport">⬇️ Exportar (CSV)</button>
+    </div>
+
+    <table id="tblStats">
+      <thead>
+        <tr id="headRow">
+          <th data-col="teamLeader" class="sort-none">Team Leader</th>
+          <th data-col="operador" class="sort-none">Operador</th>
+          <th data-col="perop" class="sort-none">PEROP1AM</th>
+          <th data-col="bi04_l30" class="sort-none">BI-04 Last 30 Days</th>
+          <th data-col="bi04_cm" class="sort-none">BI-04 Current Month</th>
+          <th data-col="bi505_cm" class="sort-none">BI-505 Current Month</th>
+          <th data-col="bi844_cm" class="sort-none">BI-844 Current Month</th>
+          <th data-col="bi97_cm" class="sort-none">BI-97 Current Month</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ===== Utilidades =====
+    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    // ===== Estado =====
+    let dataRaw=[]; let filtered=[];
+    let sortState={ col:null, mode:0 }; // 0 none, 1 desc, 2 asc
+
+    // ===== Carga de datos =====
+    async function loadData(){
+      try{
+        const res=await fetch('datalast30days.json');
+        const data=await res.json();
+        // Map A..H a claves legibles
+        dataRaw = data.map(op=>({
+          teamLeader: op.A||'',
+          operador: op.B||'',
+          perop: op.C||'',
+          bi04_l30: op.D||'',
+          bi04_cm:  op.E||'',
+          bi505_cm: op.F||'',
+          bi844_cm: op.G||'',
+          bi97_cm:  op.H||''
+        }));
+        buildFilters(dataRaw);
+        applyFiltersAndRender();
+        toast('✅ Datos cargados');
+      }catch(e){ console.error(e); toast('❌ No se pudo cargar datalast30days.json'); }
+    }
+
+    // ===== Filtros =====
+    function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
+    function fillSelect(sel, values){ sel.innerHTML='<option value="">Todos</option>'+values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
+    function buildFilters(rows){
+      const tls=uniqSorted(rows.map(r=>r.teamLeader));
+      fillSelect(document.getElementById('fltTL'), tls);
+    }
+
+    function applyFiltersAndRender(){
+      const vTL = norm(document.getElementById('fltTL').value);
+      const vQ  = norm(document.getElementById('fltSearch').value);
+
+      filtered = dataRaw.filter(r=>{
+        const a=norm(r.teamLeader), b=norm(r.operador), c=norm(r.perop);
+        const ok = (!vTL||a===vTL) && (!vQ || b.includes(vQ) || c.includes(vQ));
+        return ok;
+      });
+
+      if(sortState.col){
+        const col=sortState.col;
+        filtered.sort((x,y)=>{
+          const A=String(x[col]??'');
+          const B=String(y[col]??'');
+          const cmp=A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
+          return sortState.mode===1 ? -cmp : sortState.mode===2 ? cmp : 0;
+        });
       }
 
-      function resetStatsFilters() {
-        document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select').forEach(input => {
-          input.value = '';
+      renderTable(filtered);
+    }
+
+    // ===== Render =====
+    function renderTable(rows){
+      const tbody=document.querySelector('#tblStats tbody');
+      tbody.innerHTML='';
+      const frag=document.createDocumentFragment();
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        const link = (href,text)=> href?`<a href="${href}" target="_blank" rel="noopener" style="color:#87cefa; text-decoration:underline; font-size:14px;">${text}</a>`:'—';
+        tr.innerHTML=`
+          <td>${r.teamLeader}</td>
+          <td>${r.operador}</td>
+          <td class="perop" data-copy="${r.perop}">${r.perop}</td>
+          <td>${link(r.bi04_l30,'Link al BI-04')}</td>
+          <td>${link(r.bi04_cm,'Link al BI-04')}</td>
+          <td>${link(r.bi505_cm,'Link al BI-505')}</td>
+          <td>${link(r.bi844_cm,'Link al BI-844')}</td>
+          <td>${link(r.bi97_cm,'Link al BI-97')}</td>
+        `;
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+      document.getElementById('rowCounter').textContent = `Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
+
+      // Click-to-copy PEROP
+      tbody.querySelectorAll('td.perop').forEach(td=>{
+        td.title='Click para copiar PEROP';
+        td.addEventListener('click', async ()=>{
+          const v = td.dataset.copy || td.textContent.trim();
+          try{ await navigator.clipboard.writeText(v); toast('📋 PEROP copiado'); }
+          catch{ toast('❌ No se pudo copiar'); }
         });
-        document.querySelectorAll('#tabla-stats tbody tr').forEach(row => {
-          row.style.display = '';
-        });
-        actualizarContadorStats();
-      }
+      });
+    }
 
-      fetch('datalast30days.json')
-        .then(response => response.json())
-        .then(data => {
-          const tbody = document.querySelector('#tabla-stats tbody');
-          data.forEach(op => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${op.A}</td>
-              <td>${op.B}</td>
-              <td>${op.C}</td>
-              <td><a href="${op.D}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-04</a></td>
-              <td><a href="${op.E}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-04</a></td>
-              <td><a href="${op.F}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-505</a></td>
-              <td><a href="${op.G}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-844</a></td>
-              <td><a href="${op.H}" target="_blank" style="color: #87cefa; text-decoration: underline; font-size: 14px;">Link al BI-97</a></td>
-            `;
-            tbody.appendChild(row);
-          });
+    // ===== Orden 3 estados =====
+    function resetHeadSortClasses(){
+      document.querySelectorAll('#headRow th').forEach(th=>{
+        th.classList.remove('sort-asc','sort-desc');
+        th.classList.add('sort-none');
+      });
+    }
+    function cycleSort(th){
+      const col=th.dataset.col; // key
+      if(!col) return;
+      if(sortState.col!==col){ sortState={col,mode:1}; }
+      else { sortState.mode = (sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
+      resetHeadSortClasses();
+      if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
+      applyFiltersAndRender();
+    }
 
-          actualizarContadorStats();
+    // ===== Export CSV =====
+    function exportCSV(){
+      if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
+      const headers=['Team Leader','Operador','PEROP1AM','BI-04 Last 30 Days','BI-04 Current Month','BI-505 Current Month','BI-844 Current Month','BI-97 Current Month'];
+      const rows=filtered.map(r=>[r.teamLeader,r.operador,r.perop,r.bi04_l30,r.bi04_cm,r.bi505_cm,r.bi844_cm,r.bi97_cm]);
+      const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); // BOM
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`estadisticas_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
 
-          const valoresUnicos = {
-            0: [...new Set(data.map(op => op.A))].sort(),
-          };
+    // ===== Eventos =====
+    document.getElementById('btnReset').addEventListener('click',()=>{
+      document.getElementById('fltTL').value='';
+      document.getElementById('fltSearch').value='';
+      sortState={col:null,mode:0};
+      resetHeadSortClasses();
+      applyFiltersAndRender();
+    });
+    document.getElementById('btnExport').addEventListener('click',exportCSV);
+    ['fltTL','fltSearch'].forEach(id=>{
+      document.getElementById(id).addEventListener('input',applyFiltersAndRender);
+      document.getElementById(id).addEventListener('change',applyFiltersAndRender);
+    });
+    document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
 
-          const filterRow = document.getElementById('filter-row-stats');
-
-          const thTeam = document.createElement('th');
-          const selectTeam = document.createElement('select');
-          selectTeam.classList.add('filter-select');
-          selectTeam.innerHTML = '<option value="">Filtrar...</option>' + valoresUnicos[0].map(v => `<option value="${v}">${v}</option>`).join('');
-          selectTeam.dataset.column = 0;
-          thTeam.appendChild(selectTeam);
-          filterRow.appendChild(thTeam);
-
-          for (let i = 1; i < 3; i++) {
-            const th = document.createElement('th');
-            const input = document.createElement('input');
-            input.classList.add('filter-input');
-            input.placeholder = 'Filtrar...';
-            input.dataset.column = i;
-            th.appendChild(input);
-            filterRow.appendChild(th);
-          }
-
-          for (let i = 3; i < 8; i++) {
-            const thVacio = document.createElement('th');
-            filterRow.appendChild(thVacio);
-          }
-
-          document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select').forEach(input => {
-            input.addEventListener('input', filtrarStats);
-            input.addEventListener('change', filtrarStats);
-          });
-
-          function filtrarStats() {
-            const filtros = Array.from(document.querySelectorAll('#tabla-stats .filter-input, #tabla-stats .filter-select'))
-              .map(el => el.value.toLowerCase());
-            document.querySelectorAll('#tabla-stats tbody tr').forEach(row => {
-              const cells = Array.from(row.cells);
-              const visible = filtros.every((filtro, i) => !filtro || cells[i].textContent.toLowerCase().includes(filtro));
-              row.style.display = visible ? '' : 'none';
-            });
-            actualizarContadorStats();
-          }
-        });
-    </script>
-  </body>
+    // Init
+    resetHeadSortClasses();
+    loadData();
+  </script>
+</body>
 </html>
-
