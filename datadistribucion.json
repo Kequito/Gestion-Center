@@ -1,13 +1,5 @@
 [
  {
-   "A": "TEAMLEADER",
-   "B": "ASESORES",
-   "C": "PEROP1AM",
-   "E": "CAMPAÑA",
-   "F": "DESCANSO",
-   "G": "TURNO"
- },
- {
    "A": "AIXA CASTELLANOS",
    "B": "CELIO DE JESUS CAMPOS CAÑAS",
    "C": "PEROP1AM-41464",
@@ -1320,3 +1312,4 @@
    "G": "07:00-16:00"
  }
 ]
+
