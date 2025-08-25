@@ -1,258 +1,272 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel de Gestión</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Lexend', sans-serif;
-        background-color: #1c2a45;
-        color: white;
-        display: flex;
-      }
-      aside {
-        background-color: #152035;
-        width: 220px;
-        height: 100vh;
-        padding: 40px 20px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        left: 0;
-        top: 0;
-      }
-      .logo {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 40px;
-        text-align: center;
-      }
-      nav a {
-        color: white;
-        margin: 24px 0;
-        text-decoration: none;
-        font-size: 16px;
-        padding: 12px;
-        border-radius: 6px;
-        transition: background-color 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      nav a:hover {
-        background-color: #1c2a45;
-      }
-      .main-content {
-        flex-grow: 1;
-        padding: 60px;
-        padding-left: 260px;
-        box-sizing: border-box;
-      }
-      .section {
-        margin-top: 100px;
-      }
-      .section h2 {
-        font-size: 32px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      .reset-container {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .reset-button {
-        padding: 10px 20px;
-        background-color: #5a7bc2;
-        border: none;
-        border-radius: 6px;
-        color: white;
-        font-family: 'Lexend', sans-serif;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .reset-button:hover {
-        background-color: #3e5da8;
-      }
-      .counter-box {
-        text-align: center;
-        font-size: 16px;
-        margin-bottom: 10px;
-        font-weight: bold;
-        color: #a5c5f7;
-      }
-      table.coverage-table,
-      table.distribution-table {
-        width: 100%;
-        max-width: 1000px;
-        margin: 0 auto;
-        border-collapse: collapse;
-        background-color: #2a3b5c;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      table th,
-      table td {
-        padding: 14px;
-        text-align: center;
-        border-bottom: 1px solid #3a4a6a;
-      }
-      table th {
-        background-color: #1f2d4a;
-      }
-      table tr:hover {
-        background-color: #324469;
-      }
-      .filter-input {
-        width: 100%;
-        padding: 6px;
-        border: none;
-        border-radius: 4px;
-        text-align: center;
-        margin-bottom: 6px;
-        background-color: #34476a;
-        color: white;
-        font-family: 'Lexend', sans-serif;
-        font-size: 14px;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-      }
-      .filter-input:focus {
-        outline: 2px solid #5a7bc2;
-        background-color: #3b507a;
-      }
-    </style>
-  </head>
-  <body>
-    <aside>
-      <div class="logo">📊 Gestión Center</div>
-      <nav>
-        <a href="index.html">🏠 Inicio</a>
-        <a href="#informes">📝 Informes</a>
-        <a href="plandetrabajo.html">✅ Plan de trabajo</a>
-        <a href="distribucion.html">📋 Distribución</a>
-        <a href="estadisticas.html">📈 Estadísticas</a>
-        <a href="cobertura.html">🌎 Cobertura</a>
-        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-        <a href="#contacto">📬 Contacto</a>
-      </nav>
-    </aside>
-    <div class="main-content">
-      <section class="section" id="distribucion">
-        <h2>📋 Distribución de Operadores</h2>
-        <div class="reset-container">
-          <button class="reset-button" onclick="resetFilters()">🔄 Restablecer filtros</button>
-        </div>
-        <div class="counter-box" id="op-counter">Mostrando 0 operadores</div>
-        <table class="distribution-table" id="tabla-distribucion">
-          <thead>
-            <tr id="filter-row"></tr>
-            <tr>
-              <th>Team Leader</th>
-              <th>Operador</th>
-              <th>PEROP1AM</th>
-              <th>Campaña</th>
-              <th>Descanso</th>
-              <th>Turno</th>
-              <th>Empresa</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Contenido dinámico aquí -->
-          </tbody>
-        </table>
-      </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – Distribución</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Tema y base (idéntico a opo11.html) ===== */
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+      --green:#2e7d32; --red:#c62828; --orange:#f57c00;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
+
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
+
+    /* Barra de acciones / filtros (matching opo11) */
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    button:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
+
+    .filters{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 16px; }
+    .filter-group{ display:flex; flex-direction:column; gap:6px; }
+    .filter-group label{ font-size:12px; color:var(--txt-muted); }
+    .filter-group select, .filter-group input[type="text"]{ padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color); background:var(--table-bg); color:var(--txt); min-width:170px; height:38px; }
+    .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+
+    /* Tabla */
+    table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+    thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:relative; user-select:none; cursor:pointer; }
+    tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
+    thead th:first-child, tbody td:first-child{ text-align:left; }
+    .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.9; }
+
+    /* Indicadores de orden */
+    .sort-none::after{ content:""; }
+    .sort-desc::after{ content:" ↓"; font-weight:900; }
+    .sort-asc::after{ content:" ↑"; font-weight:900; }
+
+    /* Toast */
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+    @media (max-width: 960px){
+      .filter-group select,.filter-group input{ min-width:130px; }
+      main{ padding:18px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Sidebar (copiado 1:1 del estilo de opo11) ===== -->
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a class="active" href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a href="#contacto">📬 Contacto</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
+
+  <!-- ===== Contenido ===== -->
+  <main>
+    <h1 class="page-title">📋 Distribución de Operadores</h1>
+    <p class="subtitle">Mismo look & feel que el New Report · Filtros rápidos y ordenamiento 3 estados</p>
+    <div id="fechaHora" class="datetime"></div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label for="fltTL">Team Leader</label>
+        <select id="fltTL"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltCampania">Campaña</label>
+        <select id="fltCampania"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltDescanso">Descanso</label>
+        <select id="fltDescanso"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltTurno">Turno</label>
+        <select id="fltTurno"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltSearch">Buscar</label>
+        <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
+      </div>
+      <div class="counter" id="opCounter">Mostrando 0 operadores</div>
     </div>
 
-    <script>
-      function actualizarContador() {
-        const total = Array.from(document.querySelectorAll('#tabla-distribucion tbody tr'))
-          .filter(row => row.style.display !== 'none').length;
-        document.getElementById('op-counter').textContent = `Mostrando ${total} operadores`;
+    <div class="toolbar">
+      <button id="btnReset">🧹 Restablecer filtros</button>
+      <button id="btnExport">⬇️ Exportar (CSV)</button>
+    </div>
+
+    <table id="tablaDistribucion">
+      <thead>
+        <tr id="headRow">
+          <th data-col="A" class="sort-none">Team Leader</th>
+          <th data-col="B" class="sort-none">Operador</th>
+          <th data-col="C" class="sort-none">PEROP1AM</th>
+          <th data-col="D" class="sort-none">Campaña</th>
+          <th data-col="E" class="sort-none">Descanso</th>
+          <th data-col="F" class="sort-none">Turno</th>
+          <th data-col="G" class="sort-none">Empresa</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ===== Utilidades =====
+    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+    const pad2=n=>String(n).padStart(2,'0');
+    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    // ===== Estado =====
+    let dataRaw=[]; // array de objetos {A..G}
+    let filtered=[]; // cache filtrada
+    let sortState={ col:null, mode:0 }; // mode: 0 none, 1 desc, 2 asc
+
+    // ===== Carga de datos =====
+    async function loadData(){
+      try{
+        const res=await fetch('datadistribucion.json');
+        dataRaw=await res.json();
+        buildFilters(dataRaw);
+        applyFiltersAndRender();
+        toast('✅ Datos de distribución cargados');
+      }catch(e){ console.error(e); toast('❌ No se pudo cargar datadistribucion.json'); }
+    }
+
+    // ===== Filtros =====
+    function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
+    function fillSelect(sel, values){ sel.innerHTML='<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>'+values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
+
+    function buildFilters(rows){
+      const tl=uniqSorted(rows.map(r=>r.A));
+      const camp=uniqSorted(rows.map(r=>r.D));
+      const des=uniqSorted(rows.map(r=>r.E));
+      const tur=uniqSorted(rows.map(r=>r.F));
+      fillSelect(document.getElementById('fltTL'), tl);
+      fillSelect(document.getElementById('fltCampania'), camp);
+      fillSelect(document.getElementById('fltDescanso'), des);
+      fillSelect(document.getElementById('fltTurno'), tur);
+    }
+
+    function applyFiltersAndRender(){
+      const vTL = document.getElementById('fltTL').value.toLowerCase();
+      const vCa = document.getElementById('fltCampania').value.toLowerCase();
+      const vDe = document.getElementById('fltDescanso').value.toLowerCase();
+      const vTu = document.getElementById('fltTurno').value.toLowerCase();
+      const vQ  = document.getElementById('fltSearch').value.toLowerCase();
+
+      filtered = dataRaw.filter(r=>{
+        const sA = String(r.A||'').toLowerCase();
+        const sB = String(r.B||'').toLowerCase();
+        const sC = String(r.C||'').toLowerCase();
+        const sD = String(r.D||'').toLowerCase();
+        const sE = String(r.E||'').toLowerCase();
+        const sF = String(r.F||'').toLowerCase();
+        const ok = (!vTL||sA===vTL) && (!vCa||sD===vCa) && (!vDe||sE===vDe) && (!vTu||sF===vTu) && (!vQ || sB.includes(vQ) || sC.includes(vQ));
+        return ok;
+      });
+
+      // Ordenar si hay criterio activo
+      if(sortState.col){
+        const col=sortState.col;
+        filtered.sort((a,b)=>{
+          const A=String(a[col]??'');
+          const B=String(b[col]??'');
+          const cmp=A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
+          return sortState.mode===1 ? -cmp : sortState.mode===2 ? cmp : 0;
+        });
       }
 
-      function resetFilters() {
-        document.querySelectorAll('.filter-input').forEach(input => {
-          input.value = '';
-        });
-        document.querySelectorAll('#tabla-distribucion tbody tr').forEach(row => {
-          row.style.display = '';
-        });
-        actualizarContador();
-      }
+      renderTable(filtered);
+    }
 
-      fetch('datadistribucion.json')
-        .then(response => response.json())
-        .then(data => {
-          const tbody = document.querySelector('#tabla-distribucion tbody');
-          const columnas = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-          data.forEach(op => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${op.A}</td>
-              <td>${op.B}</td>
-              <td>${op.C}</td>
-              <td>${op.D}</td>
-              <td>${op.E}</td>
-              <td>${op.F}</td>
-              <td>${op.G}</td>
-            `;
-            tbody.appendChild(row);
-          });
+    // ===== Render =====
+    function renderTable(rows){
+      const tbody=document.querySelector('#tablaDistribucion tbody');
+      tbody.innerHTML='';
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${r.A||''}</td>
+          <td>${r.B||''}</td>
+          <td class="perop">${r.C||''}</td>
+          <td>${r.D||''}</td>
+          <td>${r.E||''}</td>
+          <td>${r.F||''}</td>
+          <td>${r.G||''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('opCounter').textContent = `Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
+    }
 
-          actualizarContador();
+    // ===== Orden 3 estados =====
+    function resetHeadSortClasses(){
+      document.querySelectorAll('#headRow th').forEach(th=>{
+        th.classList.remove('sort-asc','sort-desc');
+        th.classList.add('sort-none');
+      });
+    }
+    function cycleSort(th){
+      const col=th.dataset.col; // A..G
+      // ciclo: none -> desc -> asc -> none
+      if(sortState.col!==col){ sortState={col,mode:1}; }
+      else { sortState.mode = (sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
+      resetHeadSortClasses();
+      if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
+      applyFiltersAndRender();
+    }
 
-          const valoresUnicos = {};
-          columnas.forEach((col, index) => {
-            valoresUnicos[index] = [...new Set(data.map(op => op[col]))].sort();
-          });
+    // ===== Export =====
+    function exportCSV(){
+      if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
+      const headers=['Team Leader','Operador','PEROP1AM','Campaña','Descanso','Turno','Empresa'];
+      const rows=filtered.map(r=>[r.A||'',r.B||'',r.C||'',r.D||'',r.E||'',r.F||'',r.G||'']);
+      const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
 
-          const filterRow = document.getElementById('filter-row');
-          columnas.forEach((col, index) => {
-            const th = document.createElement('th');
-            if ([0, 3, 4, 5, 6].includes(index)) {
-              const select = document.createElement('select');
-              select.classList.add('filter-input');
-              const defaultOption = document.createElement('option');
-              defaultOption.value = '';
-              defaultOption.textContent = 'Filtrar...';
-              select.appendChild(defaultOption);
-              valoresUnicos[index].forEach(value => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = value;
-                select.appendChild(option);
-              });
-              select.dataset.column = index;
-              th.appendChild(select);
-            } else {
-              const input = document.createElement('input');
-              input.classList.add('filter-input');
-              input.placeholder = 'Filtrar...';
-              input.dataset.column = index;
-              th.appendChild(input);
-            }
-            filterRow.appendChild(th);
-          });
+    // ===== Eventos =====
+    document.getElementById('btnReset').addEventListener('click',()=>{
+      document.getElementById('fltTL').value='';
+      document.getElementById('fltCampania').value='';
+      document.getElementById('fltDescanso').value='';
+      document.getElementById('fltTurno').value='';
+      document.getElementById('fltSearch').value='';
+      sortState={col:null,mode:0};
+      resetHeadSortClasses();
+      applyFiltersAndRender();
+    });
+    document.getElementById('btnExport').addEventListener('click',exportCSV);
+    ['fltTL','fltCampania','fltDescanso','fltTurno','fltSearch'].forEach(id=>{
+      document.getElementById(id).addEventListener('input',applyFiltersAndRender);
+      document.getElementById(id).addEventListener('change',applyFiltersAndRender);
+    });
+    document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
 
-          document.querySelectorAll('.filter-input').forEach(input => {
-            input.addEventListener('input', function () {
-              const filters = Array.from(document.querySelectorAll('.filter-input')).map(el => el.value.toLowerCase());
-              document.querySelectorAll('#tabla-distribucion tbody tr').forEach(row => {
-                const cells = Array.from(row.cells);
-                const visible = filters.every((filtro, i) => !filtro || cells[i].textContent.toLowerCase().includes(filtro));
-                row.style.display = visible ? '' : 'none';
-              });
-              actualizarContador();
-            });
-          });
-        });
-    </script>
-  </body>
+    // Init
+    resetHeadSortClasses();
+    loadData();
+  </script>
+</body>
 </html>
-
