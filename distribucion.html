@@ -133,65 +133,103 @@
     // ===== Utilidades =====
     const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
     const pad2=n=>String(n).padStart(2,'0');
-    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
+    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;}
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // ===== Estado =====
-    let dataRaw=[]; // array de objetos {A..G}
-    let filtered=[]; // cache filtrada
-    let sortState={ col:null, mode:0 }; // mode: 0 none, 1 desc, 2 asc
+    // ===== Helpers de normalización y detección =====
+    const diasSet=new Set(['lunes','martes','miercoles','miércoles','jueves','viernes','sabado','sábado','domingo']);
+    const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/\s+/g,' ').trim();
+    const esHora=v=>/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(String(v).trim());
+    const esDia=v=>diasSet.has(norm(v));
 
-    // ===== Carga de datos =====
+    // ===== Estado =====
+    let dataRaw=[];      // array de objetos con claves A..G
+    let filtered=[];     // cache filtrada
+    let sortState={ col:null, mode:0 }; // 0 none, 1 desc, 2 asc
+
+    // Mapa de columnas (se infiere al cargar datos)
+    let MAP={ TL:'A', OP:'B', PEROP:'C', CAMP:'D', DESC:'E', TURNO:'F', EMP:'G' };
+
+    // ===== Carga de datos + inferencia de esquema =====
     async function loadData(){
       try{
-        const res=await fetch('datadistribucion.json');
-        dataRaw=await res.json();
+        const res = await fetch('datadistribucion.json');
+        dataRaw = await res.json();
+        inferirMapa(dataRaw);
         buildFilters(dataRaw);
         applyFiltersAndRender();
         toast('✅ Datos de distribución cargados');
       }catch(e){ console.error(e); toast('❌ No se pudo cargar datadistribucion.json'); }
     }
 
+    // Detecta qué columna es Campaña/Descanso/Turno mirando D,E,F,G
+    function inferirMapa(rows){
+      const keys=['D','E','F','G'];
+      const score = Object.fromEntries(keys.map(k=>[k,{dia:0,hora:0,nonEmpty:0}]));
+      rows.slice(0,200).forEach(r=>{
+        keys.forEach(k=>{
+          const v = r[k];
+          if(String(v||'').trim()!=='') score[k].nonEmpty++;
+          if(esHora(v)) score[k].hora++;
+          if(esDia(v))  score[k].dia++;
+        });
+      });
+      // Descanso = donde hay más días
+      const DESC = keys.reduce((a,b)=> score[a].dia>=score[b].dia ? a : b);
+      // Turno = donde hay más horarios (excluyendo DESC)
+      const turnoCandidatos = keys.filter(k=>k!==DESC);
+      const TURNO = turnoCandidatos.reduce((a,b)=> score[a].hora>=score[b].hora ? a : b);
+      // Quedan 2: uno será Campaña y el otro Empresa
+      const resto = keys.filter(k=>k!==DESC && k!==TURNO);
+      const CAMP = resto[0] ?? 'D';
+      const EMP  = resto[1] ?? 'G';
+      MAP = { TL:'A', OP:'B', PEROP:'C', CAMP, DESC, TURNO, EMP };
+    }
+
     // ===== Filtros =====
-    function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
-    function fillSelect(sel, values){ sel.innerHTML='<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>'+values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
+    function uniqSorted(arr){ return [...new Set(arr.map(v=>String(v??'').trim()).filter(v=>v!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
+    function fillSelect(sel, values){
+      sel.innerHTML = '<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>' +
+        values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join('');
+    }
 
     function buildFilters(rows){
-      const tl=uniqSorted(rows.map(r=>r.A));
-      const camp=uniqSorted(rows.map(r=>r.D));
-      const des=uniqSorted(rows.map(r=>r.E));
-      const tur=uniqSorted(rows.map(r=>r.F));
+      const tl  = uniqSorted(rows.map(r=>r[MAP.TL]));
+      const cam = uniqSorted(rows.map(r=>r[MAP.CAMP]));
+      const des = uniqSorted(rows.map(r=>r[MAP.DESC]));
+      const tur = uniqSorted(rows.map(r=>r[MAP.TURNO]));
       fillSelect(document.getElementById('fltTL'), tl);
-      fillSelect(document.getElementById('fltCampania'), camp);
+      fillSelect(document.getElementById('fltCampania'), cam);
       fillSelect(document.getElementById('fltDescanso'), des);
       fillSelect(document.getElementById('fltTurno'), tur);
     }
 
     function applyFiltersAndRender(){
-      const vTL = document.getElementById('fltTL').value.toLowerCase();
-      const vCa = document.getElementById('fltCampania').value.toLowerCase();
-      const vDe = document.getElementById('fltDescanso').value.toLowerCase();
-      const vTu = document.getElementById('fltTurno').value.toLowerCase();
-      const vQ  = document.getElementById('fltSearch').value.toLowerCase();
+      const vTL = norm(document.getElementById('fltTL').value);
+      const vCa = norm(document.getElementById('fltCampania').value);
+      const vDe = norm(document.getElementById('fltDescanso').value);
+      const vTu = norm(document.getElementById('fltTurno').value);
+      const vQ  = norm(document.getElementById('fltSearch').value);
 
       filtered = dataRaw.filter(r=>{
-        const sA = String(r.A||'').toLowerCase();
-        const sB = String(r.B||'').toLowerCase();
-        const sC = String(r.C||'').toLowerCase();
-        const sD = String(r.D||'').toLowerCase();
-        const sE = String(r.E||'').toLowerCase();
-        const sF = String(r.F||'').toLowerCase();
-        const ok = (!vTL||sA===vTL) && (!vCa||sD===vCa) && (!vDe||sE===vDe) && (!vTu||sF===vTu) && (!vQ || sB.includes(vQ) || sC.includes(vQ));
+        const sA = norm(r[MAP.TL]);
+        const sB = norm(r[MAP.OP]);
+        const sC = norm(r[MAP.PEROP]);
+        const sD = norm(r[MAP.CAMP]);
+        const sE = norm(r[MAP.DESC]);
+        const sF = norm(r[MAP.TURNO]);
+        const ok = (!vTL||sA===vTL) && (!vCa||sD===vCa) && (!vDe||sE===vDe) && (!vTu||sF===vTu) &&
+                   (!vQ || sB.includes(vQ) || sC.includes(vQ));
         return ok;
       });
 
-      // Ordenar si hay criterio activo
+      // Orden si hay criterio activo
       if(sortState.col){
-        const col=sortState.col;
+        const col = sortState.col;
         filtered.sort((a,b)=>{
-          const A=String(a[col]??'');
-          const B=String(b[col]??'');
-          const cmp=A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
+          const A = String(a[col]??'').trim();
+          const B = String(b[col]??'').trim();
+          const cmp = A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
           return sortState.mode===1 ? -cmp : sortState.mode===2 ? cmp : 0;
         });
       }
@@ -206,31 +244,29 @@
       rows.forEach(r=>{
         const tr=document.createElement('tr');
         tr.innerHTML=`
-          <td>${r.A||''}</td>
-          <td>${r.B||''}</td>
-          <td class="perop">${r.C||''}</td>
-          <td>${r.D||''}</td>
-          <td>${r.E||''}</td>
-          <td>${r.F||''}</td>
-          <td>${r.G||''}</td>
+          <td>${r[MAP.TL]||''}</td>
+          <td>${r[MAP.OP]||''}</td>
+          <td class="perop">${r[MAP.PEROP]||''}</td>
+          <td>${r[MAP.CAMP]||''}</td>
+          <td>${r[MAP.DESC]||''}</td>
+          <td>${r[MAP.TURNO]||''}</td>
+          <td>${r[MAP.EMP]||''}</td>
         `;
         tbody.appendChild(tr);
       });
-      document.getElementById('opCounter').textContent = `Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
+      document.getElementById('opCounter').textContent=`Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
     }
 
     // ===== Orden 3 estados =====
     function resetHeadSortClasses(){
       document.querySelectorAll('#headRow th').forEach(th=>{
-        th.classList.remove('sort-asc','sort-desc');
-        th.classList.add('sort-none');
+        th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
       });
     }
     function cycleSort(th){
-      const col=th.dataset.col; // A..G
-      // ciclo: none -> desc -> asc -> none
+      const col = th.dataset.col; // A..G (respetamos data-col del <th>)
       if(sortState.col!==col){ sortState={col,mode:1}; }
-      else { sortState.mode = (sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
+      else { sortState.mode=(sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
       resetHeadSortClasses();
       if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
       applyFiltersAndRender();
@@ -240,10 +276,10 @@
     function exportCSV(){
       if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
       const headers=['Team Leader','Operador','PEROP1AM','Campaña','Descanso','Turno','Empresa'];
-      const rows=filtered.map(r=>[r.A||'',r.B||'',r.C||'',r.D||'',r.E||'',r.F||'',r.G||'']);
+      const rows=filtered.map(r=>[r[MAP.TL]||'',r[MAP.OP]||'',r[MAP.PEROP]||'',r[MAP.CAMP]||'',r[MAP.DESC]||'',r[MAP.TURNO]||'',r[MAP.EMP]||'']);
       const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
     // ===== Eventos =====
@@ -253,9 +289,7 @@
       document.getElementById('fltDescanso').value='';
       document.getElementById('fltTurno').value='';
       document.getElementById('fltSearch').value='';
-      sortState={col:null,mode:0};
-      resetHeadSortClasses();
-      applyFiltersAndRender();
+      sortState={col:null,mode:0}; resetHeadSortClasses(); applyFiltersAndRender();
     });
     document.getElementById('btnExport').addEventListener('click',exportCSV);
     ['fltTL','fltCampania','fltDescanso','fltTurno','fltSearch'].forEach(id=>{
