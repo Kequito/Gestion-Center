@@ -1,234 +1,297 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel de Gestión</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Lexend', sans-serif;
-        background-color: #1c2a45;
-        color: white;
-        display: flex;
-      }
-      aside {
-        background-color: #152035;
-        width: 220px;
-        height: 100vh;
-        padding: 40px 20px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        left: 0;
-        top: 0;
-      }
-      .logo {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 40px;
-        text-align: center;
-      }
-      nav a {
-        color: white;
-        margin: 24px 0;
-        text-decoration: none;
-        font-size: 16px;
-        padding: 12px;
-        border-radius: 6px;
-        transition: background-color 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      nav a:hover {
-        background-color: #1c2a45;
-      }
-      .main-content {
-        flex-grow: 1;
-        padding: 60px;
-        padding-left: 260px;
-        box-sizing: border-box;
-      }
-      .section {
-        margin-top: 100px;
-      }
-      .section h2 {
-        font-size: 32px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      table.coverage-table,
-      table.distribution-table,
-      table.stats-table,
-      table.plan-table {
-        width: 100%;
-        max-width: 1000px;
-        margin: 0 auto;
-        border-collapse: collapse;
-        background-color: #2a3b5c;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      table th,
-      table td {
-        padding: 14px;
-        text-align: center;
-        border-bottom: 1px solid #3a4a6a;
-        word-wrap: break-word;
-      }
-      table th {
-        background-color: #1f2d4a;
-      }
-      table tr:hover {
-        background-color: #324469;
-      }
-      .checklist {
-        text-align: left;
-        max-width: 1000px;
-        margin: 0 auto 40px;
-        padding-left: 10px;
-        border-radius: 10px;
-        background-color: #243556;
-        padding: 20px;
-      }
-      .checklist h3 {
-        font-size: 20px;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #4fa3ff;
-        padding-bottom: 8px;
-      }
-      .checklist ul {
-        list-style: none;
-        padding: 0;
-        margin-top: 20px;
-      }
-      .checklist li {
-        background-color: #1f2d4a;
-        border: 1px solid #324469;
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        transition: background-color 0.3s;
-      }
-      .checklist li:hover {
-        background-color: #2a3b5c;
-      }
-      .checklist input[type="checkbox"] {
-        margin-right: 12px;
-        transform: scale(1.3);
-      }
-      .checklist .header {
-        display: flex;
-        font-weight: bold;
-        padding: 10px 16px;
-        border-bottom: 2px solid #4fa3ff;
-        margin-bottom: 10px;
-        background-color: #1f2d4a;
-      }
-      .checklist .header div {
-        flex: 1;
-        text-align: left;
-      }
-      .checklist .done {
-        background-color: #2c7a4c !important;
-      }
-      .task {
-        background-color: #1e293b;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        border-left: 4px solid var(--accent);
-        transition: all 0.3s ease;
-      }
-      .task.completed {
-        background-color: #166534;
-        border-left-color: #22c55e;
-      }
-      .task .status {
-        font-weight: bold;
-        color: var(--text-light);
-      }
-      iframe.pdf-viewer {
-        width: 100%;
-        max-width: 1000px;
-        height: 600px;
-        margin: 40px auto 0;
-        display: block;
-        border: none;
-        border-radius: 8px;
-      }
-    </style>
-    <script>
-    function toggleTask(element) {
-      element.classList.toggle("completed");
-      const status = element.querySelector(".status");
-      if (element.classList.contains("completed")) {
-        status.textContent = "Completado 🟢";
-      } else {
-        status.textContent = "Pendiente ⏳";
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – Plan de trabajo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Tema base: consistente con opo11/distribución/camprev/estadísticas ===== */
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0D47A1; --accent-color:#42a5f5; --surface:#22314f; --border:#2f446a; --header-bg:#0d47a1;
+      --green:#2e7d32; --red:#c62828; --orange:#f57c00; --yellow:#fbc02d;
     }
-    </script>
-  </head>
-  <body>
-    <aside>
-      <div class="logo">📊 Gestión Center</div>
-      <nav>
-        <a href="index.html">🏠 Inicio</a>
-        <a href="#informes">📝 Informes</a>
-        <a href="plandetrabajo.html">✅ Plan de trabajo</a>
-        <a href="distribucion.html">📋 Distribución</a>
-        <a href="estadisticas.html">📈 Estadísticas</a>
-        <a href="cobertura.html">🌎 Cobertura</a>
-        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-        <a href="#contacto">📬 Contacto</a>
-      </nav>
-    </aside>
-    <div class="main-content">
-      <section class="section" id="plan-tl">
-        <h2>📋 Plan de Trabajo TLs – Turno AM</h2>
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
 
-        <div class="checklist">
-          <h3>✅ Checklist de tareas con horario</h3>
-          <div class="task" onclick="toggleTask(this)"><span>7:00 AM – 8:00 AM: Good Day (Registro de Asistencia)</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>8:00 AM – 9:00 AM: Planilla (Registro de Horas del Día Anterior)</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>8:00 AM – 9:00 AM: Control de Asistencia Diaria (Tiempo Incompleto)</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>9:00 AM – 10:00 AM: Horas Rusia</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>9:00 AM – 10:00 AM: Programación (BI-247)</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>3:00 PM – 4:00 PM: Verificación de Recalls (BI-82 y BI-91)</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>3:30 PM – 4:00 PM: Reporte de Cierre (Grupo “Equipo CC Perú”)</span><span class="status">Pendiente ⏳</span></div>
-          <div class="task" onclick="toggleTask(this)"><span>3:30 PM – 4:00 PM: Team Leader Report (Bajo Rendimiento del Día)</span><span class="status">Pendiente ⏳</span></div>
-        </div>
+    /* ===== Sidebar (idéntico) ===== */
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
 
-        <table class="plan-table">
-          <thead>
-            <tr>
-              <th style="width: 200px;">Horario</th>
-              <th>Actividad</th>
-              <th>Descripción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Durante el día</td><td>2.1 Leads Daily</td><td>Ingreso de leads (7AM–2PM)</td></tr>
-            <tr><td>Durante el día</td><td>2.2 Estadísticas de campañas</td><td>Revisión de métricas ACD, SAVE, etc.</td></tr>
-            <tr><td>Durante el día</td><td>2.3 Órdenes con mala publicidad</td><td>Registro en el documento asignado</td></tr>
-          </tbody>
-        </table>
+    /* ===== Main ===== */
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
 
-        <h3 style="text-align: center; margin-top: 60px;">📄 Plan de trabajo completo (PDF)</h3>
-        <iframe class="pdf-viewer" src="Plan_de_trabajo_TEAM_LEADER.pdf"></iframe>
+    /* ===== Panel superior ===== */
+    .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:8px 0 16px; }
+    .pill{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:14px; }
+    .select{ background:var(--surface); color:var(--txt); border:1px solid var(--primary-color); border-radius:10px; padding:8px 12px; height:38px; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    button:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
 
-      </section>
+    /* ===== Progreso ===== */
+    .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; height:12px; overflow:hidden; position:relative; }
+    .progress>span{ display:block; height:100%; background:linear-gradient(90deg,#42a5f5,#80d6ff); width:0%; transition:width .35s ease; }
+    .progress-label{ font-size:12px; color:var(--txt-muted); min-width:140px; text-align:right; }
+
+    /* ===== Secciones ===== */
+    .section{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin:14px 0; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+    .section-header{ display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+    .section-header h2{ font-size:18px; margin:0; }
+    .section-header .time{ color:var(--txt-muted); font-size:13px; margin-left:auto; }
+    .section.collapsed .section-body{ display:none; }
+
+    /* ===== Tareas ===== */
+    .task{ display:grid; grid-template-columns:28px 1fr 220px; gap:12px; align-items:start; padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
+    .task:hover{ background:rgba(0,0,0,.16); }
+    .task.done{ background:rgba(46,125,50,.22); border-color:#2e7d3270; }
+    .task .chk{ width:18px; height:18px; margin-top:2px; }
+    .task .title{ font-weight:700; }
+    .task .desc{ color:var(--txt-muted); font-size:13px; margin-top:3px; }
+    .task .meta{ font-size:12px; color:#cfe3ff; }
+    .task .note{ width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#1b2a48; color:var(--txt); resize:vertical; min-height:40px; }
+    .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+    .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:#1b2a48; }
+
+    /* ===== PDF Viewer ===== */
+    .pdf{ width:100%; height:560px; border:none; border-radius:12px; box-shadow:0 6px 12px rgba(0,0,0,.25); }
+
+    /* ===== Toast ===== */
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+    @media (max-width: 960px){
+      main{ padding:18px; }
+      .page-title{ font-size:20px; }
+      .task{ grid-template-columns:24px 1fr; }
+      .task .tools{ grid-column:1/-1; justify-content:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Sidebar (copiado 1:1 del estilo) ===== -->
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a class="active" href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a href="#contacto">📬 Contacto</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
+
+  <!-- ===== Contenido ===== -->
+  <main>
+    <h1 class="page-title">✅ Plan de Trabajo – Team Leaders</h1>
+    <p class="subtitle">Basado en la versión vigente · Turno AM/PM con horarios equivalentes · notas y progreso persistentes</p>
+    <div id="fechaHora" class="datetime"></div>
+
+    <div class="topbar">
+      <div class="pill">
+        <strong>Turno:</strong>
+        <select id="selTurno" class="select">
+          <option value="AM">AM (7:00–4:00)</option>
+          <option value="PM">PM (1:00–10:00)</option>
+        </select>
+      </div>
+      <button id="btnResetDay">🧹 Reset del día</button>
+      <button id="btnClearAll">🗑️ Borrar guardado</button>
+      <button id="btnPrint">🖨️ Imprimir</button>
+      <div class="progress" title="Avance de tareas con horario">
+        <span id="progBar"></span>
+      </div>
+      <div class="progress-label" id="progLabel">0% completado</div>
     </div>
-  </body>
-</html>
 
+    <!-- Secciones renderizadas por JS: Primera, Segunda, Tercera, Última, Continuas -->
+    <div id="sections"></div>
+
+    <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
+    <iframe class="pdf" src="Plan_de_trabajo_TEAM_LEADER.pdf"></iframe>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ===== Utilidades =====
+    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    // ===== Datos del plan vigente =====
+    const PLAN = {
+      blocks:[
+        { id:'primera',  title:'📌 Primera hora de gestión',  time:{AM:'7:00–8:00',  PM:'1:00–2:00'},  tasks:[
+          {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores (A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM).'},
+        ]},
+        { id:'segunda',  title:'📌 Segunda hora de gestión',   time:{AM:'8:00–9:00',  PM:'2:00–3:00'},  tasks:[
+          {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844. Reglas de redondeo: >45m → 1h; desde 4:45h sumar 1h por break.'},
+          {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para incompletos: asignar TL responsable y motivo.'},
+        ]},
+        { id:'tercera',  title:'📌 Tercera hora de gestión',   time:{AM:'9:00–10:00', PM:'3:00–4:00'},  tasks:[
+          {id:'1.4', title:'Horas Rusia', desc:'Carga de horas (conexión, llamadas, SAVE) con base en BI-844 (día anterior).'},
+          {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta; desprogramar ausentes; coherencia horario oficial vs real.'},
+        ]},
+        { id:'ultima',   title:'📌 Última hora de gestión',    time:{AM:'3:00–4:00', PM:'9:00–10:00'}, tasks:[
+          {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día y queda con status final.'},
+        ]},
+      ],
+      continuous:[
+        {id:'c.1', title:'Leads Daily', desc:'Registro cada hora hasta 2 horas antes de terminar el turno.'},
+        {id:'c.2', title:'Verificación de estadísticas de campañas', desc:'Monitoreo de leads, conectados, ACD, ventas, SAVE, etc.'},
+        {id:'c.3', title:'Órdenes con mala publicidad', desc:'Registro y seguimiento durante el día.'},
+      ],
+      policy:[
+        '1) Primer incumplimiento: recordatorio inmediato.',
+        '2) Segundo incumplimiento: llamado de atención formal.',
+        '3) Reincidencia: informe a RRHH para evaluación.'
+      ]
+    };
+
+    // ===== Persistencia =====
+    const STORAGE_KEY='plan_vigente_v2';
+    function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
+    function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function defaultState(){
+      const st={ shift:'AM', tasks:{}, notes:{}, collapsed:{} };
+      PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; st.notes[t.id]=''; }));
+      PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; st.notes[t.id]=''; });
+      return st;
+    }
+
+    let state = Object.assign(defaultState(), loadState());
+
+    // ===== Render =====
+    const sectionsEl = document.getElementById('sections');
+
+    function render(){
+      // Turno selector
+      document.getElementById('selTurno').value = state.shift;
+
+      sectionsEl.innerHTML='';
+
+      // Render bloques con horario
+      PLAN.blocks.forEach(block=>{
+        const sec=document.createElement('section'); sec.className='section';
+        if(state.collapsed[block.id]) sec.classList.add('collapsed');
+
+        const head=document.createElement('div'); head.className='section-header';
+        head.innerHTML=`<h2>${block.title}</h2><div class="time">${state.shift} · ${block.time[state.shift]}</div>`;
+        head.addEventListener('click',()=>{ state.collapsed[block.id]=!state.collapsed[block.id]; saveState(state); render(); });
+
+        const body=document.createElement('div'); body.className='section-body';
+
+        block.tasks.forEach(task=>{
+          const done=!!state.tasks[task.id];
+          const note=state.notes[task.id]||'';
+          const el=document.createElement('div'); el.className='task'+(done?' done':'');
+          el.innerHTML=`
+            <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''}>
+            <div>
+              <div class="title">${task.id} · ${task.title}</div>
+              <div class="desc">${task.desc||''}</div>
+              <div class="meta">${state.shift} · ${block.time[state.shift]}</div>
+              <div style="margin-top:8px;">
+                <textarea class="note" id="note-${task.id}" placeholder="Notas de seguimiento (se guardan automáticamente)">${note.replace(/</g,'&lt;')}</textarea>
+              </div>
+            </div>
+            <div class="tools">
+              <span class="chip" title="Marcar/Desmarcar tarea">⏱️ Bloque</span>
+              <span class="chip" title="Se guarda en el navegador">💾 Auto-guardado</span>
+            </div>`;
+
+          // Listeners
+          el.querySelector('.chk').addEventListener('change',ev=>{
+            state.tasks[task.id]=ev.target.checked; saveState(state); updateProgress(); el.classList.toggle('done',ev.target.checked); toast(ev.target.checked?'✅ Tarea completada':'↩️ Tarea pendiente');
+          });
+          el.querySelector('.note').addEventListener('input',ev=>{ state.notes[task.id]=ev.target.value; saveState(state); });
+
+          body.appendChild(el);
+        });
+
+        sec.appendChild(head); sec.appendChild(body);
+        sectionsEl.appendChild(sec);
+      });
+
+      // Render continuas
+      const secC=document.createElement('section'); secC.className='section';
+      if(state.collapsed['continuas']) secC.classList.add('collapsed');
+      const headC=document.createElement('div'); headC.className='section-header';
+      headC.innerHTML=`<h2>🔁 Tareas de actualización continua</h2><div class="time">Todo el día</div>`;
+      headC.addEventListener('click',()=>{ state.collapsed['continuas']=!state.collapsed['continuas']; saveState(state); render(); });
+
+      const bodyC=document.createElement('div'); bodyC.className='section-body';
+      PLAN.continuous.forEach(task=>{
+        const done=!!state.tasks[task.id];
+        const note=state.notes[task.id]||'';
+        const el=document.createElement('div'); el.className='task'+(done?' done':'');
+        el.innerHTML=`
+          <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''}>
+          <div>
+            <div class="title">${task.title}</div>
+            <div class="desc">${task.desc||''}</div>
+            <div class="meta">⏳ Sin horario fijo</div>
+            <div style="margin-top:8px;"><textarea class="note" id="note-${task.id}" placeholder="Notas (se guardan automáticamente)">${note.replace(/</g,'&lt;')}</textarea></div>
+          </div>
+          <div class="tools">
+            <span class="chip">🗂️ Seguimiento</span>
+            <span class="chip">💾 Auto-guardado</span>
+          </div>`;
+        el.querySelector('.chk').addEventListener('change',ev=>{ state.tasks[task.id]=ev.target.checked; saveState(state); updateProgress(); el.classList.toggle('done',ev.target.checked); });
+        el.querySelector('.note').addEventListener('input',ev=>{ state.notes[task.id]=ev.target.value; saveState(state); });
+        bodyC.appendChild(el);
+      });
+      secC.appendChild(headC); secC.appendChild(bodyC); sectionsEl.appendChild(secC);
+
+      // Política
+      const secP=document.createElement('section'); secP.className='section';
+      const headP=document.createElement('div'); headP.className='section-header';
+      headP.innerHTML=`<h2>⚠️ Política de incumplimiento</h2><div class="time">Aplicación gradual</div>`;
+      const bodyP=document.createElement('div'); bodyP.className='section-body';
+      const ul=document.createElement('ul'); ul.style.margin='6px 0 0 16px'; ul.style.padding='0';
+      PLAN.policy.forEach(p=>{ const li=document.createElement('li'); li.style.margin='8px 0'; li.textContent=p; ul.appendChild(li); });
+      bodyP.appendChild(ul); secP.appendChild(headP); secP.appendChild(bodyP); sectionsEl.appendChild(secP);
+
+      updateProgress();
+    }
+
+    function updateProgress(){
+      // Solo cuentan tareas con horario (no continuas)
+      const timedIds = PLAN.blocks.flatMap(b=>b.tasks.map(t=>t.id));
+      const total = timedIds.length;
+      const done = timedIds.filter(id=>!!state.tasks[id]).length;
+      const pct = total? Math.round(done*100/total) : 0;
+      document.getElementById('progBar').style.width=pct+'%';
+      document.getElementById('progLabel').textContent=pct+"% completado";
+    }
+
+    // ===== Eventos globales =====
+    document.getElementById('selTurno').addEventListener('change',e=>{ state.shift=e.target.value; saveState(state); render(); });
+    document.getElementById('btnResetDay').addEventListener('click',()=>{
+      PLAN.blocks.forEach(b=>b.tasks.forEach(t=> state.tasks[t.id]=false ));
+      saveState(state); render(); toast('🧹 Tareas con horario reseteadas');
+    });
+    document.getElementById('btnClearAll').addEventListener('click',()=>{
+      localStorage.removeItem(STORAGE_KEY); state=defaultState(); render(); toast('🗑️ Guardado eliminado');
+    });
+    document.getElementById('btnPrint').addEventListener('click',()=>window.print());
+
+    // Init
+    render();
+  </script>
+</body>
+</html>
