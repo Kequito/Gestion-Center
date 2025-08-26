@@ -1,1 +1,245 @@
-a
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – Cobertura</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Tema base: consistente con opo11/distribución/camprev/estadísticas/plandetrabajo ===== */
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+
+    /* ===== Sidebar (idéntico) ===== */
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
+
+    /* ===== Main ===== */
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
+
+    /* ===== Topbar / filtros ===== */
+    .filters{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 16px; }
+    .filter-group{ display:flex; flex-direction:column; gap:6px; }
+    .filter-group label{ font-size:12px; color:var(--txt-muted); }
+    .filter-group select, .filter-group input[type="text"]{ padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color); background:var(--table-bg); color:var(--txt); min-width:170px; height:38px; }
+    .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
+    button, .btn{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    button:hover, .btn:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
+
+    /* ===== Tabla ===== */
+    table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); position:relative; }
+    thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; }
+    tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:left; }
+    thead th:first-child, tbody td:first-child{ text-align:left; }
+    thead input{ width:100%; padding:8px; box-sizing:border-box; border-radius:8px; border:1px solid #315185; background:#2f4d7d; color:#fff; }
+    thead input::placeholder{ color:#cfe3ff; }
+
+    /* ===== Toast ===== */
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+    @media (max-width: 960px){
+      main{ padding:18px; }
+      .page-title{ font-size:20px; }
+      .filter-group select,.filter-group input{ min-width:130px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Sidebar (copiado 1:1 del estilo) ===== -->
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a class="active" href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a href="#contacto">📬 Contacto</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
+
+  <!-- ===== Contenido ===== -->
+  <main>
+    <h1 class="page-title" id="title">🌎 Cobertura – <span id="countryName">Chile</span> <img id="flag" alt="flag" style="height:22px; vertical-align:middle; border-radius:4px;"/></h1>
+    <p class="subtitle">Mismo look & feel que el resto · Filtros por columna · Cambia de campaña con 1 selector</p>
+    <div id="fechaHora" class="datetime"></div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label for="selCountry">País / Campaña</label>
+        <select id="selCountry">
+          <!-- se llena por JS -->
+        </select>
+      </div>
+      <div class="counter" id="rowCounter">—</div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnReset">🧹 Restablecer filtros</button>
+      <a id="btnSheets" href="#" target="_blank" rel="noopener" class="btn">📄 Ver en Sheets</a>
+      <button id="btnCSV">⬇️ Exportar (CSV)</button>
+    </div>
+
+    <table id="tblCoverage">
+      <thead id="thead">
+        <tr id="filterRow"><!-- inputs por columna --></tr>
+        <tr id="labelRow"><!-- nombres de columnas --></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ===== Utilidades =====
+    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    // ===== Config por país =====
+    const CONFIG={
+      CHL:{ name:'Chile', flag:'https://flagcdn.com/w40/cl.png', json:'chile.json', sheets:'https://docs.google.com/spreadsheets/d/1xp1Z2h_2H-UhAetyvaTGdJPshpmA89aod51IP6UdoUY/edit?gid=1980937451#gid=1980937451' },
+      COL:{ name:'Colombia', flag:'https://flagcdn.com/w40/co.png', json:'colombia.json', sheets:'https://docs.google.com/spreadsheets/d/1DbCCUk8am0NFhBwZsv3OxB9sH1YgDGuQDexWr8Sq6RA/edit?gid=114472255#gid=114472255' },
+      CRI:{ name:'Costa Rica', flag:'https://flagcdn.com/w40/cr.png', json:'costarica.json', sheets:'https://docs.google.com/spreadsheets/d/1rJGgjvpPjrLso9lMx1FWb_vkZ5AyA_AGR9-YnPe0q2A/edit?gid=577202553#gid=577202553' },
+      ECU:{ name:'Ecuador', flag:'https://flagcdn.com/w40/ec.png', json:'ecuador.json', sheets:'https://docs.google.com/spreadsheets/d/1gEs7RfH-4JkklOgJLPCVUVtiKo9-zCGG/edit?gid=1749403733#gid=1749403733' },
+      MEX:{ name:'México', flag:'https://flagcdn.com/w40/mx.png', json:'mexico.json', sheets:'https://docs.google.com/spreadsheets/d/18A8RXs_YhPXEJ_bU2wnSaXvjoBm2xkIK8ZzYjDrgfhI/edit?gid=2009048853#gid=2009048853' },
+      PRY:{ name:'Paraguay', flag:'https://flagcdn.com/w40/py.png', json:'paraguay.json', sheets:'https://docs.google.com/spreadsheets/d/1AC7l_mbaIv5ixzOuQ3BAqkX_rI2MJMemebSHIbSHFNA/edit?gid=221079964#gid=221079964' },
+      PER:{ name:'Perú', flag:'https://flagcdn.com/w40/pe.png', json:'peru.json', sheets:'' },
+      URY:{ name:'Uruguay', flag:'https://flagcdn.com/w40/uy.png', json:'uruguay.json', sheets:'https://docs.google.com/spreadsheets/d/1qzgsxKX0oHDW3Vm1pMN_Uo-PPAzFRZYM1B4dy7CTiLM/edit?gid=1915480262#gid=1915480262' },
+      VEN:{ name:'Venezuela', flag:'https://flagcdn.com/w40/ve.png', json:'venezuela.json', sheets:'' },
+    };
+
+    // Misma estructura de columnas (A..H) que Chile.
+    const COL_LABELS=['PAQUETERIA','CÓDIGO POSTAL','LOCALIDAD','COMUNA','PROVINCIA','REGIÓN','TIEMPO DE ENTREGA','DÍAS DE ENTREGA'];
+    const KEYS=['A','B','C','D','E','F','G','H'];
+
+    // ===== Persistencia =====
+    const STORAGE='cov_ui_v1';
+    function loadState(){ try{return JSON.parse(localStorage.getItem(STORAGE))||{}}catch{return{}} }
+    function saveState(s){ localStorage.setItem(STORAGE, JSON.stringify(s)); }
+    let state=Object.assign({ country:'CHL', filters:Array(KEYS.length).fill('') }, loadState());
+
+    // ===== DOM refs =====
+    const selCountry=document.getElementById('selCountry');
+    const rowCounter=document.getElementById('rowCounter');
+    const flag=document.getElementById('flag');
+    const countryName=document.getElementById('countryName');
+    const btnSheets=document.getElementById('btnSheets');
+    const tbody=document.getElementById('tbody');
+    const filterRow=document.getElementById('filterRow');
+    const labelRow=document.getElementById('labelRow');
+
+    // ===== Data =====
+    let dataRaw=[]; let filtered=[];
+
+    // ===== UI build =====
+    function buildCountrySelect(){
+      selCountry.innerHTML = Object.entries(CONFIG).map(([code,c])=>`<option value="${code}">${c.name}</option>`).join('');
+      selCountry.value = state.country in CONFIG ? state.country : 'CHL';
+    }
+
+    function buildTableHeader(){
+      // Fila de filtros
+      filterRow.innerHTML = COL_LABELS.map((_,i)=>`<th><input id="flt${i}" type="text" placeholder="Filtrar..." value="${state.filters[i]||''}"></th>`).join('');
+      // Fila de nombres
+      labelRow.innerHTML = COL_LABELS.map(lbl=>`<th>${lbl}</th>`).join('');
+      // Listeners
+      COL_LABELS.forEach((_,i)=>{
+        const el=document.getElementById(`flt${i}`);
+        el.addEventListener('input',()=>{ state.filters[i]=el.value; saveState(state); applyFilters(); });
+      });
+    }
+
+    function updateHeaderCountry(){
+      const cfg=CONFIG[state.country];
+      countryName.textContent=cfg.name;
+      flag.src=cfg.flag; flag.alt=cfg.name;
+      btnSheets.href=cfg.sheets || '#';
+      btnSheets.style.display = cfg.sheets? 'inline-flex':'none';
+    }
+
+    // ===== Data load/render =====
+    async function loadData(){
+      const cfg=CONFIG[state.country];
+      try{
+        const res=await fetch(cfg.json, {cache:'no-store'});
+        dataRaw=await res.json();
+        renderTable(dataRaw);
+        toast('✅ Cobertura cargada: '+cfg.name);
+      }catch(e){ console.error(e); dataRaw=[]; renderTable([]); toast('❌ No se pudo cargar '+cfg.json); }
+    }
+
+    function renderTable(rows){
+      tbody.innerHTML='';
+      const frag=document.createDocumentFragment();
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=KEYS.map(k=>`<td>${r[k]??''}</td>`).join('');
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+      applyFilters();
+    }
+
+    function applyFilters(){
+      const filters = state.filters.map(v=>norm(v));
+      let visible=0;
+      [...tbody.rows].forEach(tr=>{
+        const tds=[...tr.cells].map(td=>norm(td.textContent));
+        const ok = filters.every((fv,idx)=> !fv || tds[idx].includes(fv));
+        tr.style.display = ok? '':'none';
+        if(ok) visible++;
+      });
+      rowCounter.textContent = `Mostrando ${visible.toLocaleString('es-PE')} registro${visible===1?'':'s'}`;
+    }
+
+    // ===== Export =====
+    function exportCSV(){
+      const rows=[...tbody.rows].filter(tr=>tr.style.display!=='none');
+      if(!rows.length){ toast('ℹ️ No hay filas para exportar'); return; }
+      const csv=[COL_LABELS.join(',')];
+      rows.forEach(tr=>{
+        const line=[...tr.cells].map(td=>`"${td.textContent.replace(/"/g,'""')}"`).join(',');
+        csv.push(line);
+      });
+      const blob=new Blob(['\ufeff'+csv.join('\n')],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url; a.download=`cobertura_${CONFIG[state.country].name}_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    // ===== Eventos =====
+    document.getElementById('btnReset').addEventListener('click',()=>{
+      state.filters = Array(KEYS.length).fill(''); saveState(state);
+      buildTableHeader(); applyFilters();
+    });
+    document.getElementById('btnCSV').addEventListener('click',exportCSV);
+    selCountry.addEventListener('change',()=>{ state.country=selCountry.value; saveState(state); updateHeaderCountry(); loadData(); });
+
+    // Init
+    buildCountrySelect();
+    buildTableHeader();
+    updateHeaderCountry();
+    loadData();
+  </script>
+</body>
+</html>
