@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – Selector de Apoyo 2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+      --green:#2e7d32; --red:#c62828; --orange:#f57c00;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+
+    /* ===== Sidebar ===== */
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
+
+    /* ===== Main ===== */
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
+
+    /* ===== Filtros / acciones ===== */
+    .filters{ display:grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap:12px; align-items:end; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 16px; }
+    .filter-group{ display:flex; flex-direction:column; gap:6px; }
+    .filter-group label{ font-size:12px; color:var(--txt-muted); }
+    .filter-group select, .filter-group input[type="text"], .filter-group textarea{
+      padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color);
+      background:var(--table-bg); color:var(--txt); height:38px;
+    }
+    .filter-group textarea{
+      height:auto; min-height:38px; resize:vertical; line-height:1.2; font-family:'Lexend',sans-serif;
+    }
+    .grid-span-2{ grid-column: span 2; }
+    .grid-span-3{ grid-column: span 3; }
+    .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; align-self:center; }
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    button:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
+
+    /* ===== Tabla ===== */
+    table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); position:relative; }
+    thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
+    tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
+    thead th:first-child, tbody td:first-child{ text-align:left; }
+    .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.95; cursor:copy; }
+
+    /* Orden 3 estados */
+    .sort-none::after{ content:""; }
+    .sort-desc::after{ content:" ↓"; font-weight:900; }
+    .sort-asc::after{ content:" ↑"; font-weight:900; }
+
+    /* Semáforo de % */
+    .pct{ font-weight:800; }
+    .pct.red{ color:#ff8a80; }
+    .pct.orange{ color:#ffcc80; }
+    .pct.green{ color:#80e27e; }
+
+    /* Toast */
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+    @media (max-width: 1200px){
+      .filters{ grid-template-columns: repeat(3, minmax(170px,1fr)); }
+    }
+    @media (max-width: 960px){
+      .filters{ grid-template-columns: repeat(2, minmax(140px,1fr)); }
+      main{ padding:18px; }
+      .page-title{ font-size:20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Sidebar ===== -->
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a class="active" href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a href="#contacto">📬 Contacto</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
+
+  <!-- ===== Contenido ===== -->
+  <main>
+    <h1 class="page-title">👥 Selector de Apoyo – Ver 2.0</h1>
+    <p class="subtitle">Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> · filtros, orden acumulativo y lista de PEROP</p>
+    <div id="fechaHora" class="datetime"></div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label for="fltTL">Team Leader</label>
+        <select id="fltTL"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltCamp">Campaña</label>
+        <select id="fltCamp"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltDesc">Descanso</label>
+        <select id="fltDesc"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltTurno">Turno</label>
+        <select id="fltTurno"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="fltSearch">Buscar</label>
+        <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
+      </div>
+
+      <!-- NUEVO: filtro de lista de PEROP -->
+      <div class="filter-group grid-span-3">
+        <label for="fltList">Lista PEROP1AM (uno por línea o separados por , ;)</label>
+        <textarea id="fltList" rows="4" placeholder="Ejemplo:
+PEROP1AM-41058
+PEROP1AM-39726
+41058"></textarea>
+      </div>
+
+      <div class="counter" id="rowCounter">Mostrando 0 registros</div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnReset">🧹 Restablecer filtros</button>
+      <button id="btnExport">⬇️ Exportar (CSV)</button>
+    </div>
+
+    <table id="tblCampRev">
+      <thead>
+        <tr id="headRow">
+          <th data-col="teamLeader" class="sort-none">Team Leader</th>
+          <th data-col="nombre" class="sort-none">Operador</th>
+          <th data-col="perop" class="sort-none">PEROP1AM</th>
+          <th data-col="campania" class="sort-none">Campaña</th>
+          <th data-col="orders" class="sort-none">Total Orders</th>
+          <th data-col="approve" class="sort-none">%Approve</th>
+          <th data-col="reject" class="sort-none">%Reject</th>
+          <th data-col="trash" class="sort-none">%Trash</th>
+          <th data-col="avg" class="sort-none">Avg Check</th>
+          <th data-col="descanso" class="sort-none">Descanso</th>
+          <th data-col="turno" class="sort-none">Turno</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ===== Utilidades =====
+    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+    function actualizarFechaHora(){
+      const ahora=new Date();
+      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
+    }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    // ===== Estado =====
+    let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[];
+    // Orden acumulativo: array de { col, mode } -> 1=desc, 2=asc
+    let sortState=[];
+
+    // ===== Carga/ensamble de datos =====
+    async function loadData(){
+      try{
+        const [distrib, camp] = await Promise.all([
+          fetch('datadistribucion.json').then(r=>r.json()),
+          fetch('camprev.json').then(r=>r.json())
+        ]);
+        rawDistrib=distrib; rawCamp=camp;
+        // Join por PEROP (distrib.C === camp.A)
+        dataFinal = rawCamp.reduce((acc,row)=>{
+          const op = rawDistrib.find(o=>String(o.C)===String(row.A));
+          if(op){
+            acc.push({
+              teamLeader: op.A || '',
+              nombre: op.B || '',
+              perop: row.A || '',
+              campania: row.B || '',
+              orders: Number(row.C)||0,
+              approve: String(row.E||'').toString(),
+              reject: String(row.M||'').toString(),
+              trash: String(row.O||'').toString(),
+              avg: Number(row.P)||0,
+              descanso: op.E || '',
+              turno: op.F || ''
+            });
+          }
+          return acc;
+        },[]);
+        buildFilters(dataFinal);
+        applyFiltersAndRender();
+        toast('✅ Datos cargados');
+      }catch(e){ console.error(e); toast('❌ No se pudieron cargar los JSON'); }
+    }
+
+    // ===== Filtros =====
+    function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
+    function fillSelect(sel, values){
+      sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
+        values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join('');
+    }
+
+    function buildFilters(rows){
+      const tls = uniqSorted(rows.map(r=>r.teamLeader));
+      const camps = uniqSorted(rows.map(r=>r.campania));
+      const descs = uniqSorted(rows.map(r=>r.descanso));
+      const turns = uniqSorted(rows.map(r=>r.turno));
+      fillSelect(document.getElementById('fltTL'), tls);
+      fillSelect(document.getElementById('fltCamp'), camps);
+      fillSelect(document.getElementById('fltDesc'), descs);
+      fillSelect(document.getElementById('fltTurno'), turns);
+    }
+
+    // Parseo robusto de lista PEROP (tolera espacios, comas, ;, líneas vacías, solo dígitos)
+    function parsePeropList(raw){
+      if(!raw) return { full:new Set(), digits:new Set() };
+      const tokens = raw
+        .split(/[\n,;]+/g)
+        .map(s=>s.replace(/\s+/g,'').toUpperCase()) // quita espacios
+        .filter(Boolean);
+
+      const full = new Set(tokens);
+      const digits = new Set(tokens.map(t=>{
+        const m = t.match(/(\d{3,})$/); // últimos dígitos (3+)
+        return m ? m[1] : '';
+      }).filter(Boolean));
+
+      return { full, digits };
+    }
+
+    function applyFiltersAndRender(){
+      const vTL = norm(document.getElementById('fltTL').value);
+      const vCa = norm(document.getElementById('fltCamp').value);
+      const vDe = norm(document.getElementById('fltDesc').value);
+      const vTu = norm(document.getElementById('fltTurno').value);
+      const vQ  = norm(document.getElementById('fltSearch').value);
+      const { full:peropFull, digits:peropDigits } = parsePeropList(document.getElementById('fltList').value);
+
+      filtered = dataFinal.filter(r=>{
+        const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
+
+        // Filtro de lista PEROP (si hay lista, aplica)
+        const peropClean = String(r.perop).replace(/\s+/g,'').toUpperCase();
+        const peropNum   = (peropClean.match(/(\d{3,})$/)||[])[1] || '';
+        const passList   = (peropFull.size===0 && peropDigits.size===0) ||
+                           peropFull.has(peropClean) ||
+                           (peropNum && peropDigits.has(peropNum));
+
+        const passOthers = (!vTL||a===vTL) && (!vCa||d===vCa) && (!vDe||e===vDe) && (!vTu||f===vTu) &&
+                           (!vQ || b.includes(vQ) || c.includes(vQ));
+
+        return passList && passOthers;
+      });
+
+      // ===== Ordenamiento acumulativo =====
+      if(sortState.length){
+        filtered.sort((x,y)=>{
+          for(const {col,mode} of sortState){
+            let A=x[col], B=y[col];
+            if(['orders','avg'].includes(col)){
+              A=Number(A)||0; B=Number(B)||0;
+            }else if(['approve','reject','trash'].includes(col)){
+              A=parseFloat(String(A).replace('%',''))||0; 
+              B=parseFloat(String(B).replace('%',''))||0;
+            }else{
+              A=String(A); B=String(B);
+            }
+            const cmp = (typeof A==='number'&&typeof B==='number') 
+              ? (A-B) 
+              : A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
+            if(cmp!==0) return mode===1 ? -cmp : cmp; // 1=desc, 2=asc
+          }
+          return 0;
+        });
+      }
+      renderTable(filtered);
+    }
+
+    // ===== Render =====
+    function colorPct(val, type){
+      const n=parseFloat(String(val).replace('%',''))||0;
+      if(type==="approve"){
+        if(n<=24) return "red";
+        if(n<=29) return "orange";
+        return "green";
+      }else if(type==="reject" || type==="trash"){
+        if(n<=7) return "green";
+        if(n<=14) return "orange";
+        return "red";
+      }
+      return "";
+    }
+
+    function renderTable(rows){
+      const tbody=document.querySelector('#tblCampRev tbody');
+      tbody.innerHTML='';
+      const frag=document.createDocumentFragment();
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${r.teamLeader}</td>
+          <td>${r.nombre}</td>
+          <td class="perop" data-copy="${r.perop}">${r.perop}</td>
+          <td>${r.campania}</td>
+          <td>${r.orders}</td>
+          <td class="pct ${colorPct(r.approve,'approve')}">${r.approve}</td>
+          <td class="pct ${colorPct(r.reject,'reject')}">${r.reject}</td>
+          <td class="pct ${colorPct(r.trash,'trash')}">${r.trash}</td>
+          <td>$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
+          <td>${r.descanso}</td>
+          <td>${r.turno}</td>
+        `;
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+      document.getElementById('rowCounter').textContent = `Mostrando ${rows.length} registro${rows.length===1?'':'s'}`;
+
+      // Click-to-copy PEROP
+      tbody.querySelectorAll('td.perop').forEach(td=>{
+        td.title='Click para copiar PEROP';
+        td.addEventListener('click', async ()=>{
+          const v = td.dataset.copy || td.textContent.trim();
+          try{ await navigator.clipboard.writeText(v); toast('📋 PEROP copiado'); }
+          catch{ toast('❌ No se pudo copiar'); }
+        });
+      });
+    }
+
+    // ===== Orden 3 estados acumulativo =====
+    function resetHeadSortClasses(){
+      document.querySelectorAll('#headRow th').forEach(th=>{
+        th.classList.remove('sort-asc','sort-desc');
+        th.classList.add('sort-none');
+      });
+    }
+    function refreshHeadSortClasses(){
+      resetHeadSortClasses();
+      sortState.forEach(({col,mode})=>{
+        const thEl=document.querySelector(`#headRow th[data-col="${col}"]`);
+        if(thEl && mode){
+          thEl.classList.remove('sort-none');
+          thEl.classList.add(mode===1?'sort-desc':'sort-asc');
+        }
+      });
+    }
+    function cycleSort(th){
+      const col=th.dataset.col;
+      if(!col) return;
+      const wasDesc = th.classList.contains('sort-desc');
+      const wasAsc  = th.classList.contains('sort-asc');
+      let existing  = sortState.find(s=>s.col===col);
+
+      if(!wasDesc && !wasAsc){
+        // none -> desc
+        if(existing) existing.mode=1; else sortState.push({col,mode:1});
+      }else if(wasDesc){
+        // desc -> asc
+        if(existing) existing.mode=2; else sortState.push({col,mode:2});
+      }else if(wasAsc){
+        // asc -> none (remover de la pila)
+        sortState = sortState.filter(s=>s.col!==col);
+      }
+      refreshHeadSortClasses();
+      applyFiltersAndRender();
+    }
+
+    // ===== Export CSV =====
+    function exportCSV(){
+      if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
+      const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
+      const rows=filtered.map(r=>[r.teamLeader,r.nombre,r.perop,r.campania,r.orders,r.approve,r.reject,r.trash,r.avg,r.descanso,r.turno]);
+      const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); // BOM
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`camprev_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    // ===== Eventos =====
+    document.getElementById('btnReset').addEventListener('click',()=>{
+      document.getElementById('fltTL').value='';
+      document.getElementById('fltCamp').value='';
+      document.getElementById('fltDesc').value='';
+      document.getElementById('fltTurno').value='';
+      document.getElementById('fltSearch').value='';
+      document.getElementById('fltList').value='';
+      sortState=[]; // limpiar orden acumulativo
+      resetHeadSortClasses();
+      applyFiltersAndRender();
+    });
+    document.getElementById('btnExport').addEventListener('click',exportCSV);
+    ['fltTL','fltCamp','fltDesc','fltTurno','fltSearch','fltList'].forEach(id=>{
+      document.getElementById(id).addEventListener('input',applyFiltersAndRender);
+      document.getElementById(id).addEventListener('change',applyFiltersAndRender);
+    });
+    document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
+
+    // Init
+    resetHeadSortClasses();
+    loadData();
+  </script>
+</body>
+</html>
