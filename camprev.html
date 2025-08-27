@@ -69,7 +69,7 @@
   </style>
 </head>
 <body>
-  <!-- ===== Sidebar (copiado 1:1 del estilo) ===== -->
+  <!-- ===== Sidebar ===== -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
@@ -88,7 +88,7 @@
   <!-- ===== Contenido ===== -->
   <main>
     <h1 class="page-title">👥 Selector de Apoyo – Ver 2.0</h1>
-    <p class="subtitle">Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> · filtros y orden 3 estados</p>
+    <p class="subtitle">Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> · filtros y orden acumulativo</p>
     <div id="fechaHora" class="datetime"></div>
 
     <div class="filters">
@@ -152,7 +152,8 @@
 
     // ===== Estado =====
     let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[];
-    let sortState={ col:null, mode:0 }; // 0 none, 1 desc, 2 asc
+    // Ordenamiento acumulativo: array de { col, mode } donde mode: 1=desc, 2=asc
+    let sortState=[];
 
     // ===== Carga/ensamble de datos =====
     async function loadData(){
@@ -215,27 +216,46 @@
         const ok = (!vTL||a===vTL) && (!vCa||d===vCa) && (!vDe||e===vDe) && (!vTu||f===vTu) && (!vQ || b.includes(vQ) || c.includes(vQ));
         return ok;
       });
-      if(sortState.col){
-        const col=sortState.col;
+
+      // ===== Ordenamiento acumulativo =====
+      if(sortState.length){
         filtered.sort((x,y)=>{
-          let A=x[col], B=y[col];
-          // Normaliza números y %
-          if(['orders','avg'].includes(col)){
-            A=Number(A)||0; B=Number(B)||0;
-          }else if(['approve','reject','trash'].includes(col)){
-            A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0;
-          }else{
-            A=String(A); B=String(B);
+          for(const {col,mode} of sortState){
+            let A=x[col], B=y[col];
+            if(['orders','avg'].includes(col)){
+              A=Number(A)||0; B=Number(B)||0;
+            }else if(['approve','reject','trash'].includes(col)){
+              A=parseFloat(String(A).replace('%',''))||0; 
+              B=parseFloat(String(B).replace('%',''))||0;
+            }else{
+              A=String(A); B=String(B);
+            }
+            const cmp = (typeof A==='number'&&typeof B==='number') 
+              ? (A-B) 
+              : A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
+            if(cmp!==0) return mode===1 ? -cmp : cmp; // 1=desc, 2=asc
           }
-          const cmp = (typeof A==='number'&&typeof B==='number') ? (A-B) : A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
-          return sortState.mode===1 ? -cmp : sortState.mode===2 ? cmp : 0;
+          return 0;
         });
       }
       renderTable(filtered);
     }
 
     // ===== Render =====
-    function colorPct(val){ const n=parseFloat(String(val).replace('%',''))||0; return n<=24?'red':(n<=29?'orange':'green'); }
+    // Semáforo por métrica
+    function colorPct(val, type){
+      const n=parseFloat(String(val).replace('%',''))||0;
+      if(type==="approve"){
+        if(n<=24) return "red";
+        if(n<=29) return "orange";
+        return "green";
+      }else if(type==="reject" || type==="trash"){
+        if(n<=7) return "green";
+        if(n<=14) return "orange";
+        return "red";
+      }
+      return "";
+    }
 
     function renderTable(rows){
       const tbody=document.querySelector('#tblCampRev tbody');
@@ -249,9 +269,9 @@
           <td class="perop" data-copy="${r.perop}">${r.perop}</td>
           <td>${r.campania}</td>
           <td>${r.orders}</td>
-          <td class="pct ${colorPct(r.approve)}">${r.approve}</td>
-          <td class="pct ${colorPct(r.reject)}">${r.reject}</td>
-          <td class="pct ${colorPct(r.trash)}">${r.trash}</td>
+          <td class="pct ${colorPct(r.approve,'approve')}">${r.approve}</td>
+          <td class="pct ${colorPct(r.reject,'reject')}">${r.reject}</td>
+          <td class="pct ${colorPct(r.trash,'trash')}">${r.trash}</td>
           <td>$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
           <td>${r.descanso}</td>
           <td>${r.turno}</td>
@@ -272,20 +292,55 @@
       });
     }
 
-    // ===== Orden 3 estados =====
+    // ===== Orden 3 estados acumulativo =====
     function resetHeadSortClasses(){
       document.querySelectorAll('#headRow th').forEach(th=>{
         th.classList.remove('sort-asc','sort-desc');
         th.classList.add('sort-none');
       });
     }
-    function cycleSort(th){
-      const col=th.dataset.col; // key
-      if(!col) return;
-      if(sortState.col!==col){ sortState={col,mode:1}; }
-      else { sortState.mode = (sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
+
+    function refreshHeadSortClasses(){
       resetHeadSortClasses();
-      if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
+      sortState.forEach(({col,mode})=>{
+        const thEl=document.querySelector(`#headRow th[data-col="${col}"]`);
+        if(thEl && mode){
+          thEl.classList.remove('sort-none');
+          thEl.classList.add(mode===1?'sort-desc':'sort-asc');
+        }
+      });
+    }
+
+    function cycleSort(th){
+      const col=th.dataset.col;
+      if(!col) return;
+      let existing = sortState.find(s=>s.col===col);
+      if(!existing){
+        // Primera vez que se hace click: DESC por defecto
+        sortState.push({col,mode:1});
+      }else{
+        // Ciclo: DESC (1) -> ASC (2) -> NONE (0 y se elimina)
+        existing.mode = (existing.mode % 2) + 1; // 1->2, 2->1 (temporal)
+        if(existing.mode===1 && th.classList.contains('sort-asc')){
+          // Si venía de ASC y lo llevamos a "NONE"
+          sortState = sortState.filter(s=>s.col!==col);
+        }else if(th.classList.contains('sort-desc') && existing.mode===2){
+          // transición 1->2 normal
+        }else if(!th.classList.contains('sort-desc') && !th.classList.contains('sort-asc')){
+          // Asegura que no quede en estado inválido
+        }
+        // Ajuste correcto del ciclo manual:
+        // Detectar estado real anterior por clases del TH
+        const wasDesc = th.classList.contains('sort-desc');
+        const wasAsc  = th.classList.contains('sort-asc');
+        if(wasDesc) existing.mode = 2;        // ↓ -> ↑
+        else if(wasAsc){                      // ↑ -> none
+          sortState = sortState.filter(s=>s.col!==col);
+        }else{                                 // none -> ↓ (ya lo cubre el push arriba)
+          // no-op
+        }
+      }
+      refreshHeadSortClasses();
       applyFiltersAndRender();
     }
 
@@ -306,7 +361,7 @@
       document.getElementById('fltDesc').value='';
       document.getElementById('fltTurno').value='';
       document.getElementById('fltSearch').value='';
-      sortState={col:null,mode:0};
+      sortState=[]; // limpiar orden acumulativo
       resetHeadSortClasses();
       applyFiltersAndRender();
     });
