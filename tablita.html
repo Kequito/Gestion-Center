@@ -6,62 +6,74 @@
   <title>Gestión Center – Tablas Colaborativas</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
   <style>
-    /* ===== Tema base: CLON de 'Estadísticas' (dejamos la sidebar EXACTA) ===== */
+    /* ===== Tema base: clon de "Estadísticas" ===== */
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
-      --primary:#0D47A1; --accent:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --thead:#0d47a1;
+      --primary:#0D47A1; --accent:#42a5f5; --panel:#18263f; --panel-soft:rgba(255,255,255,.05);
+      --table:#22314f; --border:#2f446a; --thead:#0d47a1;
+      --radius-s:10px; --radius:14px; --radius-lg:18px;
+      --shadow:0 6px 18px rgba(0,0,0,.18);
     }
     *{box-sizing:border-box}
-    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+    body{margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); min-height:100vh; display:flex;}
 
-    /* ===== Sidebar (idéntica al doc de Estadísticas) ===== */
-    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    /* ===== Sidebar (idéntica) ===== */
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; position:fixed; left:0; top:0; display:flex; flex-direction:column; }
     .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; gap:10px; }
     nav a:hover{ background:var(--hover); }
     nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
     .spacer{ flex:1; }
 
-    /* ===== Main ===== */
-    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
-    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
-    .subtitle{ margin:0 0 16px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    /* ===== Layout principal ===== */
+    main{ margin-left:220px; width:calc(100% - 220px); }
+    .container{ max-width:1120px; margin:0 auto; padding:28px; }
+    .page-head{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+    .page-title{ display:flex; align-items:center; gap:10px; font-size:24px; font-weight:700; margin:0; }
+    .page-sub{ margin:6px 0 0; color:var(--txt-muted); font-size:14px; }
 
-    /* ===== UI polido / más aire ===== */
-    .stack > * + *{ margin-top:16px; }
-    .section-card{ background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:16px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.15); }
-    .card{ background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:16px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.14); }
-    .btn{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:12px; background:var(--primary); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    /* ===== Componentes ===== */
+    .btn{ padding:10px 14px; border-radius:12px; border:none; cursor:pointer; background:var(--primary); color:#fff; box-shadow:var(--shadow); transition:background .2s,transform .03s; }
     .btn:hover{ background:var(--accent); }
-    .btn:active{ transform:translateY(1px); }
-    .btn-soft{ padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid var(--table-border); color:#fff; }
-    .btn[disabled]{ opacity:.5; cursor:not-allowed; }
-    .chip{ background:rgba(255,255,255,.06); border:1px solid var(--table-border); color:#e3f2fd; border-radius:999px; padding:4px 10px; font-size:12px; }
-    .chip.neutral{ color:#cfd8dc; }
-    .input,.select{ width:100%; background:var(--table-bg); color:#fff; border:1px solid var(--table-border); padding:10px 12px; border-radius:12px; outline:none; }
+    .btn-soft{ padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:var(--panel-soft); color:#fff; }
+    .btn-mini{ padding:6px 10px; border-radius:10px; border:1px solid var(--border); background:var(--panel-soft); color:#fff; }
+    .btn:active,.btn-soft:active,.btn-mini:active{ transform:translateY(1px); }
+    .chip{ padding:5px 10px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.06); font-size:12px; color:#e3f2fd; }
+    .chip.muted{ color:#cfd8dc; }
+    .input,.select{ width:100%; background:var(--table); color:#fff; border:1px solid var(--border); padding:10px 12px; border-radius:12px; outline:none; }
     .input:focus,.select:focus{ box-shadow:0 0 0 3px rgba(66,165,245,.25); border-color:#4ea2ff; }
 
-    /* Subtoolbar más respirable */
-    .subtoolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:14px; padding:10px 12px; }
-    .meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .actions{ display:flex; align-items:center; gap:8px; }
+    .card{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); }
+    .card-soft{ background:var(--panel-soft); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
 
-    /* Tabla */
-    .table-shell{ background:rgba(255,255,255,.03); border:1px solid var(--table-border); border-radius:14px; padding:6px; }
-    table.gc{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,.18); }
+    /* ===== Mis tablas ===== */
+    .grid{ display:grid; gap:18px; }
+    @media (min-width: 900px){ .grid.cols-3{ grid-template-columns: repeat(3, 1fr); } .grid.cols-2{ grid-template-columns: repeat(2, 1fr); } }
+    .table-card{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+
+    /* ===== Panel de tabla ===== */
+    .panel-head{ display:flex; align-items:start; justify-content:space-between; gap:16px; }
+    .panel-title{ font-weight:600; font-size:18px; margin:0; }
+    .subtoolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .meta{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .actions{ display:flex; gap:8px; align-items:center; }
+
+    .shell{ background:var(--panel-soft); border:1px solid var(--border); padding:8px; border-radius:var(--radius); }
+    table.gc{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,.18); }
     thead th{ background:var(--thead); color:#fff; padding:12px 10px; text-align:left; position:sticky; top:0; z-index:2; user-select:none; }
-    tbody td{ padding:12px 10px; border-top:1px solid var(--table-border); }
+    tbody td{ padding:12px 10px; border-top:1px solid var(--border); }
     tbody tr:nth-child(odd){ background:rgba(255,255,255,.02); }
     tbody tr:nth-child(even){ background:rgba(0,0,0,.06); }
     tbody tr:hover{ background:rgba(66,165,245,.08); }
 
-    /* Modales */
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50; }
-    .modal{ width:100%; max-width:56rem; background:var(--bg-aside); border:1px solid var(--table-border); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    /* ===== Modales ===== */
+    .backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50; }
+    .modal{ width:100%; max-width:56rem; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    .stack > * + *{ margin-top:14px; }
   </style>
 </head>
 <body>
-  <!-- ===== Sidebar ===== -->
+  <!-- ===== Sidebar (no tocar) ===== -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
@@ -79,63 +91,83 @@
   </aside>
 
   <!-- ===== Contenido ===== -->
-  <main class="stack">
-    <div>
-      <h1 class="page-title">📋 Tablas Colaborativas</h1>
-      <p class="subtitle">Crea, visualiza y edita tablas personalizadas (sin CSV por ahora). Botón de edición <strong>por tarjeta</strong>.</p>
-      <div class="toolbar"><button id="btnCreate" class="btn">➕ Crear tabla</button></div>
+  <main>
+    <div class="container">
+      <!-- Encabezado compacto -->
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">📋 Tablas Colaborativas</h1>
+          <p class="page-sub">Crea, visualiza y edita tablas personalizadas (sin CSV). El botón de edición es <b>por tarjeta</b> y el modo de edición se controla <b>dentro del panel</b>.</p>
+        </div>
+        <button id="btnCreate" class="btn">➕ Crear tabla</button>
+      </div>
+
+      <!-- Mis tablas -->
+      <section class="card">
+        <h2 style="margin:0 0 10px;font-size:16px;font-weight:600;">Mis tablas</h2>
+        <div id="tablesGrid" class="grid cols-3"></div>
+      </section>
+
+      <!-- Panel de tabla -->
+      <section id="editorSection" class="card" style="margin-top:18px; display:none;">
+        <div class="panel-head">
+          <div>
+            <h3 id="editorTitle" class="panel-title"></h3>
+            <div class="subtoolbar">
+              <div class="meta">
+                <span id="metaCols" class="chip">0 cols</span>
+                <span id="metaRows" class="chip">0 filas</span>
+                <span id="modePill" class="chip muted">Modo Vista</span>
+              </div>
+              <div class="actions">
+                <div class="card-soft" style="display:flex; gap:6px; align-items:center;">
+                  <button id="btnView" class="btn-mini">Vista</button>
+                  <button id="btnEdit" class="btn-mini">Edición</button>
+                </div>
+                <button id="btnAddRow" class="btn" style="display:none;">➕ Fila</button>
+                <button id="btnAddCol" class="btn-soft" style="display:none;">➕ Columna</button>
+                <button id="btnBack" class="btn-soft">⟵ Volver</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="shell" style="margin-top:10px;">
+          <table class="gc" id="dataTable">
+            <thead><tr id="theadRow"></tr></thead>
+            <tbody id="tbodyRows"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
-
-    <!-- Listado de tablas con más aire -->
-    <section id="tablesGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></section>
-
-    <!-- Editor/Visor con secciones aireadas -->
-    <section id="editorSection" class="hidden section-card stack">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-10">
-          <h2 id="editorTitle" class="text-lg font-semibold"></h2>
-        </div>
-      </div>
-
-      <div class="subtoolbar">
-        <div class="meta">
-          <span id="metaCols" class="chip">0 cols</span>
-          <span id="metaRows" class="chip">0 filas</span>
-          <span id="modePill" class="chip neutral">Modo Vista</span>
-        </div>
-        <div class="actions">
-          <button id="btnAddRow" class="btn" style="display:none;">➕ Fila</button>
-          <button id="btnAddCol" class="btn-soft" style="display:none;">➕ Columna</button>
-          <button id="btnBack" class="btn-soft">⟵ Volver</button>
-        </div>
-      </div>
-
-      <div class="table-shell">
-        <table class="gc" id="dataTable">
-          <thead><tr id="theadRow"></tr></thead>
-          <tbody id="tbodyRows"></tbody>
-        </table>
-      </div>
-    </section>
   </main>
 
-  <!-- Modal: Crear Tabla (con tipos, sin perder inputs) -->
-  <div id="modalCreate" class="modal-backdrop">
+  <!-- ===== Modal: Crear tabla ===== -->
+  <div id="modalCreate" class="backdrop">
     <div class="modal">
-      <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Crear nueva tabla</h3><button data-close class="btn-soft">✖</button></div>
+      <div class="page-head" style="margin-bottom:8px;">
+        <h3 class="panel-title">Crear nueva tabla</h3>
+        <button data-close class="btn-soft">✖</button>
+      </div>
       <div class="stack">
         <input id="tblName" class="input" placeholder="Nombre de la tabla"/>
         <div id="colsEditor" class="stack"></div>
         <button id="btnAddNewCol" class="btn-soft">➕ Añadir columna</button>
-        <div class="flex justify-end gap-8"><button data-close class="btn-soft">Cancelar</button><button id="btnConfirmCreate" class="btn">Crear</button></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button data-close class="btn-soft">Cancelar</button>
+          <button id="btnConfirmCreate" class="btn">Crear</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Añadir Columna (en edición) -->
-  <div id="modalAddCol" class="modal-backdrop">
+  <!-- ===== Modal: Añadir columna (en edición) ===== -->
+  <div id="modalAddCol" class="backdrop">
     <div class="modal" style="max-width:32rem;">
-      <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Añadir columna</h3><button data-close-addcol class="btn-soft">✖</button></div>
+      <div class="page-head" style="margin-bottom:8px;">
+        <h3 class="panel-title">Añadir columna</h3>
+        <button data-close-addcol class="btn-soft">✖</button>
+      </div>
       <div class="stack">
         <input id="addcolName" class="input" placeholder="Nombre de la columna"/>
         <select id="addcolType" class="select">
@@ -148,224 +180,292 @@
           <option value="select">select</option>
         </select>
         <input id="addcolOptions" class="input" placeholder="Opciones para 'select' (coma)" style="display:none;"/>
-        <div class="flex justify-end gap-8"><button data-close-addcol class="btn-soft">Cancelar</button><button id="btnConfirmAddCol" class="btn">Añadir</button></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button data-close-addcol class="btn-soft">Cancelar</button>
+          <button id="btnConfirmAddCol" class="btn">Añadir</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ===== Estado =====
+    /* =================== Estado =================== */
     const state = {
-      tables: [],            // {id,name,columns:[{id,name,type,options?}], rows:[{id,cells:[]}]}
+      tables: [],           // {id,name,columns:[{id,name,type,options?}], rows:[{id,cells:[]}]}
       activeId: null,
-      editMode: false,
-      draftCols: [],
+      editMode: false,      // controla SOLO el panel, no global
+      draftCols: [],        // mantiene inputs al crear
     };
 
-    // ===== Refs =====
+    /* =================== Refs =================== */
     const tablesGrid = document.getElementById('tablesGrid');
     const editorSection = document.getElementById('editorSection');
-    const editorTitle = document.getElementById('editorTitle');
+    const editorTitle   = document.getElementById('editorTitle');
     const metaCols = document.getElementById('metaCols');
     const metaRows = document.getElementById('metaRows');
     const modePill = document.getElementById('modePill');
     const theadRow = document.getElementById('theadRow');
     const tbodyRows = document.getElementById('tbodyRows');
+
     const btnCreate = document.getElementById('btnCreate');
+    const btnBack   = document.getElementById('btnBack');
     const btnAddRow = document.getElementById('btnAddRow');
     const btnAddCol = document.getElementById('btnAddCol');
-    const btnBack = document.getElementById('btnBack');
+    const btnView   = document.getElementById('btnView');
+    const btnEdit   = document.getElementById('btnEdit');
 
-    // Modales crear
+    // Crear
     const modalCreate = document.getElementById('modalCreate');
-    const tblName = document.getElementById('tblName');
-    const colsEditor = document.getElementById('colsEditor');
-    const btnAddNewCol = document.getElementById('btnAddNewCol');
+    const tblName     = document.getElementById('tblName');
+    const colsEditor  = document.getElementById('colsEditor');
+    const btnAddNewCol= document.getElementById('btnAddNewCol');
     const btnConfirmCreate = document.getElementById('btnConfirmCreate');
 
-    // Modal add col
-    const modalAddCol = document.getElementById('modalAddCol');
-    const addcolName = document.getElementById('addcolName');
-    const addcolType = document.getElementById('addcolType');
+    // Add col
+    const modalAddCol   = document.getElementById('modalAddCol');
+    const addcolName    = document.getElementById('addcolName');
+    const addcolType    = document.getElementById('addcolType');
     const addcolOptions = document.getElementById('addcolOptions');
     const btnConfirmAddCol = document.getElementById('btnConfirmAddCol');
 
-    // ===== Utils =====
+    /* =================== Utils =================== */
     const uid = (p='id') => p + '_' + Math.random().toString(36).slice(2,9);
     const now = () => Date.now();
-    const open = el => el.style.display='flex';
-    const close = el => el.style.display='none';
-    const activeTable = () => state.tables.find(t=>t.id===state.activeId) || null;
+    const activeTable = () => state.tables.find(t => t.id === state.activeId) || null;
+    const open  = el => el.style.display = 'flex';
+    const close = el => el.style.display = 'none';
+    function formatLinkDisplay(u){ try{ const x=new URL(u); return x.hostname.replace(/^www\./,''); }catch{ return u ? 'Abrir' : '—'; } }
 
-    function formatLinkDisplay(urlStr){ try{ const u=new URL(urlStr); return u.hostname.replace(/^www\./,''); }catch{ return urlStr? 'Abrir' : '—'; } }
-
-    // ===== Listado (cada tarjeta tiene su botón de edición propio) =====
+    /* =================== Listado =================== */
     function renderTables(){
-      tablesGrid.innerHTML='';
+      tablesGrid.innerHTML = '';
       state.tables.filter(t=>!t.deletedAt).forEach(t=>{
-        const rowsCount = t.rows.filter(r=>!r.deletedAt).length;
         const card = document.createElement('div');
-        card.className='card';
-        card.style.padding='18px';
-        card.innerHTML = `
-          <div class="flex items-start justify-between">
-            <div class="stack" style="margin-top:0">
-              <div class="font-semibold" style="font-size:16px;">${t.name}</div>
-              <div class="meta">
-                <span class="chip">${t.columns.length} cols</span>
-                <span class="chip">${rowsCount} filas</span>
-              </div>
-            </div>
-            <div class="actions">
-              <button class="btn-soft" data-open>👁️ Ver</button>
-              <button class="btn-soft" data-edit>✏️ Editar</button>
-            </div>
+        card.className = 'card table-card';
+
+        const left = document.createElement('div');
+        left.innerHTML = `
+          <div style="font-size:16px;font-weight:600;margin-bottom:6px;">${t.name}</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="chip">${t.columns.length} cols</span>
+            <span class="chip">${t.rows.filter(r=>!r.deletedAt).length} filas</span>
           </div>`;
-        card.querySelector('[data-open]').onclick = ()=> openTable(t.id,false);
-        card.querySelector('[data-edit]').onclick = ()=> openTable(t.id,true);
-        tablesGrid.appendChild(card);
+
+        const right = document.createElement('div');
+        right.style.display='flex'; right.style.gap='8px';
+        const btnOpen = document.createElement('button'); btnOpen.className='btn-soft'; btnOpen.textContent='👁️ Ver';
+        const btnEdit = document.createElement('button'); btnEdit.className='btn-soft'; btnEdit.textContent='✏️ Editar';
+        btnOpen.onclick = ()=> openTable(t.id,false);
+        btnEdit.onclick = ()=> openTable(t.id,true);
+        right.append(btnOpen, btnEdit);
+
+        card.append(left, right);
+        tablesGrid.append(card);
       });
     }
 
-    function openTable(id, goEdit){ state.activeId=id; state.editMode=!!goEdit; editorSection.classList.remove('hidden'); renderEditor(); }
+    function openTable(id, goEdit){
+      state.activeId = id;
+      state.editMode = !!goEdit;
+      editorSection.style.display = 'block';
+      renderEditor();
+      // desplazar al panel
+      editorSection.scrollIntoView({behavior:'smooth', block:'start'});
+    }
 
-    // ===== Editor =====
+    /* =================== Panel =================== */
     function renderEditor(){
-      const t = activeTable(); if(!t){ editorSection.classList.add('hidden'); return; }
+      const t = activeTable(); if(!t){ editorSection.style.display='none'; return; }
       editorTitle.textContent = t.name;
       metaCols.textContent = `${t.columns.length} cols`;
       metaRows.textContent = `${t.rows.filter(r=>!r.deletedAt).length} filas`;
       modePill.textContent = state.editMode ? 'Modo Edición' : 'Modo Vista';
+
+      // toggle botones según modo
       btnAddRow.style.display = state.editMode ? 'inline-flex' : 'none';
       btnAddCol.style.display = state.editMode ? 'inline-flex' : 'none';
 
-      // Header
-      theadRow.innerHTML='';
+      // header
+      theadRow.innerHTML = '';
       t.columns.forEach((c, idx)=>{
-        const th=document.createElement('th');
-        th.style.borderRight='1px solid var(--table-border)';
+        const th = document.createElement('th');
         th.innerHTML = state.editMode
-          ? `<span class="cursor-pointer" style="text-decoration:underline dotted;" data-rename="${idx}">${c.name}</span> <button class="btn-soft" style="padding:4px 8px;margin-left:8px;" data-delcol="${idx}" title="Eliminar">❌</button>`
+          ? `<span data-rename="${idx}" style="cursor:pointer;text-decoration:underline dotted;">${c.name}</span> <button class="btn-mini" data-delcol="${idx}" title="Eliminar">❌</button>`
           : c.name;
         theadRow.appendChild(th);
       });
 
-      // Body
-      tbodyRows.innerHTML='';
+      // body
+      tbodyRows.innerHTML = '';
       t.rows.filter(r=>!r.deletedAt).forEach(r=>{
-        const tr=document.createElement('tr');
+        const tr = document.createElement('tr');
         t.columns.forEach((c, idx)=>{
-          const td=document.createElement('td');
-          const val=r.cells[idx] ?? '';
+          const td = document.createElement('td');
+          const val = r.cells[idx] ?? '';
           if(!state.editMode){
             if(c.type==='link') td.innerHTML = `<a href="${val||'#'}" target="_blank" rel="noopener" style="color:#8fd0ff;text-decoration:underline">${formatLinkDisplay(val)}</a>`;
             else td.textContent = val;
           } else {
-            if(c.type==='checkbox')
+            if(c.type==='checkbox'){
               td.innerHTML = `<input type="checkbox" ${String(val)==='true'||val===true?'checked':''} data-cell="${r.id}|${idx}">`;
-            else if(c.type==='date')
+            } else if(c.type==='date'){
               td.innerHTML = `<input class="input" type="date" value="${val}" data-cell="${r.id}|${idx}">`;
-            else if(c.type==='number')
+            } else if(c.type==='number'){
               td.innerHTML = `<input class="input" type="number" value="${val}" data-cell="${r.id}|${idx}">`;
-            else if(c.type==='email')
+            } else if(c.type==='email'){
               td.innerHTML = `<input class="input" type="email" value="${val}" data-cell="${r.id}|${idx}">`;
-            else if(c.type==='link')
+            } else if(c.type==='link'){
               td.innerHTML = `<input class="input" type="url" placeholder="https://" value="${val}" data-cell="${r.id}|${idx}">`;
-            else if(c.type==='select'){
+            } else if(c.type==='select'){
               const opts=(c.options||[]).map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('');
               td.innerHTML = `<select class="select" data-cell="${r.id}|${idx}"><option value=""></option>${opts}</select>`;
-            } else td.innerHTML = `<input class="input" value="${val}" data-cell="${r.id}|${idx}">`;
+            } else {
+              td.innerHTML = `<input class="input" value="${val}" data-cell="${r.id}|${idx}">`;
+            }
           }
           tr.appendChild(td);
         });
         tbodyRows.appendChild(tr);
       });
 
-      // Binds
+      // binds inputs
       if(state.editMode){
         document.querySelectorAll('[data-cell]').forEach(el=>{
-          const [rowId, i]=el.getAttribute('data-cell').split('|');
-          const row=t.rows.find(rr=>rr.id===rowId); if(!row) return;
-          if(el.type==='checkbox') el.onchange=()=>{ row.cells[+i]=el.checked; t.updatedAt=now(); };
-          else el.oninput=()=>{ row.cells[+i]=el.value; t.updatedAt=now(); };
+          const [rowId, i] = el.getAttribute('data-cell').split('|');
+          const row = t.rows.find(rr=>rr.id===rowId); if(!row) return;
+          if(el.type==='checkbox') el.onchange = ()=>{ row.cells[+i]=el.checked; t.updatedAt=now(); };
+          else el.oninput = ()=>{ row.cells[+i]=el.value; t.updatedAt=now(); };
         });
       }
+      // rename / delete col
       theadRow.querySelectorAll('[data-rename]').forEach(el=>{
-        el.onclick=()=>{ const i=+el.getAttribute('data-rename'); const cur=t.columns[i].name; const name=prompt('Nuevo nombre',cur); if(!name) return; t.columns[i].name=name; t.updatedAt=now(); renderEditor(); renderTables(); };
+        el.onclick = ()=>{
+          const i = +el.getAttribute('data-rename');
+          const cur = t.columns[i].name;
+          const name = prompt('Nuevo nombre', cur);
+          if(!name) return;
+          t.columns[i].name = name; t.updatedAt = now(); renderEditor(); renderTables();
+        };
       });
       theadRow.querySelectorAll('[data-delcol]').forEach(el=>{
-        el.onclick=()=>{ const i=+el.getAttribute('data-delcol'); if(!confirm('¿Eliminar esta columna?')) return; t.columns.splice(i,1); t.rows.forEach(r=>r.cells.splice(i,1)); t.updatedAt=now(); renderEditor(); renderTables(); };
+        el.onclick = ()=>{
+          const i = +el.getAttribute('data-delcol');
+          if(!confirm('¿Eliminar esta columna?')) return;
+          t.columns.splice(i,1); t.rows.forEach(r=>r.cells.splice(i,1));
+          t.updatedAt = now(); renderEditor(); renderTables();
+        };
       });
     }
 
-    // ===== Crear tabla =====
+    /* =================== Crear tabla =================== */
     function openCreate(){
-      tblName.value='';
-      state.draftCols=[ {id:uid('col'),name:'Columna A',type:'text'}, {id:uid('col'),name:'Columna B',type:'text'} ];
+      tblName.value=''; state.draftCols=[
+        {id:uid('col'), name:'Columna A', type:'text'},
+        {id:uid('col'), name:'Columna B', type:'text'},
+      ];
       renderColsEditor(); open(modalCreate);
     }
     function closeCreate(){ close(modalCreate); }
 
     function renderColsEditor(){
-      colsEditor.innerHTML='';
+      colsEditor.innerHTML = '';
       state.draftCols.forEach((c, idx)=>{
-        const row=document.createElement('div'); row.className='card'; row.style.padding='14px';
-        const grid=document.createElement('div'); grid.className='stack'; grid.style.marginTop='0';
+        const row = document.createElement('div');
+        row.className = 'card-soft';
+        const grid = document.createElement('div');
+        grid.style.display='grid'; grid.style.gridTemplateColumns='5fr 3fr 3fr 1fr'; grid.style.gap='12px'; grid.style.alignItems='center';
 
-        const rowGrid=document.createElement('div'); rowGrid.style.display='grid'; rowGrid.style.gridTemplateColumns='5fr 3fr 3fr 1fr'; rowGrid.style.gap='12px';
+        const elName = document.createElement('input');
+        elName.className='input'; elName.placeholder='Nombre de la columna'; elName.value=c.name||'';
+        elName.oninput = e=> c.name = e.target.value;
 
-        const name=document.createElement('input'); name.className='input'; name.placeholder='Nombre de la columna'; name.value=c.name||''; name.oninput=e=>c.name=e.target.value;
-        const type=document.createElement('select'); type.className='select'; ['text','number','date','checkbox','email','link','select'].forEach(tt=>{ const o=document.createElement('option'); o.value=tt; o.textContent=tt; type.appendChild(o); }); type.value=c.type||'text'; type.onchange=e=>{ c.type=e.target.value; renderColsEditor(); };
+        const elType = document.createElement('select');
+        elType.className='select';
+        ['text','number','date','checkbox','email','link','select'].forEach(tt=>{
+          const o=document.createElement('option'); o.value=tt; o.textContent=tt; elType.appendChild(o);
+        });
+        elType.value=c.type||'text';
+        elType.onchange = e=>{ c.type=e.target.value; renderColsEditor(); };
 
-        const optWrap=document.createElement('div');
+        const third = document.createElement('div');
         if(c.type==='select'){
-          const opt=document.createElement('input'); opt.className='input'; opt.placeholder="Opciones (coma)"; opt.value=(c.options||[]).join(','); opt.oninput=e=>{ c.options=e.target.value.split(',').map(x=>x.trim()).filter(Boolean); }; optWrap.appendChild(opt);
+          const elOpt = document.createElement('input');
+          elOpt.className='input'; elOpt.placeholder="Opciones (coma)"; elOpt.value=(c.options||[]).join(',');
+          elOpt.oninput = e=> c.options = e.target.value.split(',').map(x=>x.trim()).filter(Boolean);
+          third.appendChild(elOpt);
         } else if(c.type==='link'){
-          const hint=document.createElement('div'); hint.style.color='var(--txt-muted)'; hint.style.fontSize='12px'; hint.textContent='Se mostrará solo el dominio (p. ej. ejemplo.com)'; optWrap.appendChild(hint);
-        } else { const spacer=document.createElement('div'); spacer.style.minHeight='1px'; optWrap.appendChild(spacer); }
+          const hint = document.createElement('div');
+          hint.style.color='var(--txt-muted)'; hint.style.fontSize='12px';
+          hint.textContent='En vista se mostrará solo el dominio (p. ej. ejemplo.com)';
+          third.appendChild(hint);
+        }
 
-        const del=document.createElement('button'); del.className='btn-soft'; del.textContent='🗑'; del.title='Eliminar'; del.onclick=()=>{ state.draftCols.splice(idx,1); renderColsEditor(); };
+        const del = document.createElement('button'); del.className='btn-soft'; del.textContent='🗑';
+        del.onclick = ()=>{ state.draftCols.splice(idx,1); renderColsEditor(); };
 
-        rowGrid.appendChild(name); rowGrid.appendChild(type); rowGrid.appendChild(optWrap); rowGrid.appendChild(del);
-        grid.appendChild(rowGrid); row.appendChild(grid); colsEditor.appendChild(row);
+        grid.append(elName, elType, third, del);
+        row.append(grid);
+        colsEditor.append(row);
       });
     }
 
-    // ===== Eventos =====
-    document.getElementById('btnCreate').onclick = openCreate;
+    /* =================== Eventos =================== */
+    btnCreate.onclick = openCreate;
     document.querySelectorAll('[data-close]').forEach(b=> b.onclick = closeCreate);
-    btnAddNewCol.onclick = ()=>{ state.draftCols.push({id:uid('col'),name:'',type:'text'}); renderColsEditor(); };
+    btnAddNewCol.onclick = ()=>{ state.draftCols.push({id:uid('col'), name:'', type:'text'}); renderColsEditor(); };
     btnConfirmCreate.onclick = ()=>{
-      const name=(tblName.value||'').trim(); if(!name) return alert('Ponle un nombre a la tabla');
-      if(!state.draftCols.length) return alert('Añade al menos una columna');
-      const t={ id:uid('tbl'), name, columns: state.draftCols.map(c=>({id:c.id,name:c.name||'Columna',type:c.type||'text',options:c.options||[]})), rows:[], createdAt:now(), updatedAt:now() };
-      state.tables.unshift(t); closeCreate(); renderTables(); openTable(t.id,true);
+      const name = (tblName.value||'').trim(); if(!name){ alert('Ponle un nombre a la tabla'); return; }
+      if(!state.draftCols.length){ alert('Añade al menos una columna'); return; }
+      const t = {
+        id: uid('tbl'),
+        name,
+        columns: state.draftCols.map(c=>({id:c.id, name:c.name||'Columna', type:c.type||'text', options:c.options||[]})),
+        rows: [],
+        createdAt: now(), updatedAt: now()
+      };
+      state.tables.unshift(t);
+      closeCreate(); renderTables(); openTable(t.id, true);
     };
 
-    btnBack.onclick = ()=>{ state.activeId=null; editorSection.classList.add('hidden'); };
-    btnAddRow.onclick = ()=>{ const t=activeTable(); if(!t) return; t.rows.unshift({id:uid('row'),cells:t.columns.map(()=> '')}); t.updatedAt=now(); renderEditor(); renderTables(); };
-    btnAddCol.onclick = ()=>{ const t=activeTable(); if(!t) return; addcolName.value=''; addcolType.value='text'; addcolOptions.value=''; addcolOptions.style.display='none'; open(modalAddCol); };
+    // Panel actions
+    btnBack.onclick = ()=>{ state.activeId=null; editorSection.style.display='none'; };
+    btnView.onclick = ()=>{ state.editMode=false; renderEditor(); };
+    btnEdit.onclick = ()=>{ state.editMode=true;  renderEditor(); };
+    btnAddRow.onclick = ()=>{
+      const t = activeTable(); if(!t) return;
+      t.rows.unshift({id:uid('row'), cells:t.columns.map(()=> '')});
+      t.updatedAt = now(); renderEditor(); renderTables();
+    };
+    btnAddCol.onclick = ()=>{
+      const t = activeTable(); if(!t) return;
+      addcolName.value=''; addcolType.value='text'; addcolOptions.value=''; addcolOptions.style.display='none';
+      open(modalAddCol);
+    };
     addcolType.addEventListener('change', ()=>{ addcolOptions.style.display = addcolType.value==='select' ? 'block' : 'none'; });
-    document.querySelectorAll('[data-close-addcol]').forEach(b=> b.onclick=()=> close(modalAddCol));
+    document.querySelectorAll('[data-close-addcol]').forEach(b=> b.onclick = ()=> close(modalAddCol));
     btnConfirmAddCol.onclick = ()=>{
-      const t=activeTable(); if(!t) return; const name=(addcolName.value||'').trim(); if(!name) return alert('Nombre de columna');
-      const type=addcolType.value; const options= type==='select' ? addcolOptions.value.split(',').map(x=>x.trim()).filter(Boolean) : [];
-      t.columns.push({id:uid('col'),name,type,options}); t.rows.forEach(r=> r.cells.push('')); t.updatedAt=now(); close(modalAddCol); renderEditor(); renderTables();
+      const t = activeTable(); if(!t) return;
+      const name = (addcolName.value||'').trim(); if(!name){ alert('Nombre de columna'); return; }
+      const type = addcolType.value;
+      const options = type==='select' ? addcolOptions.value.split(',').map(x=>x.trim()).filter(Boolean) : [];
+      t.columns.push({id:uid('col'), name, type, options});
+      t.rows.forEach(r=> r.cells.push(''));
+      t.updatedAt = now(); close(modalAddCol); renderEditor(); renderTables();
     };
 
-    // ===== Demo =====
+    /* =================== Demo inicial =================== */
     (function initDemo(){
       const t={ id:'demo', name:'Ejemplo – Turnos OPs', columns:[
-        {id:'op',name:'Operador',type:'text'},
-        {id:'perop',name:'PEROP1AM',type:'text'},
-        {id:'turno',name:'Turno',type:'select',options:['AM (07-16)','PM (13-22)']},
-        {id:'desc',name:'Descanso',type:'select',options:['3:00 (15m)','4:00 (15m)','5:00 (45m)','6:00 (45m)']},
-        {id:'tl',name:'Team Leader',type:'text'},
-        {id:'camp',name:'Campaña',type:'text'},
-        {id:'ficha',name:'Ficha',type:'link'}
+        {id:'op',   name:'Operador',    type:'text'},
+        {id:'perop',name:'PEROP1AM',    type:'text'},
+        {id:'turno',name:'Turno',       type:'select', options:['AM (07-16)','PM (13-22)']},
+        {id:'desc', name:'Descanso',    type:'select', options:['3:00 (15m)','4:00 (15m)','5:00 (45m)','6:00 (45m)']},
+        {id:'tl',   name:'Team Leader', type:'text'},
+        {id:'camp', name:'Campaña',     type:'text'},
+        {id:'ficha',name:'Ficha',       type:'link'}
       ], rows:[
-        {id:uid('row'),cells:['Jennifer','PEROP1AM-40588','AM (07-16)','3:00 (15m)','Kevin','México','https://bi.ejemplo.com/reporte/123']},
-        {id:uid('row'),cells:['Manuel','PEROP1AM-40453','AM (07-16)','4:00 (15m)','Kevin','México','https://bi.ejemplo.com/reporte/999']}
+        {id:uid('row'), cells:['Jennifer','PEROP1AM-40588','AM (07-16)','3:00 (15m)','Kevin','México','https://bi.ejemplo.com/reporte/123']},
+        {id:uid('row'), cells:['Manuel','PEROP1AM-40453','AM (07-16)','4:00 (15m)','Kevin','México','https://bi.ejemplo.com/reporte/999']}
       ], createdAt:now(), updatedAt:now() };
       state.tables.push(t); renderTables();
     })();
