@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Gestión Center – Tablas Colaborativas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #0f172a;         /* fondo principal */
+      --panel: #152035;      /* paneles / sidebar */
+      --panel-2: #1c2a45;    /* cards */
+      --panel-3: #18263f;    /* zebra alt */
+      --border: #2f446a;     /* bordes */
+      --brand: #0D47A1;      /* botón primario */
+      --brand-h: #0b3b86;    /* hover primario */
+      --head: #0d47a1;       /* encabezado tabla */
+    }
+    body { background: var(--bg); color: #fff; font-family: "Lexend", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+    .pill { background: rgba(33, 150, 243, .15); border: 1px solid rgba(33,150,243,.35); color: #cfe8ff; }
+    .btn { border: 1px solid var(--border); background: #22314f; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary { background: var(--brand); border: 1px solid transparent; }
+    .btn-primary:hover { background: var(--brand-h); }
+    .input, .select {
+      width: 100%; background: #22314f; color: #fff; border: 1px solid var(--border);
+      padding: .5rem .75rem; border-radius: .75rem; outline: none;
+    }
+    .input::placeholder { color: rgba(203,213,225,.7); }
+    .toggle { width: 48px; height: 28px; border-radius: 999px; background: #64748b; position: relative; }
+    .toggle[data-on="true"] { background: #16a34a; }
+    .toggle .dot { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background:#fff; border-radius:999px; transition: transform .15s ease; }
+    .toggle[data-on="true"] .dot { transform: translateX(20px); }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
+    .modal { width: 100%; max-width: 56rem; background: var(--panel); border:1px solid var(--border); border-radius: 1rem; padding: 1.25rem; }
+    thead.sticky th { position: sticky; top: 0; z-index: 1; }
+  </style>
+</head>
+<body>
+  <!-- GRID: Sidebar + Contenido -->
+  <div class="min-h-screen grid grid-cols-[260px_1fr]">
+    <!-- SIDEBAR -->
+    <aside class="h-screen sticky top-0 bg-[var(--panel)] border-r border-[var(--border)] p-4 flex flex-col gap-3">
+      <div class="text-xl font-semibold">Gestión Center</div>
+      <nav class="flex flex-col gap-1 text-slate-200">
+        <a class="px-3 py-2 rounded-xl hover:bg-[var(--panel-2)]" href="#">🏠 Inicio</a>
+        <a class="px-3 py-2 rounded-xl hover:bg-[var(--panel-2)]" href="#">📊 Reportes</a>
+        <a class="px-3 py-2 rounded-xl font-semibold bg-[var(--panel-2)]">🧩 Tablas</a>
+      </nav>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main class="max-w-7xl mx-auto p-5 space-y-6 w-full">
+      <!-- Header -->
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div>📋</div>
+          <h1 class="text-xl font-semibold">Tablas Colaborativas</h1>
+          <span id="modePill" class="pill px-2 py-1 text-xs rounded-full">Modo Vista</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="toggleEditBtn" class="px-3 py-2 rounded-xl btn-primary">Entrar a edición</button>
+        </div>
+      </header>
+
+      <!-- Toolbar -->
+      <div class="flex items-center gap-3">
+        <button id="createTableBtn" class="px-3 py-2 rounded-xl btn-primary">➕ Crear tabla</button>
+        <button id="configTableBtn" class="px-3 py-2 rounded-xl btn disabled:opacity-50" disabled>⚙️ Configurar tabla</button>
+        <button id="importBtn" class="px-3 py-2 rounded-xl btn disabled:opacity-50" disabled>📥 Importar CSV</button>
+        <button id="exportBtn" class="px-3 py-2 rounded-xl btn disabled:opacity-50" disabled>📤 Exportar CSV</button>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-slate-300 text-sm">Ver papelera</span>
+          <button id="trashToggle" class="toggle" data-on="false"><span class="dot"></span></button>
+        </div>
+      </div>
+
+      <!-- Listado de Tablas -->
+      <section>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="tablesGrid"></div>
+      </section>
+
+      <!-- Editor/Visor de filas -->
+      <section id="tableSection" class="space-y-3 hidden">
+        <div class="flex items-center gap-3">
+          <h2 id="activeTableTitle" class="text-lg font-semibold"></h2>
+          <button id="addRowBtn" class="px-3 py-2 rounded-xl btn-primary hidden">➕ Agregar fila</button>
+        </div>
+
+        <!-- Buscador + chips -->
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <input id="searchInput" class="input" placeholder="Buscar en la tabla..." />
+          </div>
+          <span id="rowsCount" class="pill px-2 py-1 text-xs rounded-full">0 filas</span>
+          <span id="colsCount" class="pill px-2 py-1 text-xs rounded-full">0 columnas</span>
+        </div>
+
+        <!-- GRID -->
+        <div class="overflow-auto rounded-2xl border border-[var(--border)]">
+          <table class="min-w-full text-sm" id="dataTable">
+            <thead class="bg-[var(--head)] text-white sticky">
+              <tr id="tableHead"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="flex items-center justify-between">
+          <button id="prevPage" class="px-3 py-1 rounded-lg btn">Anterior</button>
+          <span id="pageInfo" class="text-slate-200 text-sm">Página 1 / 1</span>
+          <button id="nextPage" class="px-3 py-1 rounded-lg btn">Siguiente</button>
+        </div>
+
+        <!-- Acciones por fila (papelera/restaurar) -->
+        <div id="rowActions" class="flex flex-wrap gap-2"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODALES -->
+  <!-- Crear tabla -->
+  <div id="createModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Crear nueva tabla</h3>
+        <button data-close-create class="text-slate-300 hover:text-white">✖</button>
+      </div>
+      <div class="space-y-4">
+        <input id="newTableName" class="input" placeholder="Nombre de la tabla" />
+        <!-- Editor de columnas -->
+        <div class="space-y-3" id="newColsEditor"></div>
+        <button id="addNewCol" class="px-3 py-2 rounded-xl btn-primary">➕ Añadir columna</button>
+        <div class="flex justify-end gap-2">
+          <button data-close-create class="px-3 py-2 rounded-xl btn">Cancelar</button>
+          <button id="confirmCreateTable" class="px-3 py-2 rounded-xl btn-primary">Crear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configurar tabla -->
+  <div id="configModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold" id="configTitle">Configurar</h3>
+        <button data-close-config class="text-slate-300 hover:text-white">✖</button>
+      </div>
+      <div class="space-y-4">
+        <div class="space-y-3" id="configColsEditor"></div>
+        <button id="addConfigCol" class="px-3 py-2 rounded-xl btn-primary">➕ Añadir columna</button>
+        <div class="flex justify-end gap-2">
+          <button data-close-config class="px-3 py-2 rounded-xl btn">Cancelar</button>
+          <button id="saveConfig" class="px-3 py-2 rounded-xl btn-primary">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Importar CSV -->
+  <div id="importModal" class="modal-backdrop hidden">
+    <div class="modal max-w-xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Importar CSV</h3>
+        <button data-close-import class="text-slate-300 hover:text-white">✖</button>
+      </div>
+      <p class="text-slate-300 text-sm mb-3">El CSV debe tener la primera fila como encabezados que coincidan con los nombres de columnas.</p>
+      <input id="csvFile" type="file" accept=".csv" class="mb-4" />
+      <div class="flex justify-end gap-2">
+        <button data-close-import class="px-3 py-2 rounded-xl btn">Cerrar</button>
+        <button id="doImportCsv" class="px-3 py-2 rounded-xl btn-primary">Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============== Estado (en memoria) ==============
+    const state = {
+      editMode: false,                 // Vista por defecto
+      showTrash: false,                // ver papelera
+      tables: [],                      // {id, name, columns[], ...}
+      rowsByTable: {},                 // tableId -> RowDoc[]
+      activeTableId: null,
+      sort: [],                        // [{ key, dir: 1|-1 }]
+      page: 1,
+      pageSize: 25,
+      search: ""
+    };
+
+    const now = () => Date.now();
+
+    // ============== Helpers CSV ==============
+    function toCSV(rows, columns) {
+      const headers = columns.map(c => c.name);
+      const lines = [headers.join(",")];
+      for (const r of rows) {
+        const vals = columns.map(c => {
+          const v = r.data[c.id];
+          const s = (v === undefined || v === null) ? "" : String(v);
+          return '"' + s.replace(/"/g, '""') + '"';
+        });
+        lines.push(vals.join(","));
+      }
+      return lines.join("\n");
+    }
+    async function parseCSVFile(file) {
+      const text = await file.text();
+      return text
+        .split(/\r?\n/)
+        .filter(l => l.trim().length > 0)
+        .map(l => l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, "").replace(/""/g, '"')));
+    }
+
+    // ============== DOM refs ==============
+    const tablesGrid = document.getElementById("tablesGrid");
+    const tableSection = document.getElementById("tableSection");
+    const activeTableTitle = document.getElementById("activeTableTitle");
+    const addRowBtn = document.getElementById("addRowBtn");
+    const searchInput = document.getElementById("searchInput");
+    const rowsCount = document.getElementById("rowsCount");
+    const colsCount = document.getElementById("colsCount");
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const prevPage = document.getElementById("prevPage");
+    const nextPage = document.getElementById("nextPage");
+    const pageInfo = document.getElementById("pageInfo");
+    const modePill = document.getElementById("modePill");
+
+    // toolbar
+    const toggleEditBtn = document.getElementById("toggleEditBtn");
+    const createTableBtn = document.getElementById("createTableBtn");
+    const configTableBtn = document.getElementById("configTableBtn");
+    const importBtn = document.getElementById("importBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const trashToggle = document.getElementById("trashToggle");
+    const rowActions = document.getElementById("rowActions");
+
+    // modales
+    const createModal = document.getElementById("createModal");
+    const configModal = document.getElementById("configModal");
+    const importModal = document.getElementById("importModal");
+
+    // crear tabla modal
+    const newTableName = document.getElementById("newTableName");
+    const newColsEditor = document.getElementById("newColsEditor");
+    const addNewCol = document.getElementById("addNewCol");
+    const confirmCreateTable = document.getElementById("confirmCreateTable");
+
+    // config modal
+    const configTitle = document.getElementById("configTitle");
+    const configColsEditor = document.getElementById("configColsEditor");
+    const addConfigCol = document.getElementById("addConfigCol");
+    const saveConfig = document.getElementById("saveConfig");
+
+    // import modal
+    const csvFile = document.getElementById("csvFile");
+    const doImportCsv = document.getElementById("doImportCsv");
+
+    // ============== UI utils ==============
+    function openModal(el) { el.classList.remove("hidden"); }
+    function closeModal(el) { el.classList.add("hidden"); }
+    function toggleButton(btn, enabled) {
+      btn.disabled = !enabled;
+      btn.classList.toggle("disabled:opacity-50", !enabled);
+    }
+
+    function uid(prefix="id") {
+      return prefix + "_" + Math.random().toString(36).slice(2,9);
+    }
+
+    function ensureDemoData() {
+      if (state.tables.length) return;
+      const table = {
+        id: "demo-table",
+        name: "Ejemplo – Turnos OPs",
+        ownerUid: "anon",
+        columns: [
+          { id: "op", name: "Operador", type: "text", required: true },
+          { id: "perop", name: "PEROP1AM", type: "text", required: true, unique: true },
+          { id: "turno", name: "Turno", type: "select", options: ["AM (07-16)", "PM (13-22)"] },
+          { id: "desc", name: "Descanso", type: "select", options: ["3:00 (15m)", "4:00 (15m)", "5:00 (45m)", "6:00 (45m)"] },
+          { id: "tl", name: "Team Leader", type: "text" },
+          { id: "camp", name: "Campaña", type: "text" },
+          { id: "activo", name: "Activo", type: "checkbox" }
+        ],
+        createdAt: now(), createdBy: "anon", updatedAt: now(), updatedBy: "anon"
+      };
+      state.tables.push(table);
+      state.rowsByTable[table.id] = [
+        { id: "r1", data: { op: "Jennifer", perop: "PEROP1AM-40588", turno: "AM (07-16)", desc: "3:00 (15m)", tl: "Kevin", camp: "México", activo: true }, createdAt: now(), createdBy: "anon", updatedAt: now(), updatedBy: "anon" },
+        { id: "r2", data: { op: "Manuel", perop: "PEROP1AM-40453", turno: "AM (07-16)", desc: "4:00 (15m)", tl: "Kevin", camp: "México", activo: true }, createdAt: now(), createdBy: "anon", updatedAt: now(), updatedBy: "anon" },
+      ];
+    }
+
+    // ============== Rendering ==============
+    function renderTablesList() {
+      tablesGrid.innerHTML = "";
+      const visibleTables = state.tables.filter(t => !t.deletedAt);
+      for (const t of visibleTables) {
+        const rows = (state.rowsByTable[t.id] || []).filter(r => !r.deletedAt);
+        const card = document.createElement("div");
+        card.className = "p-4 rounded-2xl border bg-[var(--panel-2)] border-[var(--border)] hover:-translate-y-0.5 transition-transform";
+
+        const top = document.createElement("div");
+        top.className = "flex items-start justify-between";
+        const left = document.createElement("div");
+        const title = document.createElement("h3");
+        title.className = "font-semibold";
+        title.textContent = t.name;
+        const chips = document.createElement("div");
+        chips.className = "mt-1 text-slate-300 text-sm flex items-center gap-2";
+        const pillCols = document.createElement("span");
+        pillCols.className = "pill px-2 py-1 text-xs rounded-full";
+        pillCols.textContent = `${t.columns.length} cols`;
+        const pillRows = document.createElement("span");
+        pillRows.className = "pill px-2 py-1 text-xs rounded-full";
+        pillRows.textContent = `${rows.length} filas`;
+        chips.append(pillCols, pillRows);
+        left.append(title, chips);
+
+        const right = document.createElement("div");
+        right.className = "flex items-center gap-2";
+        const openBtn = document.createElement("button");
+        openBtn.className = "px-3 py-2 rounded-xl btn";
+        openBtn.textContent = "Abrir";
+        openBtn.onclick = () => {
+          state.activeTableId = t.id;
+          state.page = 1;
+          state.search = "";
+          state.sort = [];
+          state.editMode = false; // abrir en modo vista
+          updateUI();
+        };
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "px-3 py-2 rounded-xl bg-red-700/70 hover:bg-red-700";
+        deleteBtn.textContent = "🗑";
+        deleteBtn.onclick = () => {
+          t.deletedAt = now();
+          t.deletedBy = "anon";
+          t.updatedAt = now();
+          t.updatedBy = "anon";
+          if (state.activeTableId === t.id) state.activeTableId = null;
+          updateUI();
+        };
+        right.append(openBtn, deleteBtn);
+
+        top.append(left, right);
+        card.append(top);
+        tablesGrid.append(card);
+      }
+    }
+
+    function renderToolbarState() {
+      const hasActive = !!state.activeTableId;
+      toggleButton(configTableBtn, hasActive && state.editMode);
+      toggleButton(importBtn, hasActive);
+      toggleButton(exportBtn, hasActive);
+      modePill.textContent = state.editMode ? "Modo Edición" : "Modo Vista";
+      toggleEditBtn.textContent = state.editMode ? "Salir de edición" : "Entrar a edición";
+      addRowBtn.classList.toggle("hidden", !(hasActive && state.editMode));
+    }
+
+    function getActiveTable() {
+      return state.tables.find(t => t.id === state.activeTableId) || null;
+    }
+
+    function renderTableSection() {
+      const t = getActiveTable();
+      if (!t) {
+        tableSection.classList.add("hidden");
+        return;
+      }
+      tableSection.classList.remove("hidden");
+      activeTableTitle.textContent = t.name;
+      colsCount.textContent = t.columns.length + " columnas";
+
+      // filtros
+      const allRows = state.rowsByTable[t.id] || [];
+      let rows = allRows.filter(r => state.showTrash ? true : !r.deletedAt);
+      if (state.search.trim()) {
+        const q = state.search.toLowerCase();
+        rows = rows.filter(r => t.columns.some(c => String(r.data[c.id] ?? "").toLowerCase().includes(q)));
+      }
+
+      // ordenamiento múltiple (opcional)
+      if (state.sort.length) {
+        rows = rows.slice().sort((a,b) => {
+          for (const s of state.sort) {
+            const va = a.data[s.key];
+            const vb = b.data[s.key];
+            if (va === vb) continue;
+            if (va === undefined) return 1;
+            if (vb === undefined) return -1;
+            if (typeof va === "number" && typeof vb === "number") return (va - vb) * s.dir;
+            return String(va).localeCompare(String(vb)) * s.dir;
+          }
+          return 0;
+        });
+      }
+
+      // paginación
+      const totalPages = Math.max(1, Math.ceil(rows.length / state.pageSize));
+      state.page = Math.min(state.page, totalPages);
+      const start = (state.page - 1) * state.pageSize;
+      const pageRows = rows.slice(start, start + state.pageSize);
+
+      rowsCount.textContent = rows.filter(r => !r.deletedAt).length + " filas";
+      pageInfo.textContent = `Página ${state.page} / ${totalPages}`;
+
+      // Header
+      tableHead.innerHTML = "";
+      t.columns.forEach(col => {
+        const th = document.createElement("th");
+        th.className = "px-3 py-2 text-left whitespace-nowrap select-none cursor-pointer";
+        const wrap = document.createElement("div");
+        wrap.className = "flex items-center gap-2";
+        const label = document.createElement("span");
+        label.textContent = col.name;
+        const s = state.sort.find(x => x.key === col.id);
+        const icon = document.createElement("span");
+        icon.className = "text-xs text-slate-300";
+        icon.textContent = s ? (s.dir === 1 ? "▲" : "▼") : "";
+        wrap.append(label, icon);
+        th.append(wrap);
+        th.onclick = () => {
+          const ex = state.sort.find(x => x.key === col.id);
+          if (!ex) state.sort = [{ key: col.id, dir: 1 }, ...state.sort];
+          else if (ex.dir === 1) state.sort = [{ key: col.id, dir: -1 }, ...state.sort.filter(x => x.key !== col.id)];
+          else state.sort = state.sort.filter(x => x.key !== col.id);
+          updateUI();
+        };
+        tableHead.append(th);
+      });
+      const thAct = document.createElement("th");
+      thAct.className = "px-3 py-2 text-left";
+      thAct.textContent = "Acciones";
+      tableHead.append(thAct);
+
+      // Body
+      tableBody.innerHTML = "";
+      pageRows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-[var(--border)] odd:bg-[var(--panel-2)] even:bg-[var(--panel-3)]";
+        t.columns.forEach(col => {
+          const td = document.createElement("td");
+          td.className = "px-3 py-2 align-top";
+          const val = r.data[col.id];
+
+          if (!state.editMode) {
+            // Modo vista
+            const span = document.createElement("span");
+            span.className = "text-slate-200";
+            if (col.type === "url" && val) {
+              const a = document.createElement("a");
+              a.href = String(val);
+              a.textContent = String(val);
+              a.target = "_blank";
+              a.className = "text-blue-300 underline";
+              td.append(a);
+            } else {
+              span.textContent = String(val ?? "");
+              td.append(span);
+            }
+          } else {
+            // Modo edición
+            let el;
+            switch (col.type) {
+              case "number":
+              case "percent":
+                el = document.createElement("input");
+                el.type = "number";
+                el.className = "input";
+                el.value = val ?? "";
+                el.oninput = e => { r.data[col.id] = Number(e.target.value); r.updatedAt = now(); r.updatedBy = "anon"; };
+                break;
+              case "currency":
+                el = document.createElement("input");
+                el.type = "number";
+                el.step = "0.01";
+                el.className = "input";
+                el.value = val ?? "";
+                el.oninput = e => { r.data[col.id] = parseFloat(e.target.value); r.updatedAt = now(); r.updatedBy = "anon"; };
+                break;
+              case "date":
+                el = document.createElement("input");
+                el.type = "date";
+                el.className = "input";
+                el.value = val ?? "";
+                el.oninput = e => { r.data[col.id] = e.target.value; r.updatedAt = now(); r.updatedBy = "anon"; };
+                break;
+              case "checkbox":
+                el = document.createElement("input");
+                el.type = "checkbox";
+                el.checked = !!val;
+                el.onchange = e => { r.data[col.id] = e.target.checked; r.updatedAt = now(); r.updatedBy = "anon"; updateUI(false); };
+                el.className = "scale-110";
+                break;
+              case "select":
+                el = document.createElement("select");
+                el.className = "select";
+                const empty = document.createElement("option");
+                empty.value = ""; empty.textContent = "—";
+                el.append(empty);
+                (col.options || []).forEach(opt => {
+                  const o = document.createElement("option");
+                  o.value = opt; o.textContent = opt;
+                  el.append(o);
+                });
+                el.value = val ?? "";
+                el.onchange = e => { r.data[col.id] = e.target.value; r.updatedAt = now(); r.updatedBy = "anon"; };
+                break;
+              default:
+                el = document.createElement("input");
+                el.className = "input";
+                el.value = val ?? "";
+                el.oninput = e => { r.data[col.id] = e.target.value; r.updatedAt = now(); r.updatedBy = "anon"; };
+                break;
+            }
+            td.append(el);
+          }
+          tr.append(td);
+        });
+
+        const tdAct = document.createElement("td");
+        tdAct.className = "px-3 py-2";
+        tdAct.textContent = r.deletedAt ? "En papelera" : "—";
+        tr.append(tdAct);
+        tableBody.append(tr);
+      });
+
+      // Acciones por fila (solo en edición)
+      rowActions.innerHTML = "";
+      if (state.editMode) {
+        pageRows.forEach(r => {
+          const chip = document.createElement("div");
+          chip.className = "px-3 py-2 rounded-xl btn text-xs flex items-center gap-2";
+          const idSpan = document.createElement("span");
+          idSpan.className = "text-slate-200";
+          idSpan.textContent = r.id;
+          const actionBtn = document.createElement("button");
+          if (!r.deletedAt) {
+            actionBtn.textContent = "Enviar a papelera";
+            actionBtn.className = "text-red-300 hover:text-red-100";
+            actionBtn.onclick = () => { r.deletedAt = now(); r.deletedBy = "anon"; r.updatedAt = now(); r.updatedBy = "anon"; updateUI(); };
+          } else {
+            actionBtn.textContent = "Restaurar";
+            actionBtn.className = "text-green-300 hover:text-green-100";
+            actionBtn.onclick = () => { r.deletedAt = null; r.deletedBy = null; r.updatedAt = now(); r.updatedBy = "anon"; updateUI(); };
+          }
+          chip.append(idSpan, actionBtn);
+          rowActions.append(chip);
+        });
+      }
+
+      // Paginación btns
+      prevPage.onclick = () => { if (state.page > 1) { state.page--; updateUI(false); } };
+      nextPage.onclick = () => { if (state.page < totalPages) { state.page++; updateUI(false); } };
+    }
+
+    function renderCreateModalCols(cols, container) {
+      container.innerHTML = "";
+      cols.forEach((c, idx) => {
+        const row = document.createElement("div");
+        row.className = "grid grid-cols-12 gap-3 items-center bg-[var(--panel-2)] border border-[var(--border)] rounded-xl p-3";
+        // nombre
+        const colName = document.createElement("div"); colName.className = "col-span-3";
+        const inp = document.createElement("input"); inp.className = "input"; inp.placeholder = "Nombre de la columna"; inp.value = c.name || "";
+        inp.oninput = e => { c.name = e.target.value; };
+        colName.append(inp);
+        // tipo
+        const colType = document.createElement("div"); colType.className = "col-span-2";
+        const sel = document.createElement("select"); sel.className = "select";
+        ["text","number","percent","currency","date","select","checkbox","email","url"].forEach(t => {
+          const o=document.createElement("option"); o.value=t; o.textContent=t; sel.append(o);
+        });
+        sel.value = c.type || "text";
+        sel.onchange = e => { c.type = e.target.value; renderCreateModalCols(cols, container); };
+        colType.append(sel);
+        // opciones/valor por defecto
+        const colDef = document.createElement("div"); colDef.className = "col-span-3";
+        if (c.type === "select") {
+          const opt = document.createElement("input"); opt.className = "input"; opt.placeholder="Opciones (separadas por coma)"; opt.value=(c.options||[]).join(",");
+          opt.oninput = e => { c.options = e.target.value.split(",").map(x=>x.trim()).filter(Boolean); };
+          colDef.append(opt);
+        } else {
+          const def = document.createElement("input"); def.className="input"; def.placeholder="Valor por defecto"; def.value = c.defaultValue ?? "";
+          def.oninput = e => { c.defaultValue = e.target.value; };
+          colDef.append(def);
+        }
+        // flags + borrar
+        const colFlags = document.createElement("div"); colFlags.className="col-span-3 flex items-center gap-4";
+        const lblReq = document.createElement("label"); lblReq.className="flex items-center gap-2 text-slate-200 text-sm";
+        const chkReq = document.createElement("input"); chkReq.type="checkbox"; chkReq.checked=!!c.required; chkReq.onchange = e => c.required = e.target.checked;
+        lblReq.append(chkReq, document.createTextNode("Requerido"));
+        const lblUni = document.createElement("label"); lblUni.className="flex items-center gap-2 text-slate-200 text-sm";
+        const chkUni = document.createElement("input"); chkUni.type="checkbox"; chkUni.checked=!!c.unique; chkUni.onchange = e => c.unique = e.target.checked;
+        lblUni.append(chkUni, document.createTextNode("Único"));
+        const del = document.createElement("button"); del.className="ml-auto text-red-300 hover:text-red-100"; del.textContent="🗑";
+        del.onclick = () => { cols.splice(idx,1); renderCreateModalCols(cols, container); };
+        colFlags.append(lblReq, lblUni, del);
+
+        row.append(colName, colType, colDef, colFlags);
+        container.append(row);
+      });
+    }
+
+    // ============== Eventos globales ==============
+    searchInput.addEventListener("input", e => { state.search = e.target.value; state.page = 1; updateUI(false); });
+    toggleEditBtn.addEventListener("click", () => { state.editMode = !state.editMode; updateUI(false); });
+    trashToggle.addEventListener("click", () => {
+      const on = trashToggle.getAttribute("data-on") === "true";
+      trashToggle.setAttribute("data-on", on ? "false" : "true");
+      state.showTrash = !on;
+      updateUI();
+    });
+
+    // Crear tabla
+    createTableBtn.addEventListener("click", () => {
+      newTableName.value = "";
+      const cols = [
+        { id: uid("col"), name: "Columna A", type: "text" },
+        { id: uid("col"), name: "Columna B", type: "text" },
+      ];
+      newColsEditor.dataset.cols = JSON.stringify(cols);
+      renderCreateModalCols(cols, newColsEditor);
+      openModal(createModal);
+    });
+    addNewCol.addEventListener("click", () => {
+      const cols = JSON.parse(newColsEditor.dataset.cols || "[]");
+      cols.push({ id: uid("col"), name: "Nueva columna", type: "text" });
+      newColsEditor.dataset.cols = JSON.stringify(cols);
+      renderCreateModalCols(cols, newColsEditor);
+    });
+    confirmCreateTable.addEventListener("click", () => {
+      const name = newTableName.value.trim();
+      if (!name) { alert("Ponle un nombre a la tabla"); return; }
+      const cols = JSON.parse(newColsEditor.dataset.cols || "[]");
+      const t = {
+        id: uid("tbl"),
+        name,
+        ownerUid: "anon",
+        columns: cols.map(c => ({ ...c, id: c.id || uid("col") })),
+        createdAt: now(), createdBy: "anon", updatedAt: now(), updatedBy: "anon"
+      };
+      state.tables.unshift(t);
+      state.rowsByTable[t.id] = [];
+      state.activeTableId = t.id;
+      state.editMode = true; // entrar a edición al crear
+      closeModal(createModal);
+      updateUI();
+    });
+    document.querySelectorAll("[data-close-create]").forEach(btn => btn.addEventListener("click", () => closeModal(createModal)));
+
+    // Configurar tabla
+    configTableBtn.addEventListener("click", () => {
+      const t = getActiveTable();
+      if (!t) return;
+      configTitle.textContent = `Configurar: ${t.name}`;
+      const cols = t.columns.map(c => ({ ...c })); // copia
+      configColsEditor.dataset.cols = JSON.stringify(cols);
+      renderCreateModalCols(cols, configColsEditor);
+      openModal(configModal);
+    });
+    addConfigCol.addEventListener("click", () => {
+      const cols = JSON.parse(configColsEditor.dataset.cols || "[]");
+      cols.push({ id: uid("col"), name: "Nueva columna", type: "text" });
+      configColsEditor.dataset.cols = JSON.stringify(cols);
+      renderCreateModalCols(cols, configColsEditor);
+    });
+    saveConfig.addEventListener("click", () => {
+      const t = getActiveTable(); if (!t) return;
+      const cols = JSON.parse(configColsEditor.dataset.cols || "[]");
+      t.columns = cols;
+      t.updatedAt = now(); t.updatedBy = "anon";
+      closeModal(configModal);
+      updateUI();
+    });
+    document.querySelectorAll("[data-close-config]").forEach(btn => btn.addEventListener("click", () => closeModal(configModal)));
+
+    // Import/export
+    importBtn.addEventListener("click", () => {
+      csvFile.value = "";
+      openModal(importModal);
+    });
+    doImportCsv.addEventListener("click", async () => {
+      const t = getActiveTable(); if (!t) return;
+      const f = csvFile.files && csvFile.files[0];
+      if (!f) return;
+      const rowsCSV = await parseCSVFile(f);
+      if (!rowsCSV.length) return;
+      const headers = rowsCSV[0];
+      const map = {};
+      headers.forEach((h,i) => {
+        const col = t.columns.find(c => c.name.toLowerCase().trim() === h.toLowerCase().trim());
+        map[i] = col ? col.id : null;
+      });
+      const toAdd = [];
+      for (let i=1;i<rowsCSV.length;i++) {
+        const arr = rowsCSV[i];
+        const data = {};
+        arr.forEach((val, idx) => { const colId = map[idx]; if (colId) data[colId] = val; });
+        toAdd.push({ id: uid("row"), data, createdAt: now(), createdBy: "anon", updatedAt: now(), updatedBy: "anon" });
+      }
+      state.rowsByTable[t.id] = [...toAdd, ...(state.rowsByTable[t.id] || [])];
+      closeModal(importModal);
+      updateUI();
+    });
+    document.querySelectorAll("[data-close-import]").forEach(btn => btn.addEventListener("click", () => closeModal(importModal)));
+    exportBtn.addEventListener("click", () => {
+      const t = getActiveTable(); if (!t) return;
+      const rows = (state.rowsByTable[t.id] || []).filter(r => !r.deletedAt);
+      const csv = toCSV(rows, t.columns);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = t.name.replace(/\s+/g, "_") + ".csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Agregar fila
+    addRowBtn.addEventListener("click", () => {
+      const t = getActiveTable(); if (!t) return;
+      const r = { id: uid("row"), data: {}, createdAt: now(), createdBy: "anon", updatedAt: now(), updatedBy: "anon" };
+      state.rowsByTable[t.id] = [r, ...(state.rowsByTable[t.id] || [])];
+      updateUI(false);
+    });
+
+    // ============== Update UI (render) ==============
+    function updateUI(recomputeList = true) {
+      renderToolbarState();
+      if (recomputeList) renderTablesList();
+      renderTableSection();
+    }
+
+    // ============== Init ==============
+    ensureDemoData();
+    updateUI();
+
+  </script>
+</body>
+</html>
