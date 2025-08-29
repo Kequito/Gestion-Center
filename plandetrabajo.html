@@ -6,16 +6,17 @@
   <title>Gestión Center – Plan de trabajo</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
   <style>
-    /* ===== Tema base: consistente con opo11/distribución/camprev/estadísticas ===== */
+    /* ===== Tema base: consistente con el resto de Gestión Center ===== */
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
       --primary-color:#0D47A1; --accent-color:#42a5f5; --surface:#22314f; --border:#2f446a; --header-bg:#0d47a1;
       --green:#2e7d32; --red:#c62828; --orange:#f57c00; --yellow:#fbc02d;
+      --chip:#1b2a48;
     }
     *{box-sizing:border-box}
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
 
-    /* ===== Sidebar (idéntico) ===== */
+    /* ===== Sidebar (idéntico, NO tocar) ===== */
     aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
     .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
     nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
@@ -29,7 +30,13 @@
     .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
     .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
 
-    /* ===== Panel superior ===== */
+    /* ===== Métricas rápidas ===== */
+    .kpis{ display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:10px; margin:12px 0 8px; }
+    .kpi{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
+    .kpi .label{ font-size:12px; color:var(--txt-muted); }
+    .kpi .value{ font-size:18px; font-weight:800; margin-top:4px; }
+
+    /* ===== Topbar ===== */
     .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:8px 0 16px; }
     .pill{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:14px; }
     .select{ background:var(--surface); color:var(--txt); border:1px solid var(--primary-color); border-radius:10px; padding:8px 12px; height:38px; }
@@ -39,7 +46,8 @@
 
     /* ===== Progreso ===== */
     .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; height:12px; overflow:hidden; position:relative; }
-    .progress>span{ display:block; height:100%; background:linear-gradient(90deg,#42a5f5,#80d6ff); width:0%; transition:width .35s ease; }
+    .progress>span{ display:block; height:100%; width:0%; transition:width .35s ease, background .25s; }
+
     .progress-label{ font-size:12px; color:var(--txt-muted); min-width:140px; text-align:right; }
 
     /* ===== Secciones ===== */
@@ -50,16 +58,24 @@
     .section.collapsed .section-body{ display:none; }
 
     /* ===== Tareas ===== */
-    .task{ display:grid; grid-template-columns:28px 1fr 220px; gap:12px; align-items:start; padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
+    .task{ display:grid; grid-template-columns:28px 1fr 240px; gap:12px; align-items:start; padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
     .task:hover{ background:rgba(0,0,0,.16); }
     .task.done{ background:rgba(46,125,50,.22); border-color:#2e7d3270; }
     .task .chk{ width:18px; height:18px; margin-top:2px; }
-    .task .title{ font-weight:700; }
+    .task .title{ font-weight:700; display:flex; align-items:center; gap:8px; }
+    .status-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow:0 0 0 2px rgba(0,0,0,.2) inset; }
+    .status-pending{ background:#fbc02d; }
+    .status-done{ background:#2e7d32; }
     .task .desc{ color:var(--txt-muted); font-size:13px; margin-top:3px; }
     .task .meta{ font-size:12px; color:#cfe3ff; }
     .task .note{ width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#1b2a48; color:var(--txt); resize:vertical; min-height:40px; }
     .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
-    .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:#1b2a48; }
+    .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:var(--chip); white-space:nowrap; }
+
+    /* ===== Tooltip / Tip card ===== */
+    .tip-btn{ background:transparent; border:1px solid var(--border); color:#fff; border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer; }
+    .tip{ display:none; margin-top:8px; background:rgba(0,0,0,.25); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:#e4f1ff; }
+    .tip.visible{ display:block; }
 
     /* ===== PDF Viewer ===== */
     .pdf{ width:100%; height:560px; border:none; border-radius:12px; box-shadow:0 6px 12px rgba(0,0,0,.25); }
@@ -67,11 +83,22 @@
     /* ===== Toast ===== */
     #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
 
+    /* ===== Modal Histórico ===== */
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:1100; }
+    .modal{ background:#1f2f50; border:1px solid var(--border); width:min(720px,92vw); border-radius:14px; padding:16px; }
+    .modal h3{ margin:0 0 8px; }
+    .log-list{ max-height:50vh; overflow:auto; display:grid; gap:8px; }
+    .log-item{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+    .log-meta{ color:#cfd8dc; font-size:12px; }
+
+    @media (max-width: 1100px){
+      .task{ grid-template-columns:24px 1fr; }
+      .task .tools{ grid-column:1/-1; justify-content:flex-start; }
+    }
     @media (max-width: 960px){
       main{ padding:18px; }
       .page-title{ font-size:20px; }
-      .task{ grid-template-columns:24px 1fr; }
-      .task .tools{ grid-column:1/-1; justify-content:flex-start; }
+      .kpis{ grid-template-columns:repeat(2,minmax(140px,1fr)); }
     }
   </style>
 </head>
@@ -95,8 +122,28 @@
   <!-- ===== Contenido ===== -->
   <main>
     <h1 class="page-title">✅ Plan de Trabajo – Team Leaders</h1>
-    <p class="subtitle">Basado en la versión vigente · Turno AM/PM con horarios equivalentes · notas y progreso persistentes</p>
+    <p class="subtitle">Basado en la versión vigente · Turno AM/PM equivalente · ayudas didácticas y progreso con recordatorios</p>
     <div id="fechaHora" class="datetime"></div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Tareas con horario</div>
+        <div class="value" id="kpiTimed">0 / 0</div>
+      </div>
+      <div class="kpi">
+        <div class="label">% Avance</div>
+        <div class="value" id="kpiPct">0%</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Turno seleccionado</div>
+        <div class="value" id="kpiShift">AM</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Tiempo restante del turno</div>
+        <div class="value" id="kpiTimeLeft">--:--</div>
+      </div>
+    </div>
 
     <div class="topbar">
       <div class="pill">
@@ -109,44 +156,64 @@
       <button id="btnResetDay">🧹 Reset del día</button>
       <button id="btnClearAll">🗑️ Borrar guardado</button>
       <button id="btnPrint">🖨️ Imprimir</button>
+      <button id="btnLog">📜 Ver Histórico del Día</button>
       <div class="progress" title="Avance de tareas con horario">
         <span id="progBar"></span>
       </div>
       <div class="progress-label" id="progLabel">0% completado</div>
     </div>
 
-    <!-- Secciones renderizadas por JS: Primera, Segunda, Tercera, Última, Continuas -->
+    <!-- Secciones renderizadas por JS -->
     <div id="sections"></div>
 
     <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
-    <iframe class="pdf" src="Plan_de_trabajo_TEAM_LEADER.pdf"></iframe>
+    <!-- Usa el nombre del archivo PDF que subiste -->
+    <iframe class="pdf" src="Plan de trabajo TEAM LEADER (7AM-4PM) Ver. 1.0.pdf"></iframe>
   </main>
 
   <div id="toast"></div>
 
+  <!-- Modal Histórico -->
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h3>📜 Histórico del Día</h3>
+        <div style="display:flex; gap:8px;">
+          <button id="btnExportLog" class="tip-btn">⬇️ Exportar .txt</button>
+          <button id="btnCloseModal" class="tip-btn">✖️ Cerrar</button>
+        </div>
+      </div>
+      <p class="subtitle" id="logDate"></p>
+      <div id="logList" class="log-list"></div>
+    </div>
+  </div>
+
   <script>
     // ===== Utilidades =====
+    const STORAGE_KEY='plan_vigente_v3';
+    const LOG_KEY_PREFIX='plan_log_'; // por fecha
     const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
-    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const pad=n=>String(n).padStart(2,'0');
+    const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
     function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // ===== Datos del plan vigente =====
+    // ===== Datos del plan (contenido didáctico) =====
     const PLAN = {
       blocks:[
         { id:'primera',  title:'📌 Primera hora de gestión',  time:{AM:'7:00–8:00',  PM:'1:00–2:00'},  tasks:[
-          {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores (A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM).'},
+          {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM. No es necesario reportarlo en grupo; lo importante es que quede correctamente registrado en el documento oficial.`},
         ]},
         { id:'segunda',  title:'📌 Segunda hora de gestión',   time:{AM:'8:00–9:00',  PM:'2:00–3:00'},  tasks:[
-          {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844. Reglas de redondeo: >45m → 1h; desde 4:45h sumar 1h por break.'},
-          {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para incompletos: asignar TL responsable y motivo.'},
+          {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break. Ejemplos: 2:30h→2h, 3:52h→4h, 5:10h→6h. Reporte: enviar captura al grupo “TL’s Planillado Diario y Reporte de Ausencias RRHH”.`},
+          {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario (excepto fines de semana) para quienes no completaron su jornada.', tip:`Acciones: verificar PEROP1AMs, identificar operadores a tu cargo, completar: TL responsable y motivo del tiempo incompleto. Objetivo: seguimiento y detección de incidencias.`},
         ]},
         { id:'tercera',  title:'📌 Tercera hora de gestión',   time:{AM:'9:00–10:00', PM:'3:00–4:00'},  tasks:[
-          {id:'1.4', title:'Horas Rusia', desc:'Carga de horas (conexión, llamadas, SAVE) con base en BI-844 (día anterior).'},
-          {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta; desprogramar ausentes; coherencia horario oficial vs real.'},
+          {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:`Se realiza con información del día anterior. No requiere reporte en grupo.`},
+          {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:`Reglas: (1) Ningún operador gestionando queda sin programar. (2) Ausentes se desprograman de inmediato. (3) Coherencia entre horario oficial y real.`},
         ]},
         { id:'ultima',   title:'📌 Última hora de gestión',    time:{AM:'3:00–4:00', PM:'9:00–10:00'}, tasks:[
-          {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día y queda con status final.'},
+          {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día y queda con status final.', tip:`Objetivo: cierre limpio de jornada, sin pendientes críticos.`},
         ]},
       ],
       continuous:[
@@ -162,26 +229,31 @@
     };
 
     // ===== Persistencia =====
-    const STORAGE_KEY='plan_vigente_v2';
     function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
     function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-
     function defaultState(){
-      const st={ shift:'AM', tasks:{}, notes:{}, collapsed:{} };
+      const st={ shift:'AM', tasks:{}, notes:{}, collapsed:{}, lastReminder:'' };
       PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; st.notes[t.id]=''; }));
       PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; st.notes[t.id]=''; });
       return st;
     }
-
     let state = Object.assign(defaultState(), loadState());
+
+    // ===== Histórico =====
+    function getLog(dateStr=todayStr()){
+      try{ return JSON.parse(localStorage.getItem(LOG_KEY_PREFIX+dateStr)) || [] }catch{ return [] }
+    }
+    function pushLog(entry, dateStr=todayStr()){
+      const arr=getLog(dateStr);
+      arr.push(entry);
+      localStorage.setItem(LOG_KEY_PREFIX+dateStr, JSON.stringify(arr));
+    }
 
     // ===== Render =====
     const sectionsEl = document.getElementById('sections');
 
     function render(){
-      // Turno selector
       document.getElementById('selTurno').value = state.shift;
-
       sectionsEl.innerHTML='';
 
       // Render bloques con horario
@@ -199,12 +271,18 @@
           const done=!!state.tasks[task.id];
           const note=state.notes[task.id]||'';
           const el=document.createElement('div'); el.className='task'+(done?' done':'');
+
           el.innerHTML=`
             <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''}>
             <div>
-              <div class="title">${task.id} · ${task.title}</div>
+              <div class="title">
+                <span class="status-dot ${done?'status-done':'status-pending'}"></span>
+                ${task.id} · ${task.title}
+                <button class="tip-btn" data-tip="tip-${task.id}" title="Ver tip">ℹ️</button>
+              </div>
               <div class="desc">${task.desc||''}</div>
               <div class="meta">${state.shift} · ${block.time[state.shift]}</div>
+              <div id="tip-${task.id}" class="tip">${task.tip?task.tip:''}</div>
               <div style="margin-top:8px;">
                 <textarea class="note" id="note-${task.id}" placeholder="Notas de seguimiento (se guardan automáticamente)">${note.replace(/</g,'&lt;')}</textarea>
               </div>
@@ -216,9 +294,25 @@
 
           // Listeners
           el.querySelector('.chk').addEventListener('change',ev=>{
-            state.tasks[task.id]=ev.target.checked; saveState(state); updateProgress(); el.classList.toggle('done',ev.target.checked); toast(ev.target.checked?'✅ Tarea completada':'↩️ Tarea pendiente');
+            const checked=ev.target.checked;
+            state.tasks[task.id]=checked; saveState(state);
+            el.classList.toggle('done',checked);
+            el.querySelector('.status-dot').className = 'status-dot ' + (checked?'status-done':'status-pending');
+            updateProgress();
+            const now=new Date();
+            pushLog({ts:now.toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:block.id, time:block.time[state.shift], shift:state.shift});
+            toast(checked?'✅ Tarea completada':'↩️ Tarea pendiente');
+            updateKPIs();
           });
+
           el.querySelector('.note').addEventListener('input',ev=>{ state.notes[task.id]=ev.target.value; saveState(state); });
+
+          el.querySelector('.tip-btn').addEventListener('click',ev=>{
+            ev.preventDefault();
+            const id=ev.currentTarget.dataset.tip;
+            const tip=document.getElementById(id);
+            tip.classList.toggle('visible');
+          });
 
           body.appendChild(el);
         });
@@ -239,10 +333,14 @@
         const done=!!state.tasks[task.id];
         const note=state.notes[task.id]||'';
         const el=document.createElement('div'); el.className='task'+(done?' done':'');
+
         el.innerHTML=`
           <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''}>
           <div>
-            <div class="title">${task.title}</div>
+            <div class="title">
+              <span class="status-dot ${done?'status-done':'status-pending'}"></span>
+              ${task.title}
+            </div>
             <div class="desc">${task.desc||''}</div>
             <div class="meta">⏳ Sin horario fijo</div>
             <div style="margin-top:8px;"><textarea class="note" id="note-${task.id}" placeholder="Notas (se guardan automáticamente)">${note.replace(/</g,'&lt;')}</textarea></div>
@@ -251,8 +349,19 @@
             <span class="chip">🗂️ Seguimiento</span>
             <span class="chip">💾 Auto-guardado</span>
           </div>`;
-        el.querySelector('.chk').addEventListener('change',ev=>{ state.tasks[task.id]=ev.target.checked; saveState(state); updateProgress(); el.classList.toggle('done',ev.target.checked); });
+
+        el.querySelector('.chk').addEventListener('change',ev=>{
+          const checked=ev.target.checked;
+          state.tasks[task.id]=checked; saveState(state);
+          el.classList.toggle('done',checked);
+          el.querySelector('.status-dot').className = 'status-dot ' + (checked?'status-done':'status-pending');
+          pushLog({ts:new Date().toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:'continuas', time:'-',
+                   shift:state.shift});
+          updateProgress();
+          updateKPIs();
+        });
         el.querySelector('.note').addEventListener('input',ev=>{ state.notes[task.id]=ev.target.value; saveState(state); });
+
         bodyC.appendChild(el);
       });
       secC.appendChild(headC); secC.appendChild(bodyC); sectionsEl.appendChild(secC);
@@ -267,17 +376,69 @@
       bodyP.appendChild(ul); secP.appendChild(headP); secP.appendChild(bodyP); sectionsEl.appendChild(secP);
 
       updateProgress();
+      updateKPIs();
     }
 
+    // ===== Progreso y KPIs =====
     function updateProgress(){
-      // Solo cuentan tareas con horario (no continuas)
       const timedIds = PLAN.blocks.flatMap(b=>b.tasks.map(t=>t.id));
       const total = timedIds.length;
       const done = timedIds.filter(id=>!!state.tasks[id]).length;
       const pct = total? Math.round(done*100/total) : 0;
-      document.getElementById('progBar').style.width=pct+'%';
+      const bar=document.getElementById('progBar');
+      bar.style.width=pct+'%';
+      // color dinámico
+      bar.style.background = pct<50 ? 'linear-gradient(90deg,#c62828,#ef5350)'
+                        : pct<80 ? 'linear-gradient(90deg,#fbc02d,#ffd54f)'
+                                 : 'linear-gradient(90deg,#42a5f5,#80d6ff)';
       document.getElementById('progLabel').textContent=pct+"% completado";
+
+      // KPIs relacionados
+      document.getElementById('kpiTimed').textContent = `${done} / ${total}`;
+      document.getElementById('kpiPct').textContent = `${pct}%`;
     }
+
+    function updateKPIs(){
+      document.getElementById('kpiShift').textContent = state.shift;
+      // tiempo restante del turno (aprox)
+      const now=new Date();
+      const end = new Date();
+      if(state.shift==='AM'){ end.setHours(16,0,0,0); }
+      else { end.setHours(22,0,0,0); }
+      let diffMs = end - now;
+      if(diffMs<0) diffMs=0;
+      const hh = Math.floor(diffMs/3600000);
+      const mm = Math.floor((diffMs%3600000)/60000);
+      document.getElementById('kpiTimeLeft').textContent = `${pad(hh)}:${pad(mm)}`;
+    }
+
+    // ===== Recordatorios por horario (toast 10 min antes del bloque) =====
+    const REMIND_MIN = 10;
+    function parseBlockRange(label){ // "7:00–8:00" → [7:00,8:00]
+      const [start,end] = label.split('–').map(s=>s.trim());
+      return [start,end];
+    }
+    function asTodayTime(hhmm){ // "7:00" → Date hoy 07:00
+      const [h,m] = hhmm.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h,m,0,0);
+      return d;
+    }
+    function remindersTick(){
+      const now=new Date();
+      PLAN.blocks.forEach(b=>{
+        const [from] = parseBlockRange(b.time[state.shift]);
+        const start = asTodayTime(from);
+        const remindAt = new Date(start - REMIND_MIN*60000);
+        const key = `${todayStr()}_${state.shift}_${b.id}`;
+        // mostrar toast si estamos en la ventana exacta (±30s) y no se mostró hoy
+        if(now>=remindAt && now - remindAt < 30000 && state.lastReminder!==key){
+          state.lastReminder=key; saveState(state);
+          toast(`⏰ En ${REMIND_MIN} min: ${b.title} (${b.time[state.shift]})`);
+        }
+      });
+    }
+    setInterval(remindersTick, 5000);
 
     // ===== Eventos globales =====
     document.getElementById('selTurno').addEventListener('change',e=>{ state.shift=e.target.value; saveState(state); render(); });
@@ -286,12 +447,62 @@
       saveState(state); render(); toast('🧹 Tareas con horario reseteadas');
     });
     document.getElementById('btnClearAll').addEventListener('click',()=>{
-      localStorage.removeItem(STORAGE_KEY); state=defaultState(); render(); toast('🗑️ Guardado eliminado');
+      localStorage.removeItem(STORAGE_KEY);
+      // Mantener logs del día
+      state=defaultState(); render(); toast('🗑️ Guardado eliminado');
     });
     document.getElementById('btnPrint').addEventListener('click',()=>window.print());
 
-    // Init
-    render();
+    // ===== Modal Histórico =====
+    const backdrop=document.getElementById('modalBackdrop');
+    const logList=document.getElementById('logList');
+    document.getElementById('btnLog').addEventListener('click',()=>{
+      backdrop.style.display='flex';
+      document.getElementById('logDate').textContent = `Fecha: ${todayStr()} · Turno actual: ${state.shift}`;
+      renderLog();
+    });
+    document.getElementById('btnCloseModal').addEventListener('click',()=>{ backdrop.style.display='none'; });
+
+    function renderLog(){
+      const rows = getLog(todayStr());
+      logList.innerHTML = rows.length? '' : '<div class="log-item">Sin registros todavía.</div>';
+      rows.slice().reverse().forEach(r=>{
+        const d=new Date(r.ts);
+        const el=document.createElement('div'); el.className='log-item';
+        el.innerHTML = `
+          <div><strong>${r.action}</strong> — ${r.task}${r.title?` · ${r.title}`:''}</div>
+          <div class="log-meta">Bloque: ${r.block} · Horario: ${r.time} · Turno: ${r.shift} · ${d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+        `;
+        logList.appendChild(el);
+      });
+    }
+
+    // Exportar .txt del histórico (notas compartidas no incluidas)
+    document.getElementById('btnExportLog').addEventListener('click',()=>{
+      const rows = getLog(todayStr());
+      const lines = [
+        `Histórico del día ${todayStr()} (Turno: ${state.shift})`,
+        '---------------------------------------------',
+        ...rows.map(r=>{
+          const d=new Date(r.ts);
+          const hhmmss = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+          return `[${hhmmss}] ${r.action} - ${r.task} ${r.title?('· '+r.title):''} | Bloque:${r.block} | Horario:${r.time} | Turno:${r.shift}`;
+        })
+      ];
+      const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`historico_${todayStr()}_${state.shift}.txt`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // ===== Init =====
+    function init(){
+      render();
+      updateKPIs();
+    }
+    init();
   </script>
 </body>
 </html>
