@@ -47,7 +47,6 @@
     /* ===== Progreso ===== */
     .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; height:12px; overflow:hidden; position:relative; }
     .progress>span{ display:block; height:100%; width:0%; transition:width .35s ease, background .25s; }
-
     .progress-label{ font-size:12px; color:var(--txt-muted); min-width:140px; text-align:right; }
 
     /* ===== Secciones ===== */
@@ -68,7 +67,6 @@
     .status-done{ background:#2e7d32; }
     .task .desc{ color:var(--txt-muted); font-size:13px; margin-top:3px; }
     .task .meta{ font-size:12px; color:#cfe3ff; }
-    .task .note{ width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#1b2a48; color:var(--txt); resize:vertical; min-height:40px; }
     .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
     .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:var(--chip); white-space:nowrap; }
 
@@ -155,7 +153,6 @@
       </div>
       <button id="btnResetDay">🧹 Reset del día</button>
       <button id="btnClearAll">🗑️ Borrar guardado</button>
-      <button id="btnPrint">🖨️ Imprimir</button>
       <button id="btnLog">📜 Ver Histórico del Día</button>
       <div class="progress" title="Avance de tareas con horario">
         <span id="progBar"></span>
@@ -167,7 +164,6 @@
     <div id="sections"></div>
 
     <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
-    <!-- Usa el nombre del archivo PDF que subiste -->
     <iframe class="pdf" src="Plan de trabajo TEAM LEADER (7AM-4PM) Ver. 1.0.pdf"></iframe>
   </main>
 
@@ -190,8 +186,8 @@
 
   <script>
     // ===== Utilidades =====
-    const STORAGE_KEY='plan_vigente_v3';
-    const LOG_KEY_PREFIX='plan_log_'; // por fecha
+    const STORAGE_KEY='plan_vigente_v4';          // nuevo storage key por cambios
+    const LOG_KEY_PREFIX='plan_log_';             // histórico por fecha
     const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
     const pad=n=>String(n).padStart(2,'0');
     const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
@@ -217,9 +213,8 @@
         ]},
       ],
       continuous:[
-        {id:'c.1', title:'Leads Daily', desc:'Registro cada hora hasta 2 horas antes de terminar el turno.'},
+        // Eliminadas: Leads Daily, Órdenes con mala publicidad
         {id:'c.2', title:'Verificación de estadísticas de campañas', desc:'Monitoreo de leads, conectados, ACD, ventas, SAVE, etc.'},
-        {id:'c.3', title:'Órdenes con mala publicidad', desc:'Registro y seguimiento durante el día.'},
       ],
       policy:[
         '1) Primer incumplimiento: recordatorio inmediato.',
@@ -232,9 +227,9 @@
     function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
     function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function defaultState(){
-      const st={ shift:'AM', tasks:{}, notes:{}, collapsed:{}, lastReminder:'' };
-      PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; st.notes[t.id]=''; }));
-      PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; st.notes[t.id]=''; });
+      const st={ shift:'AM', tasks:{}, collapsed:{}, lastReminder:'' };
+      PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; }));
+      PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; });
       return st;
     }
     let state = Object.assign(defaultState(), loadState());
@@ -269,7 +264,6 @@
 
         block.tasks.forEach(task=>{
           const done=!!state.tasks[task.id];
-          const note=state.notes[task.id]||'';
           const el=document.createElement('div'); el.className='task'+(done?' done':'');
 
           el.innerHTML=`
@@ -283,9 +277,6 @@
               <div class="desc">${task.desc||''}</div>
               <div class="meta">${state.shift} · ${block.time[state.shift]}</div>
               <div id="tip-${task.id}" class="tip">${task.tip?task.tip:''}</div>
-              <div style="margin-top:8px;">
-                <textarea class="note" id="note-${task.id}" placeholder="Notas de seguimiento (se guardan automáticamente)">${note.replace(/</g,'&lt;')}</textarea>
-              </div>
             </div>
             <div class="tools">
               <span class="chip" title="Marcar/Desmarcar tarea">⏱️ Bloque</span>
@@ -305,8 +296,6 @@
             updateKPIs();
           });
 
-          el.querySelector('.note').addEventListener('input',ev=>{ state.notes[task.id]=ev.target.value; saveState(state); });
-
           el.querySelector('.tip-btn').addEventListener('click',ev=>{
             ev.preventDefault();
             const id=ev.currentTarget.dataset.tip;
@@ -321,7 +310,7 @@
         sectionsEl.appendChild(sec);
       });
 
-      // Render continuas
+      // Render continuas (solo 1)
       const secC=document.createElement('section'); secC.className='section';
       if(state.collapsed['continuas']) secC.classList.add('collapsed');
       const headC=document.createElement('div'); headC.className='section-header';
@@ -331,7 +320,6 @@
       const bodyC=document.createElement('div'); bodyC.className='section-body';
       PLAN.continuous.forEach(task=>{
         const done=!!state.tasks[task.id];
-        const note=state.notes[task.id]||'';
         const el=document.createElement('div'); el.className='task'+(done?' done':'');
 
         el.innerHTML=`
@@ -343,7 +331,6 @@
             </div>
             <div class="desc">${task.desc||''}</div>
             <div class="meta">⏳ Sin horario fijo</div>
-            <div style="margin-top:8px;"><textarea class="note" id="note-${task.id}" placeholder="Notas (se guardan automáticamente)">${note.replace(/</g,'&lt;')}</textarea></div>
           </div>
           <div class="tools">
             <span class="chip">🗂️ Seguimiento</span>
@@ -355,12 +342,10 @@
           state.tasks[task.id]=checked; saveState(state);
           el.classList.toggle('done',checked);
           el.querySelector('.status-dot').className = 'status-dot ' + (checked?'status-done':'status-pending');
-          pushLog({ts:new Date().toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:'continuas', time:'-',
-                   shift:state.shift});
+          pushLog({ts:new Date().toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:'continuas', time:'-', shift:state.shift});
           updateProgress();
           updateKPIs();
         });
-        el.querySelector('.note').addEventListener('input',ev=>{ state.notes[task.id]=ev.target.value; saveState(state); });
 
         bodyC.appendChild(el);
       });
@@ -414,16 +399,8 @@
 
     // ===== Recordatorios por horario (toast 10 min antes del bloque) =====
     const REMIND_MIN = 10;
-    function parseBlockRange(label){ // "7:00–8:00" → [7:00,8:00]
-      const [start,end] = label.split('–').map(s=>s.trim());
-      return [start,end];
-    }
-    function asTodayTime(hhmm){ // "7:00" → Date hoy 07:00
-      const [h,m] = hhmm.split(':').map(Number);
-      const d = new Date();
-      d.setHours(h,m,0,0);
-      return d;
-    }
+    function parseBlockRange(label){ const [start,end] = label.split('–').map(s=>s.trim()); return [start,end]; }
+    function asTodayTime(hhmm){ const [h,m] = hhmm.split(':').map(Number); const d = new Date(); d.setHours(h,m,0,0); return d; }
     function remindersTick(){
       const now=new Date();
       PLAN.blocks.forEach(b=>{
@@ -431,7 +408,6 @@
         const start = asTodayTime(from);
         const remindAt = new Date(start - REMIND_MIN*60000);
         const key = `${todayStr()}_${state.shift}_${b.id}`;
-        // mostrar toast si estamos en la ventana exacta (±30s) y no se mostró hoy
         if(now>=remindAt && now - remindAt < 30000 && state.lastReminder!==key){
           state.lastReminder=key; saveState(state);
           toast(`⏰ En ${REMIND_MIN} min: ${b.title} (${b.time[state.shift]})`);
@@ -448,10 +424,8 @@
     });
     document.getElementById('btnClearAll').addEventListener('click',()=>{
       localStorage.removeItem(STORAGE_KEY);
-      // Mantener logs del día
       state=defaultState(); render(); toast('🗑️ Guardado eliminado');
     });
-    document.getElementById('btnPrint').addEventListener('click',()=>window.print());
 
     // ===== Modal Histórico =====
     const backdrop=document.getElementById('modalBackdrop');
@@ -477,7 +451,7 @@
       });
     }
 
-    // Exportar .txt del histórico (notas compartidas no incluidas)
+    // Exportar .txt del histórico
     document.getElementById('btnExportLog').addEventListener('click',()=>{
       const rows = getLog(todayStr());
       const lines = [
@@ -498,10 +472,7 @@
     });
 
     // ===== Init =====
-    function init(){
-      render();
-      updateKPIs();
-    }
+    function init(){ render(); updateKPIs(); }
     init();
   </script>
 </body>
