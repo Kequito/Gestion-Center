@@ -6,39 +6,53 @@
   <title>Gestión Center – PS Auto (Resumen por país)</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
   <style>
+    /* ===== Estilos idénticos a opo11.html ===== */
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
       --primary-color:#0d47a1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
-      --green:#2e7d32; --red:#c62828; --amber:#f9a825;
+      --green-color:#2e7d32; --red-color:#c62828; --orange-color:#f57c00;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Lexend',sans-serif;background:var(--bg-app);color:var(--txt);display:flex;min-height:100vh}
-    aside{background:var(--bg-aside);width:220px;height:100vh;padding:40px 20px;position:fixed;left:0;top:0}
-    .logo{font-size:22px;font-weight:700;margin-bottom:32px;text-align:center}
-    nav a{color:var(--txt);display:block;text-decoration:none;margin:14px 0;padding:10px 12px;border-radius:8px}
-    nav a:hover{background:var(--hover)}
-    nav a.active{background:var(--hover);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
-    main{margin-left:220px;width:calc(100% - 220px);padding:28px}
-    .page-title{font-size:24px;font-weight:800;margin:0 0 6px}
-    .subtitle{margin:0 0 12px;color:var(--txt-muted)}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
-    button{padding:10px 14px;font-size:14px;border:none;border-radius:10px;background:var(--primary-color);color:#fff;cursor:pointer}
-    button:hover{background:var(--accent-color)}
-    textarea{width:100%;min-height:160px;padding:12px;border:1px solid var(--accent-color);border-radius:12px;background:var(--table-bg);color:var(--txt)}
-    table{margin-top:14px;border-collapse:separate;border-spacing:0;width:100%;background:var(--table-bg);border:1px solid var(--table-border);border-radius:12px;overflow:hidden}
-    th,td{padding:10px;border-bottom:1px solid var(--table-border);text-align:center}
-    thead th{background:var(--header-bg);color:#fff}
-    thead th:first-child,tbody td:first-child{ text-align:left }
-    tfoot td{font-weight:800;background:rgba(66,165,245,.16);border-top:2px solid var(--table-border)}
-    .country{font-weight:800}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--table-border)}
-    /* semáforos suaves */
-    .ok{background:rgba(46,125,50,.15)}
-    .warn{background:rgba(255,193,7,.18)}
-    .bad{background:rgba(198,40,40,.18)}
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; box-sizing:border-box; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px;
+      transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%;
+      box-sizing:border-box; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
+
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); box-sizing:border-box; }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+
+    .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; } /* ← igual posición/tamaño */
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff;
+      box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    button:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
+
+    textarea{ width:100%; min-height:160px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:12px;
+      border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; box-sizing:border-box; }
+
+    table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%; background:var(--table-bg); border:1px solid var(--table-border);
+      border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+    th,td{ border-bottom:1px solid var(--table-border); padding:10px; text-align:center; }
+    thead th{ background:var(--header-bg); color:#fff; }
+    thead th:first-child, tbody td:first-child{ text-align:left; }
+    tfoot td{ font-weight:800; background:rgba(66,165,245,.16); border-top:2px solid var(--table-border); }
+
+    /* “Pills” y estados suaves */
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#334766;border:1px solid #2a3d5e}
+    .ok{ background:rgba(46,125,50,.15) }
+    .warn{ background:rgba(255,193,7,.18) }
+    .bad{ background:rgba(198,40,40,.18) }
   </style>
 </head>
 <body>
+  <!-- ===== Sidebar (idéntico) ===== -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
@@ -51,19 +65,24 @@
       <a href="opo11.html">🧰 New Report CC Perú</a>
       <a class="active" href="#">🚚 PS Auto (Resumen)</a>
     </nav>
+    <div class="spacer"></div>
   </aside>
 
+  <!-- ===== Main ===== -->
   <main>
-    <h1 class="page-title">🚚 Post-Sale Auto – Resumen por país</h1>
-    <p class="subtitle">Pega el bloque tal cual (con tabuladores) y genera la tabla compacta: Country · Queues · Number of operators · Orders available · Total orders.</p>
+    <div class="page-title">🚚 Post-Sale Auto – Resumen por país</div>
+    <p class="subtitle">Pega el bloque tal cual (con tabuladores) y genera la tabla compacta.</p>
+
+    <!-- Fecha y hora — MISMO lugar / estilo que opo11 -->
+    <div class="datetime" id="fechaHora"></div>
 
     <div class="toolbar">
       <button onclick="procesar()">⚙️ Procesar</button>
       <button onclick="limpiar()">🧹 Limpiar</button>
-      <button onclick="alternarMapeo()">🧭 Cambiar mapeo columnas</button>
+      <button onclick="alternarMapeo()">🧭 Cambiar mapeo</button>
     </div>
 
-    <textarea id="input" placeholder="Pega aquí las filas (con encabezados)."></textarea>
+    <textarea id="input" placeholder="Pega aquí las filas con encabezados (Country, Description/Name, Number of operators, Capacity, Orders)…"></textarea>
 
     <table id="out">
       <thead>
@@ -78,7 +97,7 @@
       <tbody></tbody>
       <tfoot>
         <tr>
-          <td class="country">TOTAL</td>
+          <td style="font-weight:800">TOTAL</td>
           <td></td>
           <td id="t_ops"></td>
           <td id="t_av"></td>
@@ -89,61 +108,52 @@
   </main>
 
   <script>
-    // Mapeo por defecto (ajustable con el botón "Cambiar mapeo")
-    // - ordersAvailable: primer número de "Capacity" (antes del "->")
-    // - totalOrders: primer número de "Orders" (antes del "|")
+    /* ===== Fecha y hora: idéntico comportamiento que opo11 ===== */
+    const pad2=n=>String(n).padStart(2,'0');
+    function actualizarFechaHora(){
+      const ahora=new Date();
+      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
+    }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    /* ===== Parser & lógica (igual que antes) ===== */
+    // Mapeo por defecto + alternativo (Orders available: capacity[0] o capacity[1])
     let MAP = { queues:"Description|Name", operators:"Number of operators", capacity:"Capacity", orders:"Orders" };
     function alternarMapeo(){
-      // Alterna a: ordersAvailable = 2do número de "Capacity" (después de "->")
-      // Útil si tu panel define "disponibles" como el tope objetivo.
-      if(MAP._alt){
-        MAP._alt = false;
-        alert("Mapeo por defecto activo:\nOrders available = primer número de Capacity (antes de →)\nTotal orders = primer número de Orders (antes de |)");
-      }else{
-        MAP._alt = true;
-        alert("Mapeo alternativo activo:\nOrders available = segundo número de Capacity (después de →)\nTotal orders = primer número de Orders (antes de |)");
-      }
+      MAP._alt = !MAP._alt;
+      alert(MAP._alt
+        ? "Mapeo alternativo:\nOrders available = segundo número de Capacity (después de →)"
+        : "Mapeo por defecto:\nOrders available = primer número de Capacity (antes de →)");
     }
 
     function limpiar(){
-      document.getElementById('input').value='';
-      document.querySelector('#out tbody').innerHTML='';
-      document.getElementById('t_ops').textContent='';
-      document.getElementById('t_av').textContent='';
-      document.getElementById('t_tot').textContent='';
+      input.value=''; document.querySelector('#out tbody').innerHTML='';
+      t_ops.textContent=''; t_av.textContent=''; t_tot.textContent='';
     }
 
-    function getIdx(headers, names){
+    const input = document.getElementById('input');
+    const t_ops = document.getElementById('t_ops');
+    const t_av  = document.getElementById('t_av');
+    const t_tot = document.getElementById('t_tot');
+
+    const getIdx=(headers, names)=>{
       const list = names.split('|').map(s=>s.trim().toLowerCase());
-      for(let i=0;i<headers.length;i++){
-        const h=headers[i].trim().toLowerCase();
-        if(list.includes(h)) return i;
-      }
+      for(let i=0;i<headers.length;i++) if(list.includes(headers[i].trim().toLowerCase())) return i;
       return -1;
-    }
-
-    function num(x){
-      if(x==null) return 0;
-      const m = String(x).match(/-?\d+/);
-      return m ? parseInt(m[0],10) : 0;
-    }
-    function numPair(text, splitter){
-      // Devuelve [a,b] numéricos de patrones como "31 -> 118" o "143 | 0"
-      const s = String(text||'');
-      const m = s.split(splitter).map(t=>num(t));
-      return [m[0]||0, m[1]||0];
-    }
+    };
+    const num  = x => { if(x==null) return 0; const m=String(x).match(/-?\d+/); return m?parseInt(m[0],10):0; };
+    const pair = (text, splitter) => String(text||'').split(splitter).map(t=>num(t)).slice(0,2).concat([0,0]).slice(0,2);
 
     function claseSemaforo(val){
-      // reglas suaves tipo tu mock:
-      // Orders available: 0 = rojo; 1–5 = amarillo; >=6 = verde (puedes ajustar)
       if(val<=0) return 'bad';
       if(val<=5) return 'warn';
       return 'ok';
     }
 
     function procesar(){
-      const raw = document.getElementById('input').value.trim();
+      const raw = input.value.trim();
       if(!raw){ alert('Pega el bloque con encabezados.'); return; }
 
       const rows = raw.split('\n').map(r=>r.split('\t'));
@@ -155,8 +165,8 @@
       const ixCap     = getIdx(headers, MAP.capacity);
       const ixOrders  = getIdx(headers, MAP.orders);
 
-      if(ixCountry<0 || ixQueues<0 || ixOps<0 || ixCap<0 || ixOrders<0){
-        alert('No encontré alguna columna requerida (Country, Description/Name, Number of operators, Capacity, Orders). Revisa encabezados.');
+      if([ixCountry,ixQueues,ixOps,ixCap,ixOrders].some(x=>x<0)){
+        alert('No encontré alguna columna requerida (Country, Description/Name, Number of operators, Capacity, Orders).');
         return;
       }
 
@@ -168,38 +178,36 @@
       for(let i=1;i<rows.length;i++){
         const r = rows[i]; if(!r.length) continue;
 
-        const country = (r[ixCountry]||'').toString().replace(/^\s*\d+\.\s*/,'').trim(); // "26. Chile" → "Chile"
-        const queues  = (r[ixQueues]||'').toString().trim() || (r[ixQueues===ixQueues?ixQueues:ixQueues]||'');
-        const opsTxt  = (r[ixOps]||'').toString().trim();            // "3 | 1"
-        const capTxt  = (r[ixCap]||'').toString().trim();            // "31 -> 118"
-        const ordTxt  = (r[ixOrders]||'').toString().trim();         // "143 | 0"
+        const country = (r[ixCountry]||'').toString().replace(/^\s*\d+\.\s*/,'').trim();
+        const queues  = (r[ixQueues]||'').toString().trim();
+        const opsTxt  = (r[ixOps]||'').toString().trim();       // "3 | 1"
+        const capTxt  = (r[ixCap]||'').toString().trim();       // "31 -> 118"
+        const ordTxt  = (r[ixOrders]||'').toString().trim();    // "143 | 0"
 
-        const cap = numPair(capTxt, '->');        // [31,118]
-        const ord = numPair(ordTxt, '|');         // [143,0]
+        const cap = pair(capTxt, '->');  // [a,b]
+        const ord = pair(ordTxt, '|');   // [a,b]
 
         const ordersAvailable = MAP._alt ? cap[1] : cap[0];
         const totalOrd = ord[0];
 
-        // Sumas
-        const opsPair = numPair(opsTxt, '|');     // [3,1]
-        totalOpsL += opsPair[0]; totalOpsR += opsPair[1];
-        totalAvail += ordersAvailable;
-        totalOrders += totalOrd;
+        const ops = pair(opsTxt, '|');   // [l,r]
+        totalOpsL += ops[0]; totalOpsR += ops[1];
+        totalAvail += ordersAvailable; totalOrders += totalOrd;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="country">${country}</td>
+          <td><strong>${country}</strong></td>
           <td><span class="pill">${queues}</span></td>
-          <td>${opsTxt}</td>
+          <td>${opsTxt||'–'}</td>
           <td class="${claseSemaforo(ordersAvailable)}">${ordersAvailable}</td>
           <td class="${totalOrd===0?'bad': (totalOrd<10?'warn':'ok')}">${totalOrd}</td>
         `;
         tbody.appendChild(tr);
       }
 
-      document.getElementById('t_ops').textContent = `${totalOpsL} | ${totalOpsR}`;
-      document.getElementById('t_av').textContent  = totalAvail;
-      document.getElementById('t_tot').textContent = totalOrders;
+      t_ops.textContent = `${totalOpsL} | ${totalOpsR}`;
+      t_av.textContent  = totalAvail;
+      t_tot.textContent = totalOrders;
     }
   </script>
 </body>
