@@ -46,10 +46,10 @@
     /* Banderitas */
     .flag{ width:20px; height:14px; margin-right:6px; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.15); }
 
-    /* Colores intensos (idénticos a opo11) */
-    .green{ background:var(--green-color); color:#fff; }
-    .red{ background:var(--red-color); color:#fff; }
-    .orange{ background:var(--orange-color); color:#fff; }
+    /* Colores intensos con bordes */
+    .green{ background:var(--green-color); border:1px solid var(--green-color); color:#fff; }
+    .red{ background:var(--red-color); border:1px solid var(--red-color); color:#fff; }
+    .orange{ background:var(--orange-color); border:1px solid var(--orange-color); color:#fff; }
   </style>
 </head>
 <body>
@@ -155,7 +155,7 @@
       return [parts[0]||0, parts[1]||0];
     };
 
-    /* Colores intensos */
+    /* Colores intensos con bordes */
     function claseSemaforo(val){
       if(val<=0) return 'red';
       if(val<=5) return 'orange';
