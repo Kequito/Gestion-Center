@@ -6,11 +6,9 @@
   <title>Gestión Center – PS Auto (Resumen por país)</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
   <style>
-    /* ===== Estilos idénticos a opo11.html ===== */
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
       --primary-color:#0d47a1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
-      --green-color:#2e7d32; --red-color:#c62828; --orange-color:#f57c00;
     }
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
     aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; box-sizing:border-box; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
@@ -26,7 +24,8 @@
     .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
     .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
 
-    .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; } /* ← igual posición/tamaño */
+    /* Fecha y hora — mismo lugar/tamaño que opo11 */
+    .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; }
 
     .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
     button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff;
@@ -44,15 +43,16 @@
     thead th:first-child, tbody td:first-child{ text-align:left; }
     tfoot td{ font-weight:800; background:rgba(66,165,245,.16); border-top:2px solid var(--table-border); }
 
-    /* “Pills” y estados suaves */
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#334766;border:1px solid #2a3d5e}
+    /* Banderitas */
+    .flag{ width:20px; height:14px; margin-right:6px; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.15); }
+
+    /* Semáforos suaves (solo para valores, no para filas vacías) */
     .ok{ background:rgba(46,125,50,.15) }
     .warn{ background:rgba(255,193,7,.18) }
     .bad{ background:rgba(198,40,40,.18) }
   </style>
 </head>
 <body>
-  <!-- ===== Sidebar (idéntico) ===== -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
@@ -68,12 +68,10 @@
     <div class="spacer"></div>
   </aside>
 
-  <!-- ===== Main ===== -->
   <main>
     <div class="page-title">🚚 Post-Sale Auto – Resumen por país</div>
     <p class="subtitle">Pega el bloque tal cual (con tabuladores) y genera la tabla compacta.</p>
 
-    <!-- Fecha y hora — MISMO lugar / estilo que opo11 -->
     <div class="datetime" id="fechaHora"></div>
 
     <div class="toolbar">
@@ -108,7 +106,7 @@
   </main>
 
   <script>
-    /* ===== Fecha y hora: idéntico comportamiento que opo11 ===== */
+    /* === Fecha y hora (igual que opo11) === */
     const pad2=n=>String(n).padStart(2,'0');
     function actualizarFechaHora(){
       const ahora=new Date();
@@ -118,8 +116,7 @@
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    /* ===== Parser & lógica (igual que antes) ===== */
-    // Mapeo por defecto + alternativo (Orders available: capacity[0] o capacity[1])
+    /* === Config === */
     let MAP = { queues:"Description|Name", operators:"Number of operators", capacity:"Capacity", orders:"Orders" };
     function alternarMapeo(){
       MAP._alt = !MAP._alt;
@@ -128,32 +125,44 @@
         : "Mapeo por defecto:\nOrders available = primer número de Capacity (antes de →)");
     }
 
-    function limpiar(){
-      input.value=''; document.querySelector('#out tbody').innerHTML='';
-      t_ops.textContent=''; t_av.textContent=''; t_tot.textContent='';
-    }
-
-    const input = document.getElementById('input');
-    const t_ops = document.getElementById('t_ops');
-    const t_av  = document.getElementById('t_av');
-    const t_tot = document.getElementById('t_tot');
-
-    const getIdx=(headers, names)=>{
-      const list = names.split('|').map(s=>s.trim().toLowerCase());
-      for(let i=0;i<headers.length;i++) if(list.includes(headers[i].trim().toLowerCase())) return i;
-      return -1;
+    const flagCode = (pais)=>{
+      const m = {
+        "Chile":"cl","Ecuador":"ec","Mexico":"mx","Peru":"pe",
+        "Colombia":"co","Costa Rica":"cr","Paraguay":"py","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo"
+      };
+      return m[pais] || "";
     };
-    const num  = x => { if(x==null) return 0; const m=String(x).match(/-?\d+/); return m?parseInt(m[0],10):0; };
-    const pair = (text, splitter) => String(text||'').split(splitter).map(t=>num(t)).slice(0,2).concat([0,0]).slice(0,2);
 
+    /* === Utils === */
+    function limpiar(){
+      document.getElementById('input').value='';
+      document.querySelector('#out tbody').innerHTML='';
+      document.getElementById('t_ops').textContent='';
+      document.getElementById('t_av').textContent='';
+      document.getElementById('t_tot').textContent='';
+    }
+    function getIdx(headers, names){
+      const list = names.split('|').map(s=>s.trim().toLowerCase());
+      for(let i=0;i<headers.length;i++){
+        const h=headers[i].trim().toLowerCase();
+        if(list.includes(h)) return i;
+      }
+      return -1;
+    }
+    const num = x => { if(x==null) return 0; const m=String(x).match(/-?\d+/); return m?parseInt(m[0],10):0; };
+    const pair = (text, splitter) => {
+      const parts = String(text||'').split(splitter).map(t=>num(t));
+      return [parts[0]||0, parts[1]||0];
+    };
     function claseSemaforo(val){
       if(val<=0) return 'bad';
       if(val<=5) return 'warn';
       return 'ok';
     }
 
+    /* === Parser robusto (omite filas vacías / separadores) === */
     function procesar(){
-      const raw = input.value.trim();
+      const raw = document.getElementById('input').value.trim();
       if(!raw){ alert('Pega el bloque con encabezados.'); return; }
 
       const rows = raw.split('\n').map(r=>r.split('\t'));
@@ -176,38 +185,56 @@
       let totalOpsL=0, totalOpsR=0, totalAvail=0, totalOrders=0;
 
       for(let i=1;i<rows.length;i++){
-        const r = rows[i]; if(!r.length) continue;
+        const r = rows[i];
+        if(!r || !r.length) continue;
 
-        const country = (r[ixCountry]||'').toString().replace(/^\s*\d+\.\s*/,'').trim();
+        // Omitir separadores o filas basura (por ejemplo "☰")
+        const firstCell = (r[0]||'').trim();
+        if(firstCell === '☰') continue;
+
+        // Datos base
+        const countryRaw = (r[ixCountry]||'').toString().trim();
         const queues  = (r[ixQueues]||'').toString().trim();
-        const opsTxt  = (r[ixOps]||'').toString().trim();       // "3 | 1"
-        const capTxt  = (r[ixCap]||'').toString().trim();       // "31 -> 118"
-        const ordTxt  = (r[ixOrders]||'').toString().trim();    // "143 | 0"
+        const opsTxt  = (r[ixOps]||'').toString().trim();
+        const capTxt  = (r[ixCap]||'').toString().trim();
+        const ordTxt  = (r[ixOrders]||'').toString().trim();
 
-        const cap = pair(capTxt, '->');  // [a,b]
-        const ord = pair(ordTxt, '|');   // [a,b]
+        // Reglas de "completitud" mínimas para pintar fila (evita filas verdes vacías)
+        const hasCountry = countryRaw !== '';
+        const hasQueues  = queues !== '';
+        const hasCap     = capTxt !== '';
+        const hasOrders  = ordTxt !== '';
+        if(!(hasCountry && hasQueues && hasCap && hasOrders)) continue;
 
+        // Normalizar país ("26. Chile" → "Chile")
+        const country = countryRaw.replace(/^\s*\d+\.\s*/,'').trim();
+
+        const cap = pair(capTxt, '->');          // [a,b]
+        const ord = pair(ordTxt, '|');           // [a,b]
         const ordersAvailable = MAP._alt ? cap[1] : cap[0];
         const totalOrd = ord[0];
 
-        const ops = pair(opsTxt, '|');   // [l,r]
+        const ops = pair(opsTxt, '|');           // [l,r]
         totalOpsL += ops[0]; totalOpsR += ops[1];
         totalAvail += ordersAvailable; totalOrders += totalOrd;
 
+        const code = flagCode(country);
+        const flag = code ? `<img class="flag" src="https://flagcdn.com/w40/${code}.png" alt="">` : '';
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${country}</strong></td>
-          <td><span class="pill">${queues}</span></td>
-          <td>${opsTxt||'–'}</td>
+          <td><strong>${flag}${country}</strong></td>
+          <td>${queues}</td>
+          <td>${opsTxt || '–'}</td>
           <td class="${claseSemaforo(ordersAvailable)}">${ordersAvailable}</td>
           <td class="${totalOrd===0?'bad': (totalOrd<10?'warn':'ok')}">${totalOrd}</td>
         `;
         tbody.appendChild(tr);
       }
 
-      t_ops.textContent = `${totalOpsL} | ${totalOpsR}`;
-      t_av.textContent  = totalAvail;
-      t_tot.textContent = totalOrders;
+      document.getElementById('t_ops').textContent = `${totalOpsL} | ${totalOpsR}`;
+      document.getElementById('t_av').textContent  = totalAvail;
+      document.getElementById('t_tot').textContent = totalOrders;
     }
   </script>
 </body>
