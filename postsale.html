@@ -9,6 +9,7 @@
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
       --primary-color:#0d47a1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+      --green-color:#2e7d32; --red-color:#c62828; --orange-color:#f57c00;
     }
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
     aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; box-sizing:border-box; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
@@ -24,7 +25,6 @@
     .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
     .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
 
-    /* Fecha y hora — mismo lugar/tamaño que opo11 */
     .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; }
 
     .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
@@ -46,10 +46,10 @@
     /* Banderitas */
     .flag{ width:20px; height:14px; margin-right:6px; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.15); }
 
-    /* Semáforos suaves (solo para valores, no para filas vacías) */
-    .ok{ background:rgba(46,125,50,.15) }
-    .warn{ background:rgba(255,193,7,.18) }
-    .bad{ background:rgba(198,40,40,.18) }
+    /* Colores intensos (idénticos a opo11) */
+    .green{ background:var(--green-color); color:#fff; }
+    .red{ background:var(--red-color); color:#fff; }
+    .orange{ background:var(--orange-color); color:#fff; }
   </style>
 </head>
 <body>
@@ -154,13 +154,15 @@
       const parts = String(text||'').split(splitter).map(t=>num(t));
       return [parts[0]||0, parts[1]||0];
     };
+
+    /* Colores intensos */
     function claseSemaforo(val){
-      if(val<=0) return 'bad';
-      if(val<=5) return 'warn';
-      return 'ok';
+      if(val<=0) return 'red';
+      if(val<=5) return 'orange';
+      return 'green';
     }
 
-    /* === Parser robusto (omite filas vacías / separadores) === */
+    /* === Parser robusto === */
     function procesar(){
       const raw = document.getElementById('input').value.trim();
       if(!raw){ alert('Pega el bloque con encabezados.'); return; }
@@ -188,33 +190,25 @@
         const r = rows[i];
         if(!r || !r.length) continue;
 
-        // Omitir separadores o filas basura (por ejemplo "☰")
         const firstCell = (r[0]||'').trim();
         if(firstCell === '☰') continue;
 
-        // Datos base
         const countryRaw = (r[ixCountry]||'').toString().trim();
         const queues  = (r[ixQueues]||'').toString().trim();
         const opsTxt  = (r[ixOps]||'').toString().trim();
         const capTxt  = (r[ixCap]||'').toString().trim();
         const ordTxt  = (r[ixOrders]||'').toString().trim();
 
-        // Reglas de "completitud" mínimas para pintar fila (evita filas verdes vacías)
-        const hasCountry = countryRaw !== '';
-        const hasQueues  = queues !== '';
-        const hasCap     = capTxt !== '';
-        const hasOrders  = ordTxt !== '';
-        if(!(hasCountry && hasQueues && hasCap && hasOrders)) continue;
+        if(!(countryRaw && queues && capTxt && ordTxt)) continue;
 
-        // Normalizar país ("26. Chile" → "Chile")
         const country = countryRaw.replace(/^\s*\d+\.\s*/,'').trim();
 
-        const cap = pair(capTxt, '->');          // [a,b]
-        const ord = pair(ordTxt, '|');           // [a,b]
+        const cap = pair(capTxt, '->');
+        const ord = pair(ordTxt, '|');
         const ordersAvailable = MAP._alt ? cap[1] : cap[0];
         const totalOrd = ord[0];
 
-        const ops = pair(opsTxt, '|');           // [l,r]
+        const ops = pair(opsTxt, '|');
         totalOpsL += ops[0]; totalOpsR += ops[1];
         totalAvail += ordersAvailable; totalOrders += totalOrd;
 
@@ -227,7 +221,7 @@
           <td>${queues}</td>
           <td>${opsTxt || '–'}</td>
           <td class="${claseSemaforo(ordersAvailable)}">${ordersAvailable}</td>
-          <td class="${totalOrd===0?'bad': (totalOrd<10?'warn':'ok')}">${totalOrd}</td>
+          <td class="${totalOrd===0?'red': (totalOrd<10?'orange':'green')}">${totalOrd}</td>
         `;
         tbody.appendChild(tr);
       }
