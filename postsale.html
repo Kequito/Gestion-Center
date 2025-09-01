@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – PS Auto (Resumen por país)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0d47a1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+      --green:#2e7d32; --red:#c62828; --amber:#f9a825;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Lexend',sans-serif;background:var(--bg-app);color:var(--txt);display:flex;min-height:100vh}
+    aside{background:var(--bg-aside);width:220px;height:100vh;padding:40px 20px;position:fixed;left:0;top:0}
+    .logo{font-size:22px;font-weight:700;margin-bottom:32px;text-align:center}
+    nav a{color:var(--txt);display:block;text-decoration:none;margin:14px 0;padding:10px 12px;border-radius:8px}
+    nav a:hover{background:var(--hover)}
+    nav a.active{background:var(--hover);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+    main{margin-left:220px;width:calc(100% - 220px);padding:28px}
+    .page-title{font-size:24px;font-weight:800;margin:0 0 6px}
+    .subtitle{margin:0 0 12px;color:var(--txt-muted)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+    button{padding:10px 14px;font-size:14px;border:none;border-radius:10px;background:var(--primary-color);color:#fff;cursor:pointer}
+    button:hover{background:var(--accent-color)}
+    textarea{width:100%;min-height:160px;padding:12px;border:1px solid var(--accent-color);border-radius:12px;background:var(--table-bg);color:var(--txt)}
+    table{margin-top:14px;border-collapse:separate;border-spacing:0;width:100%;background:var(--table-bg);border:1px solid var(--table-border);border-radius:12px;overflow:hidden}
+    th,td{padding:10px;border-bottom:1px solid var(--table-border);text-align:center}
+    thead th{background:var(--header-bg);color:#fff}
+    thead th:first-child,tbody td:first-child{ text-align:left }
+    tfoot td{font-weight:800;background:rgba(66,165,245,.16);border-top:2px solid var(--table-border)}
+    .country{font-weight:800}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--table-border)}
+    /* semáforos suaves */
+    .ok{background:rgba(46,125,50,.15)}
+    .warn{background:rgba(255,193,7,.18)}
+    .bad{background:rgba(198,40,40,.18)}
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a class="active" href="#">🚚 PS Auto (Resumen)</a>
+    </nav>
+  </aside>
+
+  <main>
+    <h1 class="page-title">🚚 Post-Sale Auto – Resumen por país</h1>
+    <p class="subtitle">Pega el bloque tal cual (con tabuladores) y genera la tabla compacta: Country · Queues · Number of operators · Orders available · Total orders.</p>
+
+    <div class="toolbar">
+      <button onclick="procesar()">⚙️ Procesar</button>
+      <button onclick="limpiar()">🧹 Limpiar</button>
+      <button onclick="alternarMapeo()">🧭 Cambiar mapeo columnas</button>
+    </div>
+
+    <textarea id="input" placeholder="Pega aquí las filas (con encabezados)."></textarea>
+
+    <table id="out">
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Queues</th>
+          <th>Number of operators</th>
+          <th>Orders available</th>
+          <th>Total orders</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td class="country">TOTAL</td>
+          <td></td>
+          <td id="t_ops"></td>
+          <td id="t_av"></td>
+          <td id="t_tot"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </main>
+
+  <script>
+    // Mapeo por defecto (ajustable con el botón "Cambiar mapeo")
+    // - ordersAvailable: primer número de "Capacity" (antes del "->")
+    // - totalOrders: primer número de "Orders" (antes del "|")
+    let MAP = { queues:"Description|Name", operators:"Number of operators", capacity:"Capacity", orders:"Orders" };
+    function alternarMapeo(){
+      // Alterna a: ordersAvailable = 2do número de "Capacity" (después de "->")
+      // Útil si tu panel define "disponibles" como el tope objetivo.
+      if(MAP._alt){
+        MAP._alt = false;
+        alert("Mapeo por defecto activo:\nOrders available = primer número de Capacity (antes de →)\nTotal orders = primer número de Orders (antes de |)");
+      }else{
+        MAP._alt = true;
+        alert("Mapeo alternativo activo:\nOrders available = segundo número de Capacity (después de →)\nTotal orders = primer número de Orders (antes de |)");
+      }
+    }
+
+    function limpiar(){
+      document.getElementById('input').value='';
+      document.querySelector('#out tbody').innerHTML='';
+      document.getElementById('t_ops').textContent='';
+      document.getElementById('t_av').textContent='';
+      document.getElementById('t_tot').textContent='';
+    }
+
+    function getIdx(headers, names){
+      const list = names.split('|').map(s=>s.trim().toLowerCase());
+      for(let i=0;i<headers.length;i++){
+        const h=headers[i].trim().toLowerCase();
+        if(list.includes(h)) return i;
+      }
+      return -1;
+    }
+
+    function num(x){
+      if(x==null) return 0;
+      const m = String(x).match(/-?\d+/);
+      return m ? parseInt(m[0],10) : 0;
+    }
+    function numPair(text, splitter){
+      // Devuelve [a,b] numéricos de patrones como "31 -> 118" o "143 | 0"
+      const s = String(text||'');
+      const m = s.split(splitter).map(t=>num(t));
+      return [m[0]||0, m[1]||0];
+    }
+
+    function claseSemaforo(val){
+      // reglas suaves tipo tu mock:
+      // Orders available: 0 = rojo; 1–5 = amarillo; >=6 = verde (puedes ajustar)
+      if(val<=0) return 'bad';
+      if(val<=5) return 'warn';
+      return 'ok';
+    }
+
+    function procesar(){
+      const raw = document.getElementById('input').value.trim();
+      if(!raw){ alert('Pega el bloque con encabezados.'); return; }
+
+      const rows = raw.split('\n').map(r=>r.split('\t'));
+      const headers = rows[0];
+
+      const ixCountry = getIdx(headers, 'Country');
+      const ixQueues  = getIdx(headers, MAP.queues);
+      const ixOps     = getIdx(headers, MAP.operators);
+      const ixCap     = getIdx(headers, MAP.capacity);
+      const ixOrders  = getIdx(headers, MAP.orders);
+
+      if(ixCountry<0 || ixQueues<0 || ixOps<0 || ixCap<0 || ixOrders<0){
+        alert('No encontré alguna columna requerida (Country, Description/Name, Number of operators, Capacity, Orders). Revisa encabezados.');
+        return;
+      }
+
+      const tbody = document.querySelector('#out tbody');
+      tbody.innerHTML='';
+
+      let totalOpsL=0, totalOpsR=0, totalAvail=0, totalOrders=0;
+
+      for(let i=1;i<rows.length;i++){
+        const r = rows[i]; if(!r.length) continue;
+
+        const country = (r[ixCountry]||'').toString().replace(/^\s*\d+\.\s*/,'').trim(); // "26. Chile" → "Chile"
+        const queues  = (r[ixQueues]||'').toString().trim() || (r[ixQueues===ixQueues?ixQueues:ixQueues]||'');
+        const opsTxt  = (r[ixOps]||'').toString().trim();            // "3 | 1"
+        const capTxt  = (r[ixCap]||'').toString().trim();            // "31 -> 118"
+        const ordTxt  = (r[ixOrders]||'').toString().trim();         // "143 | 0"
+
+        const cap = numPair(capTxt, '->');        // [31,118]
+        const ord = numPair(ordTxt, '|');         // [143,0]
+
+        const ordersAvailable = MAP._alt ? cap[1] : cap[0];
+        const totalOrd = ord[0];
+
+        // Sumas
+        const opsPair = numPair(opsTxt, '|');     // [3,1]
+        totalOpsL += opsPair[0]; totalOpsR += opsPair[1];
+        totalAvail += ordersAvailable;
+        totalOrders += totalOrd;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="country">${country}</td>
+          <td><span class="pill">${queues}</span></td>
+          <td>${opsTxt}</td>
+          <td class="${claseSemaforo(ordersAvailable)}">${ordersAvailable}</td>
+          <td class="${totalOrd===0?'bad': (totalOrd<10?'warn':'ok')}">${totalOrd}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      document.getElementById('t_ops').textContent = `${totalOpsL} | ${totalOpsR}`;
+      document.getElementById('t_av').textContent  = totalAvail;
+      document.getElementById('t_tot').textContent = totalOrders;
+    }
+  </script>
+</body>
+</html>
