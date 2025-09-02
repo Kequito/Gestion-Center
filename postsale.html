@@ -55,8 +55,24 @@
     .red{ background:var(--red-color); border:1px solid var(--red-color); color:#fff; }
     .orange{ background:var(--orange-color); border:1px solid var(--orange-color); color:#fff; }
 
-    .history-actions{ display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px; }
-    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; display:none; z-index:1000; }
+    /* ---- Acciones e HISTÓRICO ---- */
+    .history-actions{ display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px; justify-content:flex-start; }
+    .filters{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:10px 12px; margin-top:8px; }
+    .filter-group{ display:flex; align-items:center; gap:10px; }
+    .filter-group label{ display:flex; align-items:center; gap:8px; font-weight:700; margin:0; }
+    .filter-group select, .filter-group input[type="date"]{ padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color); background:var(--table-bg); color:var(--txt); min-width:140px; line-height:1; height:38px; }
+    .filter-group .clear-btn{ background:#344768; border:1px solid var(--table-border); }
+    .filter-group .clear-btn:hover{ background:#3e577f; }
+
+    /* Métricas rápidas */
+    .quick-metrics{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    .metric{ background:rgba(255,255,255,.05); border:1px solid var(--table-border); padding:10px 12px; border-radius:10px; min-width:150px; }
+    .metric .title{ font-size:12px; color:var(--txt-muted); margin-bottom:4px; }
+    .metric .value{ font-size:18px; font-weight:800; }
+    .metric .delta.up{ color:#76ff7a; }
+    .metric .delta.down{ color:#ff9e9e; }
+
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
   </style>
 </head>
 <body>
@@ -69,8 +85,8 @@
       <a href="estadisticas.html">📈 Estadísticas</a>
       <a href="cobertura.html">🌎 Cobertura</a>
       <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-      <a class="active" href="#">🚚 Post-Sale New Report</a>
       <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a class="active" href="#">🚚 PS Auto (Resumen)</a>
     </nav>
     <div class="spacer"></div>
   </aside>
@@ -119,7 +135,57 @@
       </tfoot>
     </table>
 
-    <h3 class="page-title" style="font-size:18px; margin-top:12px;">📋 Registro histórico por hora</h3>
+    <div class="history-actions">
+      <button id="btnExport">⬇️ Exportar histórico (CSV)</button>
+    </div>
+
+    <!-- Filtros (como en opo11) -->
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filtroPais">🌎 País:</label>
+        <select id="filtroPais">
+          <option value="todos">🌍 Todos</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="presetRango">🗓️ Rango:</label>
+        <select id="presetRango">
+          <option value="dia">Día específico</option>
+          <option value="hoy">Hoy</option>
+          <option value="ayer">Ayer</option>
+          <option value="7d">Últimos 7 días</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filtroFecha">📅 Fecha:</label>
+        <input type="date" id="filtroFecha"/>
+        <button class="clear-btn" id="btnFechaTodos">Todos</button>
+      </div>
+    </div>
+
+    <!-- Métricas rápidas (adaptadas a Orders available) -->
+    <div id="quickMetrics" class="quick-metrics" style="display:none;">
+      <div class="metric">
+        <div class="title">Min Orders avail</div>
+        <div id="mMin" class="value">–</div>
+      </div>
+      <div class="metric">
+        <div class="title">Mediana Orders avail</div>
+        <div id="mMed" class="value">–</div>
+      </div>
+      <div class="metric">
+        <div class="title">Max Orders avail</div>
+        <div id="mMax" class="value">–</div>
+      </div>
+      <div class="metric">
+        <div class="title">Δ vs hora previa</div>
+        <div id="mDelta" class="value">–</div>
+      </div>
+    </div>
+
+    <h3 class="page-title" style="font-size:18px; margin-top:6px;">📋 Registro histórico por hora</h3>
     <table id="tablaHistorico">
       <thead>
         <tr>
@@ -129,7 +195,7 @@
           <th>Orders avail</th>
           <th>Total orders</th>
           <th>Ops</th>
-          <th>Ult. act. datos</th><!-- nueva columna -->
+          <th>Ult. act. datos</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -138,9 +204,6 @@
 
   <div id="toast"></div>
 
-  <!-- Chart opcional (si luego quieres línea de % o totales)
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
-
   <script type="module">
     /* ====== CONFIG EDITABLE ====== */
     const SOURCE_URL = "https://panel.2wcall.com/queue/control/index?QueueSearch%5Bid%5D=&QueueSearch%5Bname%5D=auto&QueueSearch%5Bpartner_id%5D=&QueueSearch%5Bcountry_id%5D%5B%5D=26&QueueSearch%5Bcountry_id%5D%5B%5D=88&QueueSearch%5Bcountry_id%5D%5B%5D=3&QueueSearch%5Bcountry_id%5D%5B%5D=39&QueueSearch%5Bpriorities%5D=&QueueSearch%5Btype_primary%5D=&QueueSearch%5Bis_primary%5D=0";
@@ -148,10 +211,10 @@
     const FIRE_DOC_ID            = "state";
     const FIRE_COLLECTION_HIST   = "psauto_history";  // histórico por hora
 
-    /* ===== Firebase v12 (igual a opo11) ===== */
+    /* ===== Firebase v12 (mismo stack que opo11) ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, getDoc, serverTimestamp,
+    import { getFirestore, doc, setDoc, onSnapshot, serverTimestamp,
              collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -174,7 +237,7 @@
     try{ await signInAnonymously(auth); }catch(e){ console.error(e); setBadge('Solo lectura (auth falló)','warn'); toast('⚠️ Auth: '+(e.code||e.message)); }
     onAuthStateChanged(auth, (u)=> setBadge(u?'Conectado ✓':'Solo lectura', u?'ok':'') );
 
-    /* ===== Utilidades UI ===== */
+    /* ===== Utilidades ===== */
     const pad2=n=>String(n).padStart(2,'0');
     function nowStrings(){
       const d=new Date();
@@ -184,7 +247,6 @@
     }
     function actualizarFechaHora(){ const {fecha,hora}=nowStrings(); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
-
     const toast=(msg)=>{ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; t.style.opacity=1; setTimeout(()=>{t.style.transition='opacity .5s'; t.style.opacity=0;},2200); setTimeout(()=>{t.style.display='none'; t.style.transition='';},2800); };
 
     /* ===== Elementos ===== */
@@ -215,25 +277,16 @@
       input.value=''; tbody.innerHTML=''; t_ops.textContent=''; t_av.textContent=''; t_tot.textContent=''; lastUpdateEl.textContent='Última actualización: —';
     }
 
-    /* ===== Estado compartido =====
-       Guardamos/Leemos un doc con:
-       {
-         rows: [{country, queues, opsTxt, ordersAvail, totalOrd, code}],
-         totals: {opsL,opsR,avail,orders},
-         lastUpdatedHHMM: "09:30", lastUpdatedISO: "...",
-         writeLockUntil: epoch_ms
-       }
-    */
+    /* ===== Estado compartido ===== */
     let currentState = null;           // lo que mostramos
-    let lastDataUpdateISO = null;      // cuándo se procesó por última vez (para "Ult. act. datos")
+    let lastDataUpdateISO = null;      // “Últ. act. datos”
     let writeLockUntil = 0;            // bloqueo escritura
 
-    const currentRef = doc(db, FIRE_COLLECTION_CURRENT, FIRE_DOC_ID);
+    const currentRef = doc(db, "psauto_current", "state");
     onSnapshot(currentRef, (snap)=>{
       if(!snap.exists()) return;
       const data=snap.data(); currentState=data; writeLockUntil=data.writeLockUntil||0;
-      renderFromState(data);
-      updateLockUI();
+      renderFromState(data); updateLockUI();
     });
 
     function updateLockUI(){
@@ -270,30 +323,20 @@
       t_av.textContent  = st.totals?.avail||0;
       t_tot.textContent = st.totals?.orders||0;
 
-      // Última actualización
       if(st.lastUpdatedISO){
         const d=new Date(st.lastUpdatedISO);
         const fecha=d.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
         const hora =d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
         lastUpdateEl.textContent = `Última actualización: ${fecha} – ${hora}`;
       }
-      // Historial (solo refrescamos después de guardar; aquí no lo tocamos)
     }
 
     async function guardarEstadoCompartido(state){
-      // chequear bloqueo
       const now=Date.now();
       if(now < writeLockUntil){ toast('⛔ Bloqueado por 30s para evitar choques.'); return; }
-
-      // escribir y activar nuevo lock 30s
       const newLock = now + 30_000;
-      await setDoc(currentRef, {
-        ...state,
-        writeLockUntil: newLock,
-        serverTS: serverTimestamp()
-      });
-      writeLockUntil = newLock;
-      updateLockUI();
+      await setDoc(currentRef, { ...state, writeLockUntil:newLock, serverTS: serverTimestamp() });
+      writeLockUntil = newLock; updateLockUI();
     }
 
     /* ===== Procesar pega ===== */
@@ -340,27 +383,22 @@
       const state={
         rows,
         totals:{ opsL, opsR, avail, orders },
-        lastUpdatedISO: new Date().toISOString(),  // <- guardamos “últ. act. datos”
+        lastUpdatedISO: new Date().toISOString(),  // “Últ. act. datos”
       };
       lastDataUpdateISO = state.lastUpdatedISO;
 
-      renderFromState(state);          // pinta local
-      guardarEstadoCompartido(state);  // comparte a todos y activa lock
+      renderFromState(state);
+      guardarEstadoCompartido(state);
       toast('✅ Datos procesados y compartidos.');
     }
 
-    /* ===== Registro histórico =====
-       - Primer guardado a 07:15.
-       - Luego cada hora exacta 08:00–17:00.
-       - “Ult. act. datos” = lastUpdatedISO (si no hubo cambios desde 09:30, a las 10:00 guardamos esos mismos datos con 09:30).
-    */
+    /* ===== Registro histórico ===== */
     function hhmm(d){ return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
     function ddmmyyyy(d){ return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`; }
 
     async function registrarHistoricoAuto(){
-      if(!currentState || !(currentState.rows||[]).length) return; // nada que guardar
+      if(!currentState || !(currentState.rows||[]).length) return;
       const dNow = new Date();
-
       const ultimaActISO = lastDataUpdateISO || currentState.lastUpdatedISO || dNow.toISOString();
       const dAct = new Date(ultimaActISO);
 
@@ -374,77 +412,188 @@
         ordersAvail: row.ordersAvail,
         totalOrders: row.totalOrd,
         ops: row.opsTxt || '0 | 0',
-        ultimaActualizacion: hhmm(dAct)            // <- NUEVA COLUMNA (hora de última carga de datos)
+        ultimaActualizacion: hhmm(dAct)
       }));
 
       try{
         const col = collection(db, FIRE_COLLECTION_HIST);
         await Promise.all(batch.map(b=>addDoc(col, b)));
         toast('🕒 Histórico guardado.');
-        // Opcional: refrescar última tabla histórico (consulta simple del día)
-        renderHistoricoTablaHoy();
-      }catch(e){
-        console.error(e); toast('⚠️ No se pudo guardar histórico.');
-      }
+        renderHistoricoTabla();
+      }catch(e){ console.error(e); toast('⚠️ No se pudo guardar histórico.'); }
     }
+    function registrarManual(){ registrarHistoricoAuto(); }
 
-    // Botón manual por si quieren forzar un snapshot
-    function registrarManual(){
-      registrarHistoricoAuto();
-    }
-
-    // Horarios programados: 07:15, 08:00 … 17:00
-    const SLOTS = (()=> {
-      const arr = [{h:7,m:15}];
-      for(let h=8; h<=17; h++) arr.push({h, m:0});
-      return arr;
-    })();
-
+    // Horarios programados: 07:15, luego 08:00 … 17:00
+    const SLOTS = (()=> { const arr=[{h:7,m:15}]; for(let h=8;h<=17;h++) arr.push({h,m:0}); return arr; })();
     function msToNextSlot(){
       const now=new Date();
-      for(const s of SLOTS){
-        const t=new Date(); t.setHours(s.h, s.m, 0, 0);
-        if(t.getTime() > now.getTime()) return t.getTime() - now.getTime();
-      }
-      // si pasó el último (17:00), programar para mañana 07:15
-      const t=new Date(now);
-      t.setDate(now.getDate()+1); t.setHours(7,15,0,0);
-      return t.getTime() - now.getTime();
+      for(const s of SLOTS){ const t=new Date(); t.setHours(s.h,s.m,0,0); if(t>now) return t-now; }
+      const t=new Date(now); t.setDate(now.getDate()+1); t.setHours(7,15,0,0); return t-now;
+    }
+    function programarAutoSave(){ setTimeout(async ()=>{ await registrarHistoricoAuto(); programarAutoSave(); }, msToNextSlot()); }
+    programarAutoSave();
+
+    /* ====== FILTROS y MÉTRICAS (como en opo11) ====== */
+    const filtroPaisEl   = document.getElementById('filtroPais');
+    const filtroFechaEl  = document.getElementById('filtroFecha');
+    const presetEl       = document.getElementById('presetRango');
+    document.getElementById('btnFechaTodos').onclick = ()=>{ filtroFechaEl.value=""; renderHistoricoTabla(true); };
+
+    document.getElementById('btnExport').onclick = exportarHistoricoCSV;
+
+    const quickBox = document.getElementById('quickMetrics');
+    const mMin = document.getElementById('mMin');
+    const mMed = document.getElementById('mMed');
+    const mMax = document.getElementById('mMax');
+    const mDelta = document.getElementById('mDelta');
+
+    function rangeFromPreset(preset, dateISO){
+      const now=new Date();
+      const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+      const startOf=(iso)=> new Date(`${iso}T00:00:00`).getTime();
+      const addDays=(iso,days)=>{ const d=new Date(`${iso}T00:00:00`); d.setDate(d.getDate()+days); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
+      if(preset==='hoy'){ const s=startOf(todayISO), e=startOf(addDays(todayISO,1)); return {start:s,end:e}; }
+      if(preset==='ayer'){ const y=addDays(todayISO,-1); return {start:startOf(y),end:startOf(todayISO)}; }
+      if(preset==='7d'){ const s=addDays(todayISO,-6); return {start:startOf(s),end:startOf(addDays(todayISO,1))}; }
+      if(preset==='dia' && dateISO){ return {start:startOf(dateISO),end:startOf(addDays(dateISO,1))}; }
+      return {start:null, end:null};
     }
 
-    function programarAutoSave(){
-      setTimeout(async ()=>{
-        await registrarHistoricoAuto();
-        programarAutoSave(); // reprograma siguiente slot
-      }, msToNextSlot());
+    function ddmmyyyyToISO(s){ if(!s) return ""; const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; }
+    function toHora24(str){
+      if(!str) return "";
+      let s=str.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[\.]/g,'');
+      const m24=s.match(/^(\d{1,2}):(\d{2})$/); if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
+      const m12=s.match(/^(\d{1,2}):(\d{2})(am|pm)$/);
+      if(m12){ let h=+m12[1]%12, min=+m12[2]; if(m12[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`; }
+      return str;
     }
-    programarAutoSave(); // arranca programador
 
-    /* ===== Tabla histórico simple (hoy) ===== */
-    async function renderHistoricoTablaHoy(){
-      const tb = document.querySelector('#tablaHistorico tbody');
-      tb.innerHTML='';
+    let cloudHistorico=[];
+    function normalizeRows(rows){
+      rows.forEach(r=>{
+        const iso  = r.fechaISO || ddmmyyyyToISO(r.fecha);
+        const hh   = r.hora24 || toHora24(r.hora);
+        if(!r.ts && iso && hh){ r.ts = new Date(`${iso}T${hh}:00`).getTime(); }
+        r.hora = hh || r.hora;
+      });
+      rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
+      return rows;
+    }
+
+    async function ensurePaisesOptions(){
+      // añade países vistos (del histórico y del estado actual)
+      const set = new Set();
       try{
-        const hoyISO = new Date().toISOString().slice(0,10);
-        const qy = query(collection(db, FIRE_COLLECTION_HIST), where('fechaISO','==',hoyISO), orderBy('ts','asc'));
-        const snap = await getDocs(qy);
-        snap.forEach(docu=>{
-          const r=docu.data();
-          const tr=document.createElement('tr');
-          tr.innerHTML = `
-            <td>${r.hora||''}</td>
-            <td>${r.fecha||''}</td>
-            <td>${r.pais||''}</td>
-            <td>${r.ordersAvail??0}</td>
-            <td>${r.totalOrders??0}</td>
-            <td>${r.ops||'0 | 0'}</td>
-            <td>${r.ultimaActualizacion||''}</td>
-          `;
-          tb.appendChild(tr);
-        });
-      }catch(e){ console.error(e); }
+        const snap = await getDocs(collection(db, FIRE_COLLECTION_HIST));
+        snap.forEach(d=>{ const p=d.data().pais; if(p) set.add(p); });
+      }catch{}
+      if(currentState && currentState.rows){ currentState.rows.forEach(r=>set.add(r.country)); }
+      const existing = new Set([...filtroPaisEl.options].map(o=>o.value));
+      [...set].forEach(p=>{ if(!existing.has(p)){ const o=document.createElement('option'); o.value=p; o.textContent=p; filtroPaisEl.appendChild(o); } });
     }
-    renderHistoricoTablaHoy();
+
+    async function fetchHistorico(fp, startTs, endTs){
+      const base = collection(db, FIRE_COLLECTION_HIST);
+      try{
+        let qy;
+        if(fp!=='todos' && startTs!=null && endTs!=null){
+          qy = query(base, where('pais','==',fp), where('ts','>=',startTs), where('ts','<',endTs), orderBy('ts','asc'));
+        }else if(startTs!=null && endTs!=null){
+          qy = query(base, where('ts','>=',startTs), where('ts','<',endTs), orderBy('ts','asc'));
+        }else if(fp!=='todos'){
+          qy = query(base, where('pais','==',fp), orderBy('ts','asc'));
+        }else{
+          qy = query(base, orderBy('ts','asc'));
+        }
+        const snap=await getDocs(qy); const rows=[]; snap.forEach(d=>rows.push(d.data())); return normalizeRows(rows);
+      }catch(e){
+        // fallback sin orderBy (si falta índice)
+        const snap=await getDocs(base); let rows=[]; snap.forEach(d=>rows.push(d.data()));
+        if(startTs!=null && endTs!=null) rows=rows.filter(r=> (r.ts||0)>=startTs && (r.ts||0)<endTs);
+        if(fp!=='todos') rows=rows.filter(r=> r.pais===fp);
+        return normalizeRows(rows);
+      }
+    }
+
+    function calcMedian(arr){
+      if(!arr.length) return 0;
+      const v=[...arr].sort((a,b)=>a-b);
+      const m=Math.floor(v.length/2);
+      return v.length%2?v[m]:(v[m-1]+v[m])/2;
+    }
+
+    function renderQuickMetricsFrom(rows){
+      if(!rows.length){ quickBox.style.display='none'; return; }
+      const vals = rows.map(r=>Number(r.ordersAvail||0));
+      if(!vals.length){ quickBox.style.display='none'; return; }
+      const min = Math.min(...vals);
+      const med = calcMedian(vals);
+      const max = Math.max(...vals);
+      mMin.textContent = String(min);
+      mMed.textContent = String(med);
+      mMax.textContent = String(max);
+
+      let deltaTxt='–', cls='';
+      if(vals.length>=2){
+        const d = (vals[vals.length-1] - vals[vals.length-2]);
+        deltaTxt = `${d>=0?'↑':'↓'} ${Math.abs(d)}`;
+        cls = d>=0? 'delta up':'delta down';
+      }
+      mDelta.className = 'value ' + cls;
+      mDelta.textContent = deltaTxt;
+      quickBox.style.display='flex';
+    }
+
+    async function renderHistoricoTabla(forceEnsure=false){
+      if(forceEnsure) await ensurePaisesOptions();
+
+      // Habilitar/deshabilitar datepicker por preset
+      filtroFechaEl.disabled = (presetEl.value!=='dia');
+
+      const {start, end} = rangeFromPreset(presetEl.value, filtroFechaEl.value || null);
+      const tb = document.querySelector('#tablaHistorico tbody'); tb.innerHTML='';
+
+      try{
+        cloudHistorico = await fetchHistorico(filtroPaisEl.value, start, end);
+      }catch(e){ console.error(e); toast("⚠️ No se pudo leer histórico: "+(e.code||e.message)); cloudHistorico=[]; }
+
+      cloudHistorico.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.hora||''}</td>
+          <td>${r.fecha||''}</td>
+          <td>${r.pais||''}</td>
+          <td>${r.ordersAvail??0}</td>
+          <td>${r.totalOrders??0}</td>
+          <td>${r.ops||'0 | 0'}</td>
+          <td>${r.ultimaActualizacion||''}</td>
+        `;
+        tb.appendChild(tr);
+      });
+
+      renderQuickMetricsFrom(cloudHistorico);
+    }
+
+    filtroPaisEl.onchange   = ()=> renderHistoricoTabla();
+    presetEl.onchange       = ()=> renderHistoricoTabla();
+    filtroFechaEl.onchange  = ()=> renderHistoricoTabla();
+
+    function exportarHistoricoCSV(){
+      if(!cloudHistorico.length){ toast("ℹ️ No hay registros para exportar."); return; }
+      const encabezados=["Fecha","Hora","País","Orders avail","Total orders","Ops","Ult. act. datos"];
+      const filas=cloudHistorico.map(r=>[
+        r.fecha||"", r.hora||"", r.pais||"", r.ordersAvail??0, r.totalOrders??0, r.ops||"0 | 0", r.ultimaActualizacion||""
+      ]);
+      const csv=[encabezados,...filas].map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`psauto_historico_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    /* Inicialización */
+    document.getElementById('btnExport').disabled = false;
+    renderHistoricoTabla(true);
 
   </script>
 </body>
