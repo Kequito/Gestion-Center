@@ -6,17 +6,16 @@
   <title>Gestión Center – Plan de trabajo</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
   <style>
-    /* ===== Tema base: consistente con el resto de Gestión Center ===== */
+    /* ===== Tema base ===== */
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
       --primary-color:#0D47A1; --accent-color:#42a5f5; --surface:#22314f; --border:#2f446a; --header-bg:#0d47a1;
-      --green:#2e7d32; --red:#c62828; --orange:#f57c00; --yellow:#fbc02d;
-      --chip:#1b2a48;
+      --green:#2e7d32; --red:#c62828; --orange:#f57c00; --yellow:#fbc02d; --chip:#1b2a48;
     }
     *{box-sizing:border-box}
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
 
-    /* ===== Sidebar (idéntico, NO tocar) ===== */
+    /* ===== Sidebar ===== */
     aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
     .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
     nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
@@ -30,7 +29,7 @@
     .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
     .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
 
-    /* ===== Métricas rápidas ===== */
+    /* ===== KPIs ===== */
     .kpis{ display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:10px; margin:12px 0 8px; }
     .kpi{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
     .kpi .label{ font-size:12px; color:var(--txt-muted); }
@@ -70,13 +69,13 @@
     .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
     .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:var(--chip); white-space:nowrap; }
 
-    /* ===== Tooltip / Tip card ===== */
+    /* ===== Tooltip ===== */
     .tip-btn{ background:transparent; border:1px solid var(--border); color:#fff; border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer; }
     .tip{ display:none; margin-top:8px; background:rgba(0,0,0,.25); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:#e4f1ff; }
     .tip.visible{ display:block; }
 
     /* ===== PDF Viewer ===== */
-    .pdf{ width:100%; height:560px; border:none; border-radius:12px; box-shadow:0 6px 12px rgba(0,0,0,.25); }
+    .pdf{ width:100%; height:560px; border:none; }
 
     /* ===== Toast ===== */
     #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
@@ -88,37 +87,26 @@
     .log-list{ max-height:50vh; overflow:auto; display:grid; gap:8px; }
     .log-item{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
     .log-meta{ color:#cfd8dc; font-size:12px; }
-
-    @media (max-width: 1100px){
-      .task{ grid-template-columns:24px 1fr; }
-      .task .tools{ grid-column:1/-1; justify-content:flex-start; }
-    }
-    @media (max-width: 960px){
-      main{ padding:18px; }
-      .page-title{ font-size:20px; }
-      .kpis{ grid-template-columns:repeat(2,minmax(140px,1fr)); }
-    }
   </style>
 </head>
 <body>
-  <!-- ===== Sidebar (copiado 1:1 del estilo) ===== -->
+  <!-- ===== Sidebar ===== -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
       <a href="index.html">🏠 Inicio</a>
-      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a class="active" href="plandetrabajo.html">✅ Plan de trabajo</a>
       <a href="distribucion.html">📋 Distribución</a>
       <a href="estadisticas.html">📈 Estadísticas</a>
       <a href="cobertura.html">🌎 Cobertura</a>
       <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-      <a href="postsale.html">🚚 Post-Sale New Report </a>
       <a href="opo11.html">🧰 New Report CC Perú</a>
       <a href="#contacto">📬 Contacto</a>
     </nav>
     <div class="spacer"></div>
   </aside>
 
-  <!-- ===== Contenido ===== -->
+  <!-- ===== Main ===== -->
   <main>
     <h1 class="page-title">✅ Plan de Trabajo – Team Leaders</h1>
     <p class="subtitle">Basado en la versión vigente · Turno AM/PM equivalente · ayudas didácticas y progreso con recordatorios</p>
@@ -126,22 +114,10 @@
 
     <!-- KPIs -->
     <div class="kpis">
-      <div class="kpi">
-        <div class="label">Tareas con horario</div>
-        <div class="value" id="kpiTimed">0 / 0</div>
-      </div>
-      <div class="kpi">
-        <div class="label">% Avance</div>
-        <div class="value" id="kpiPct">0%</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Turno seleccionado</div>
-        <div class="value" id="kpiShift">AM</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Tiempo restante del turno</div>
-        <div class="value" id="kpiTimeLeft">--:--</div>
-      </div>
+      <div class="kpi"><div class="label">Tareas con horario</div><div class="value" id="kpiTimed">0 / 0</div></div>
+      <div class="kpi"><div class="label">% Avance</div><div class="value" id="kpiPct">0%</div></div>
+      <div class="kpi"><div class="label">Turno seleccionado</div><div class="value" id="kpiShift">AM</div></div>
+      <div class="kpi"><div class="label">Tiempo restante del turno</div><div class="value" id="kpiTimeLeft">--:--</div></div>
     </div>
 
     <div class="topbar">
@@ -155,9 +131,7 @@
       <button id="btnResetDay">🧹 Reset del día</button>
       <button id="btnClearAll">🗑️ Borrar guardado</button>
       <button id="btnLog">📜 Ver Histórico del Día</button>
-      <div class="progress" title="Avance de tareas con horario">
-        <span id="progBar"></span>
-      </div>
+      <div class="progress" title="Avance de tareas con horario"><span id="progBar"></span></div>
       <div class="progress-label" id="progLabel">0% completado</div>
     </div>
 
@@ -165,7 +139,24 @@
     <div id="sections"></div>
 
     <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
-    <iframe class="pdf" src="Plan de trabajo TEAM LEADER (7AM-4PM) Ver. 1.0.pdf"></iframe>
+    <!-- Embed robusto con fallback -->
+    <div style="border-radius:12px; overflow:hidden; box-shadow:0 6px 12px rgba(0,0,0,.25); border:1px solid var(--border);">
+      <object data="Plan_de_trabajo_TEAM_LEADER.pdf#view=FitH" type="application/pdf" class="pdf">
+        <div style="padding:16px">
+          <p>No se pudo cargar el PDF desde <code>Plan_de_trabajo_TEAM_LEADER.pdf</code>.</p>
+          <p>
+            ➜ Ver/descargar:
+            <a href="Plan_de_trabajo_TEAM_LEADER.pdf" target="_blank" style="color:#80d6ff; text-decoration:underline;">
+              abrir en nueva pestaña
+            </a>
+          </p>
+          <small style="color:#cfd8dc">
+            Sugerencia: asegúrate de que el archivo esté en la misma carpeta que <code>plandetrabajo.html</code>
+            y que el nombre coincida exactamente (mayúsculas y guiones bajos).
+          </small>
+        </div>
+      </object>
+    </div>
   </main>
 
   <div id="toast"></div>
@@ -186,35 +177,35 @@
   </div>
 
   <script>
-    // ===== Utilidades =====
-    const STORAGE_KEY='plan_vigente_v4';          // nuevo storage key por cambios
-    const LOG_KEY_PREFIX='plan_log_';             // histórico por fecha
-    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+    /* ===== Utilidades ===== */
+    const STORAGE_KEY='plan_vigente_v4';
+    const LOG_KEY_PREFIX='plan_log_';
+    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>{t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.opacity=1;},3200);};
     const pad=n=>String(n).padStart(2,'0');
     const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
     function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // ===== Datos del plan (contenido didáctico) =====
+    /* ===== Plan (sin notas y con dos tareas eliminadas) ===== */
     const PLAN = {
       blocks:[
-        { id:'primera',  title:'📌 Primera hora de gestión',  time:{AM:'7:00–8:00',  PM:'1:00–2:00'},  tasks:[
-          {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM. No es necesario reportarlo en grupo; lo importante es que quede correctamente registrado en el documento oficial.`},
+        { id:'primera', title:'📌 Primera hora de gestión', time:{AM:'7:00–8:00',PM:'1:00–2:00'}, tasks:[
+          {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM.`},
         ]},
-        { id:'segunda',  title:'📌 Segunda hora de gestión',   time:{AM:'8:00–9:00',  PM:'2:00–3:00'},  tasks:[
-          {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break. Ejemplos: 2:30h→2h, 3:52h→4h, 5:10h→6h. Reporte: enviar captura al grupo “TL’s Planillado Diario y Reporte de Ausencias RRHH”.`},
-          {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario (excepto fines de semana) para quienes no completaron su jornada.', tip:`Acciones: verificar PEROP1AMs, identificar operadores a tu cargo, completar: TL responsable y motivo del tiempo incompleto. Objetivo: seguimiento y detección de incidencias.`},
+        { id:'segunda', title:'📌 Segunda hora de gestión', time:{AM:'8:00–9:00',PM:'2:00–3:00'}, tasks:[
+          {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break.`},
+          {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para quienes no completaron su jornada.', tip:`Verificar PEROP1AMs, identificar operadores, motivo del tiempo incompleto.`},
         ]},
-        { id:'tercera',  title:'📌 Tercera hora de gestión',   time:{AM:'9:00–10:00', PM:'3:00–4:00'},  tasks:[
-          {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:`Se realiza con información del día anterior. No requiere reporte en grupo.`},
-          {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:`Reglas: (1) Ningún operador gestionando queda sin programar. (2) Ausentes se desprograman de inmediato. (3) Coherencia entre horario oficial y real.`},
+        { id:'tercera', title:'📌 Tercera hora de gestión', time:{AM:'9:00–10:00',PM:'3:00–4:00'}, tasks:[
+          {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:`Se realiza con información del día anterior.`},
+          {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:`1) Nadie gestionando sin programar. 2) Ausentes se desprograman. 3) Coherencia horario oficial/real.`},
         ]},
-        { id:'ultima',   title:'📌 Última hora de gestión',    time:{AM:'3:00–4:00', PM:'9:00–10:00'}, tasks:[
-          {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día y queda con status final.', tip:`Objetivo: cierre limpio de jornada, sin pendientes críticos.`},
+        { id:'ultima', title:'📌 Última hora de gestión', time:{AM:'3:00–4:00',PM:'9:00–10:00'}, tasks:[
+          {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día.', tip:`Objetivo: cierre limpio de jornada.`},
         ]},
       ],
       continuous:[
-        // Eliminadas: Leads Daily, Órdenes con mala publicidad
+        // Eliminadas: Leads Daily y Órdenes con mala publicidad
         {id:'c.2', title:'Verificación de estadísticas de campañas', desc:'Monitoreo de leads, conectados, ACD, ventas, SAVE, etc.'},
       ],
       policy:[
@@ -224,7 +215,7 @@
       ]
     };
 
-    // ===== Persistencia =====
+    /* ===== Persistencia ===== */
     function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
     function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function defaultState(){
@@ -235,7 +226,7 @@
     }
     let state = Object.assign(defaultState(), loadState());
 
-    // ===== Histórico =====
+    /* ===== Histórico ===== */
     function getLog(dateStr=todayStr()){
       try{ return JSON.parse(localStorage.getItem(LOG_KEY_PREFIX+dateStr)) || [] }catch{ return [] }
     }
@@ -245,14 +236,14 @@
       localStorage.setItem(LOG_KEY_PREFIX+dateStr, JSON.stringify(arr));
     }
 
-    // ===== Render =====
+    /* ===== Render ===== */
     const sectionsEl = document.getElementById('sections');
 
     function render(){
       document.getElementById('selTurno').value = state.shift;
       sectionsEl.innerHTML='';
 
-      // Render bloques con horario
+      // Bloques con horario
       PLAN.blocks.forEach(block=>{
         const sec=document.createElement('section'); sec.className='section';
         if(state.collapsed[block.id]) sec.classList.add('collapsed');
@@ -280,11 +271,10 @@
               <div id="tip-${task.id}" class="tip">${task.tip?task.tip:''}</div>
             </div>
             <div class="tools">
-              <span class="chip" title="Marcar/Desmarcar tarea">⏱️ Bloque</span>
-              <span class="chip" title="Se guarda en el navegador">💾 Auto-guardado</span>
+              <span class="chip">⏱️ Bloque</span>
+              <span class="chip">💾 Auto-guardado</span>
             </div>`;
 
-          // Listeners
           el.querySelector('.chk').addEventListener('change',ev=>{
             const checked=ev.target.checked;
             state.tasks[task.id]=checked; saveState(state);
@@ -311,7 +301,7 @@
         sectionsEl.appendChild(sec);
       });
 
-      // Render continuas (solo 1)
+      // Tareas continuas (solo 1)
       const secC=document.createElement('section'); secC.className='section';
       if(state.collapsed['continuas']) secC.classList.add('collapsed');
       const headC=document.createElement('div'); headC.className='section-header';
@@ -365,7 +355,7 @@
       updateKPIs();
     }
 
-    // ===== Progreso y KPIs =====
+    /* ===== Progreso y KPIs ===== */
     function updateProgress(){
       const timedIds = PLAN.blocks.flatMap(b=>b.tasks.map(t=>t.id));
       const total = timedIds.length;
@@ -373,20 +363,16 @@
       const pct = total? Math.round(done*100/total) : 0;
       const bar=document.getElementById('progBar');
       bar.style.width=pct+'%';
-      // color dinámico
       bar.style.background = pct<50 ? 'linear-gradient(90deg,#c62828,#ef5350)'
                         : pct<80 ? 'linear-gradient(90deg,#fbc02d,#ffd54f)'
                                  : 'linear-gradient(90deg,#42a5f5,#80d6ff)';
       document.getElementById('progLabel').textContent=pct+"% completado";
-
-      // KPIs relacionados
       document.getElementById('kpiTimed').textContent = `${done} / ${total}`;
       document.getElementById('kpiPct').textContent = `${pct}%`;
     }
 
     function updateKPIs(){
       document.getElementById('kpiShift').textContent = state.shift;
-      // tiempo restante del turno (aprox)
       const now=new Date();
       const end = new Date();
       if(state.shift==='AM'){ end.setHours(16,0,0,0); }
@@ -398,7 +384,7 @@
       document.getElementById('kpiTimeLeft').textContent = `${pad(hh)}:${pad(mm)}`;
     }
 
-    // ===== Recordatorios por horario (toast 10 min antes del bloque) =====
+    /* ===== Recordatorios 10 min antes del bloque ===== */
     const REMIND_MIN = 10;
     function parseBlockRange(label){ const [start,end] = label.split('–').map(s=>s.trim()); return [start,end]; }
     function asTodayTime(hhmm){ const [h,m] = hhmm.split(':').map(Number); const d = new Date(); d.setHours(h,m,0,0); return d; }
@@ -417,7 +403,7 @@
     }
     setInterval(remindersTick, 5000);
 
-    // ===== Eventos globales =====
+    /* ===== Eventos globales ===== */
     document.getElementById('selTurno').addEventListener('change',e=>{ state.shift=e.target.value; saveState(state); render(); });
     document.getElementById('btnResetDay').addEventListener('click',()=>{
       PLAN.blocks.forEach(b=>b.tasks.forEach(t=> state.tasks[t.id]=false ));
@@ -428,7 +414,7 @@
       state=defaultState(); render(); toast('🗑️ Guardado eliminado');
     });
 
-    // ===== Modal Histórico =====
+    /* ===== Modal Histórico ===== */
     const backdrop=document.getElementById('modalBackdrop');
     const logList=document.getElementById('logList');
     document.getElementById('btnLog').addEventListener('click',()=>{
@@ -452,7 +438,6 @@
       });
     }
 
-    // Exportar .txt del histórico
     document.getElementById('btnExportLog').addEventListener('click',()=>{
       const rows = getLog(todayStr());
       const lines = [
@@ -472,10 +457,9 @@
       URL.revokeObjectURL(a.href);
     });
 
-    // ===== Init =====
+    /* ===== Init ===== */
     function init(){ render(); updateKPIs(); }
     init();
   </script>
 </body>
 </html>
-
