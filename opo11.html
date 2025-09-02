@@ -180,7 +180,7 @@
           <th>% Approve</th>
           <th>Reject</th>
           <th>Trash</th>
-          <th>Acciones</th> <!-- NUEVO -->
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -193,8 +193,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- ========= HOTFIX COMPLETO (auth + eliminar fila) ========= -->
   <script type="module">
-    /* ===== Firebase v12 ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
@@ -203,29 +203,30 @@
       apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
       authDomain: "gestioncenterdata.firebaseapp.com",
       projectId: "gestioncenterdata",
-      storageBucket: "gestioncenterdata.firebasestorage.app",
+      storageBucket: "gestioncenterdata.appspot.com",  // <- formato correcto
       messagingSenderId: "628401314464",
       appId: "1:628401314464:web:0671233dfd801ee43587c5",
       measurementId: "G-NBFZYTN094"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
     const fbBadge = document.getElementById('fbBadge');
     function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
 
-    (async ()=>{
-      try{ await signInAnonymously(auth); }
-      catch(e){ console.error('Auth error', e); setBadge('Solo lectura (auth falló)','warn'); mostrarToast('⚠️ Autenticación: ' + (e.code||e.message)); }
-    })();
-    onAuthStateChanged(auth, (u)=>{
-      if(u){ document.getElementById('btnRegistrar')?.removeAttribute('disabled'); setBadge('Conectado ✓','ok'); }
-      else setBadge('Solo lectura','');
-    });
+    // Watchdog: nunca dejar “Conectando…” colgado
+    let authSettled = false;
+    const authWatchdog = setTimeout(()=>{
+      if (!authSettled) {
+        console.warn('[GC] Auth watchdog timeout → Solo lectura');
+        setBadge('Solo lectura','warn');
+        renderTablaHistorico(); // al menos consulta en RO si reglas lo permiten
+      }
+    }, 6000);
 
-    /* ===== Utils ===== */
+    /* ===== Utilidades ===== */
     const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais',
           PREF_FFECHA='gc_filtro_fecha_iso', PREF_PRESET='gc_preset_rango';
     const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -303,7 +304,7 @@
         }else{ html+=`<td>${d.news}</td><td>${pct(d.news,t)}</td><td>${d.recall}</td><td>${pct(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pct(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${colorPct(d.approved/t*100)}">${pct(d.approved,t)}</td><td>${d.reject}</td><td>${pct(d.reject,t)}</td><td>${d.trash}</td><td>${pct(d.trash,t)}</td>`; }
         tr.innerHTML=html; cuerpo.appendChild(tr);
       }
-      const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.reject+=d.reject; a.trash+=d.trash; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0});
+      const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.trash+=d.trash; a.reject+=d.reject; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
       if(Object.keys(dataGlobal).length){
         let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||1;
         if(vistaActual==="numerico"){ foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
@@ -329,16 +330,10 @@
       const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
       const startOf=(iso)=> new Date(`${iso}T00:00:00`).getTime();
       const addDays=(iso,days)=>{ const d=new Date(`${iso}T00:00:00`); d.setDate(d.getDate()+days); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
-
-      if(preset==='hoy'){
-        const s=startOf(todayISO), e=startOf(addDays(todayISO,1)); return {start:s, end:e};
-      }else if(preset==='ayer'){
-        const y=addDays(todayISO,-1); return {start:startOf(y), end:startOf(todayISO)};
-      }else if(preset==='7d'){
-        const s=addDays(todayISO,-6); return {start=startOf(s), end:startOf(addDays(todayISO,1))};
-      }else if(preset==='dia' && dateISO){
-        return {start=startOf(dateISO), end=startOf(addDays(dateISO,1))};
-      }
+      if(preset==='hoy'){ const s=startOf(todayISO), e=startOf(addDays(todayISO,1)); return {start:s, end:e}; }
+      if(preset==='ayer'){ const y=addDays(todayISO,-1); return {start:startOf(y), end:startOf(todayISO)}; }
+      if(preset==='7d'){ const s=addDays(todayISO,-6); return {start:startOf(s), end:startOf(addDays(todayISO,1))}; }
+      if(preset==='dia' && dateISO){ return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))}; }
       return {start:null, end:null};
     }
 
@@ -351,12 +346,10 @@
         }
         r.hora = hhmm || r.hora;
       });
-      // Orden horario: temprano → tarde
       rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
       return rows;
     }
 
-    // ← Incluye el id del documento (_id) y fallback si falta índice
     async function fetchHistoricoCloud(fp, startTs, endTs){
       const base = collection(db,'historico');
       try {
@@ -372,10 +365,10 @@
         }
         const snap = await getDocs(qy);
         const rows = [];
-        snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // <<-- guardo id
+        snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // conservar id
         return normalizeRows(rows);
-
       } catch (e) {
+        console.warn('[GC] fetchHistoricoCloud fallback:', e);
         if (e.code === 'failed-precondition') {
           let q2 = base;
           if (startTs != null && endTs != null){
@@ -383,7 +376,7 @@
           }
           const snap = await getDocs(q2);
           let rows = [];
-          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // <<-- guardo id
+          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
           if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
           return normalizeRows(rows);
         }
@@ -413,10 +406,10 @@
       try{
         await Promise.all(writes);
         mostrarToast("✅ Avance registrado en la nube.");
-        await renderTablaHistorico(true);
+        await renderTablaHistorico();
         renderGrafico();
       }catch(e){
-        console.error('Firestore write error:', e);
+        console.error('[GC] Firestore write error:', e);
         mostrarToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
       }
     }
@@ -426,11 +419,11 @@
       try{
         const snap=await getDocs(collection(db,'historico'));
         const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
-        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(true); renderGrafico();
+        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
       }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
     }
 
-    // === NUEVO: eliminar registro individual ===
+    // 🗑️ Eliminar registro individual
     async function eliminarRegistro(id){
       if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
       if(!auth.currentUser){ mostrarToast("⚠️ No autenticado: no puedes eliminar."); return; }
@@ -453,7 +446,7 @@
         const snap=await getDocs(collection(db,'historico'));
         const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
         [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;filtroPaisEl.appendChild(o); });
-      }catch{}
+      }catch(e){ console.warn('[GC] ensurePaisesOptions:', e); }
     }
 
     function calcMedian(arr){
@@ -493,7 +486,9 @@
 
     async function renderTablaHistorico(){
       await ensurePaisesOptions();
-      // Restaurar preferencias
+      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
+
+      // Preferencias
       const prefPais=readPref(PREF_FPAIS,'todos');
       const prefFecha=readPref(PREF_FFECHA,'');
       const prefPreset=readPref(PREF_PRESET,'dia');
@@ -501,16 +496,16 @@
       presetEl.value = prefPreset;
       if(prefFecha) filtroFechaEl.value = prefFecha;
 
-      // Calcular rango a consultar
       const preset = presetEl.value;
       const dateISO = filtroFechaEl.value || '';
       const {start, end} = rangeFromPreset(preset, dateISO);
 
-      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
       try{
         cloudHistorico=await fetchHistoricoCloud(filtroPaisEl.value, start, end);
       }catch(e){
-        console.error('Fetch error:', e); mostrarToast("⚠️ No se pudo leer la nube: " + (e.code||e.message)); cloudHistorico=[];
+        console.error('[GC] Fetch histórico:', e);
+        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
+        cloudHistorico=[];
       }
 
       cloudHistorico.forEach(r=>{
@@ -528,10 +523,10 @@
           <td>${r.reject||0}</td>
           <td>${r.trash||0}</td>
           <td>
-            <button class="btn-danger"
-              ${r._id ? '' : 'disabled'}
-              onclick="eliminarRegistro('${r._id||''}')"
-              title="Eliminar este registro">🗑️ Eliminar</button>
+            <button class="btn-danger" ${r._id ? '' : 'disabled'}
+              onclick="eliminarRegistro('${r._id||''}')" title="Eliminar este registro">
+              🗑️ Eliminar
+            </button>
           </td>`;
         tbody.appendChild(tr);
       });
@@ -540,18 +535,8 @@
       renderGrafico();
     }
 
-    function onFiltroChange(){
-      savePref(PREF_FPAIS, filtroPaisEl.value);
-      savePref(PREF_FFECHA, filtroFechaEl.value || '');
-      renderTablaHistorico();
-    }
-    function onPresetChange(){
-      const preset=presetEl.value;
-      savePref(PREF_PRESET, preset);
-      // Habilitar/deshabilitar el datepicker según preset
-      filtroFechaEl.disabled = (preset !== 'dia');
-      renderTablaHistorico();
-    }
+    function onFiltroChange(){ savePref(PREF_FPAIS, filtroPaisEl.value); savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); }
+    function onPresetChange(){ const preset=presetEl.value; savePref(PREF_PRESET, preset); filtroFechaEl.disabled = (preset !== 'dia'); renderTablaHistorico(); }
     function limpiarFecha(){ filtroFechaEl.value=""; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); }
 
     function exportarHistoricoCSV(){
@@ -571,18 +556,37 @@
       window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
     }
 
-    // Exponer
+    // Exponer a window
     window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
     window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
     window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
-    window.eliminarRegistro=eliminarRegistro; // NUEVO
+    window.eliminarRegistro=eliminarRegistro;
 
+    // Listener de auth primero…
+    onAuthStateChanged(auth, (u)=>{
+      authSettled = true;
+      clearTimeout(authWatchdog);
+      if(u){
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+        setBadge('Conectado ✓','ok');
+      }else{
+        setBadge('Solo lectura','warn');
+      }
+      renderTablaHistorico(); // en ambos casos cargamos histórico
+    });
+
+    // …y luego intentamos sesión anónima
+    signInAnonymously(auth).catch(e=>{
+      console.error('[GC] signInAnonymously error:', e);
+      // El onAuthStateChanged y el watchdog ya manejan el estado visual.
+    });
+
+    // Primer pintado
     document.addEventListener('DOMContentLoaded', ()=>{
       const prefPreset=readPref(PREF_PRESET,'dia');
-      presetEl.value=prefPreset;
-      filtroFechaEl.disabled = (prefPreset!=='dia');
-      const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) filtroFechaEl.value=prefFecha;
-      renderTablaHistorico();
+      document.getElementById('presetRango').value=prefPreset;
+      document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
+      const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
     });
   </script>
 </body>
