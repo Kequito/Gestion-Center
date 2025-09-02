@@ -14,16 +14,17 @@
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
     aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; box-sizing:border-box; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
     .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px;
-      transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%;
-      box-sizing:border-box; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; gap:10px; }
     nav a:hover{ background:var(--hover); }
     nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
     .spacer{ flex:1; }
 
     main{ margin-left:220px; padding:28px; width:calc(100% - 220px); box-sizing:border-box; }
-    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
-    .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .page-title{ display:flex; align-items:center; gap:10px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; gap:10px; align-items:center; }
+    .badge{ font-size:12px; padding:4px 8px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+    .badge.ok{ background:#1b5e20; border-color:#1b5e20; }
+    .badge.warn{ background:#8d2a2a; border-color:#8d2a2a; }
 
     .datetime{ font-size:14px; font-weight:600; margin:8px 0 6px; opacity:.9; }
 
@@ -32,26 +33,30 @@
       box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
     button:hover{ background:var(--accent-color); }
     button:active{ transform:translateY(1px); }
+    button[disabled]{ opacity:.55; cursor:not-allowed; }
 
-    .last-update{ font-size:13px; color:var(--txt-muted); margin:6px 0 12px; }
+    .last-update{ font-size:13px; color:var(--txt-muted); margin:6px 0 8px; }
+    .lock-msg{ font-size:12px; color:#ffd180; margin-left:6px; }
 
-    textarea{ width:100%; min-height:160px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:12px;
-      border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; box-sizing:border-box; }
+    textarea{ width:100%; min-height:160px; font-family:ui-monospace,Menlo,Consolas,monospace; padding:12px;
+      border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; }
 
-    table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%; background:var(--table-bg); border:1px solid var(--table-border);
-      border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+    table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%; background:var(--table-bg);
+      border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
     th,td{ border-bottom:1px solid var(--table-border); padding:10px; text-align:center; }
     thead th{ background:var(--header-bg); color:#fff; }
     thead th:first-child, tbody td:first-child{ text-align:left; }
     tfoot td{ font-weight:800; background:rgba(66,165,245,.16); border-top:2px solid var(--table-border); }
 
-    /* Banderitas */
     .flag{ width:20px; height:14px; margin-right:6px; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.15); }
 
-    /* Colores intensos con borde (igual que opo11) */
+    /* Colores intensos con borde */
     .green{ background:var(--green-color); border:1px solid var(--green-color); color:#fff; }
     .red{ background:var(--red-color); border:1px solid var(--red-color); color:#fff; }
     .orange{ background:var(--orange-color); border:1px solid var(--orange-color); color:#fff; }
+
+    .history-actions{ display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px; }
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; display:none; z-index:1000; }
   </style>
 </head>
 <body>
@@ -72,16 +77,20 @@
 
   <main>
     <div class="page-title">🚚 Post-Sale Auto – Resumen por país</div>
-    <p class="subtitle">Pega el bloque tal cual (con tabuladores) y genera la tabla compacta.</p>
+    <p class="subtitle">
+      Pega el bloque (tabulado) y genera la tabla · Historial por hora compartido
+      <span id="fbBadge" class="badge">Conectando…</span>
+    </p>
 
     <div class="datetime" id="fechaHora"></div>
 
     <div class="toolbar">
-      <button onclick="procesar()">⚙️ Procesar</button>
-      <button onclick="limpiar()">🧹 Limpiar</button>
-      <button onclick="alternarMapeo()">🧭 Cambiar mapeo</button>
-      <!-- Botón Fuente: cambia la constante SOURCE_URL en el JS -->
+      <button id="btnProcesar">⚙️ Procesar</button>
+      <button id="btnLimpiar">🧹 Limpiar</button>
+      <button id="btnMapeo">🧭 Cambiar mapeo</button>
       <button id="btnFuente" title="Abrir panel en nueva pestaña">🔗 Fuente (Panel)</button>
+      <button id="btnRegistrar">📌 Registrar ahora</button>
+      <span id="lockMsg" class="lock-msg"></span>
     </div>
 
     <div class="last-update" id="lastUpdate">Última actualización: —</div>
@@ -109,148 +118,334 @@
         </tr>
       </tfoot>
     </table>
+
+    <h3 class="page-title" style="font-size:18px; margin-top:12px;">📋 Registro histórico por hora</h3>
+    <table id="tablaHistorico">
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Fecha</th>
+          <th>País</th>
+          <th>Orders avail</th>
+          <th>Total orders</th>
+          <th>Ops</th>
+          <th>Ult. act. datos</th><!-- nueva columna -->
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </main>
 
-  <script>
+  <div id="toast"></div>
+
+  <!-- Chart opcional (si luego quieres línea de % o totales)
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+
+  <script type="module">
     /* ====== CONFIG EDITABLE ====== */
     const SOURCE_URL = "https://panel.2wcall.com/queue/control/index?QueueSearch%5Bid%5D=&QueueSearch%5Bname%5D=auto&QueueSearch%5Bpartner_id%5D=&QueueSearch%5Bcountry_id%5D%5B%5D=26&QueueSearch%5Bcountry_id%5D%5B%5D=88&QueueSearch%5Bcountry_id%5D%5B%5D=3&QueueSearch%5Bcountry_id%5D%5B%5D=39&QueueSearch%5Bpriorities%5D=&QueueSearch%5Btype_primary%5D=&QueueSearch%5Bis_primary%5D=0";
+    const FIRE_COLLECTION_CURRENT = "psauto_current"; // doc único con el estado compartido
+    const FIRE_DOC_ID            = "state";
+    const FIRE_COLLECTION_HIST   = "psauto_history";  // histórico por hora
 
-    /* === Fecha y hora en cabecera === */
+    /* ===== Firebase v12 (igual a opo11) ===== */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, getDoc, serverTimestamp,
+             collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
+      authDomain: "gestioncenterdata.firebaseapp.com",
+      projectId: "gestioncenterdata",
+      storageBucket: "gestioncenterdata.firebasestorage.app",
+      messagingSenderId: "628401314464",
+      appId: "1:628401314464:web:0671233dfd801ee43587c5",
+      measurementId: "G-NBFZYTN094"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    const fbBadge = document.getElementById('fbBadge');
+    const setBadge=(txt, cls='')=>{ fbBadge.textContent=txt; fbBadge.className='badge '+cls; }
+
+    try{ await signInAnonymously(auth); }catch(e){ console.error(e); setBadge('Solo lectura (auth falló)','warn'); toast('⚠️ Auth: '+(e.code||e.message)); }
+    onAuthStateChanged(auth, (u)=> setBadge(u?'Conectado ✓':'Solo lectura', u?'ok':'') );
+
+    /* ===== Utilidades UI ===== */
     const pad2=n=>String(n).padStart(2,'0');
     function nowStrings(){
       const d=new Date();
       const fecha=d.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
       const hora =d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      return {fecha, hora};
+      return {fecha, hora, d};
     }
-    function actualizarFechaHora(){
-      const {fecha, hora}=nowStrings();
-      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
-    }
+    function actualizarFechaHora(){ const {fecha,hora}=nowStrings(); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    /* === Botón Fuente === */
-    document.getElementById('btnFuente').addEventListener('click', ()=>{ window.open(SOURCE_URL, '_blank'); });
+    const toast=(msg)=>{ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; t.style.opacity=1; setTimeout(()=>{t.style.transition='opacity .5s'; t.style.opacity=0;},2200); setTimeout(()=>{t.style.display='none'; t.style.transition='';},2800); };
 
-    /* === Mapeo de columnas === */
-    let MAP = { queues:"Description|Name", operators:"Number of operators", capacity:"Capacity", orders:"Orders" };
-    function alternarMapeo(){
-      MAP._alt = !MAP._alt;
-      alert(MAP._alt
-        ? "Mapeo alternativo:\nOrders available = segundo número de Capacity (después de →)"
-        : "Mapeo por defecto:\nOrders available = primer número de Capacity (antes de →)");
-    }
+    /* ===== Elementos ===== */
+    const input = document.getElementById('input');
+    const tbody = document.querySelector('#out tbody');
+    const t_ops = document.getElementById('t_ops');
+    const t_av  = document.getElementById('t_av');
+    const t_tot = document.getElementById('t_tot');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    const lockMsg = document.getElementById('lockMsg');
 
-    const flagCode = (pais)=>{
-      const m = {
-        "Chile":"cl","Ecuador":"ec","Mexico":"mx","Peru":"pe",
-        "Colombia":"co","Costa Rica":"cr","Paraguay":"py","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo"
-      };
-      return m[pais] || "";
-    };
+    document.getElementById('btnFuente').onclick = ()=> window.open(SOURCE_URL,'_blank');
+    document.getElementById('btnMapeo').onclick  = ()=>{ MAP._alt=!MAP._alt; alert(MAP._alt?'Orders avail = Capacity (derecha)':'Orders avail = Capacity (izquierda)'); };
+    document.getElementById('btnLimpiar').onclick = limpiar;
+    document.getElementById('btnProcesar').onclick= procesar;
+    document.getElementById('btnRegistrar').onclick= registrarManual;
 
-    /* === Utils === */
-    function limpiar(){
-      document.getElementById('input').value='';
-      document.querySelector('#out tbody').innerHTML='';
-      document.getElementById('t_ops').textContent='';
-      document.getElementById('t_av').textContent='';
-      document.getElementById('t_tot').textContent='';
-      document.getElementById('lastUpdate').textContent = 'Última actualización: —';
-    }
-    function getIdx(headers, names){
-      const list = names.split('|').map(s=>s.trim().toLowerCase());
-      for(let i=0;i<headers.length;i++){
-        const h=headers[i].trim().toLowerCase();
-        if(list.includes(h)) return i;
-      }
-      return -1;
-    }
+    /* ===== Parsing ===== */
+    let MAP = { queues:"Description|Name", operators:"Number of operators", capacity:"Capacity", orders:"Orders", _alt:false };
+
+    const flagCode=(pais)=>({ "Chile":"cl","Ecuador":"ec","Mexico":"mx","Peru":"pe","Colombia":"co","Costa Rica":"cr","Paraguay":"py","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" }[pais]||"");
+    const getIdx=(headers, names)=>{ const list=names.split('|').map(s=>s.trim().toLowerCase()); for(let i=0;i<headers.length;i++){ if(list.includes(headers[i].trim().toLowerCase())) return i; } return -1; }
     const num = x => { if(x==null) return 0; const m=String(x).match(/-?\d+/); return m?parseInt(m[0],10):0; };
-    const pair = (text, splitter) => {
-      const parts = String(text||'').split(splitter).map(t=>num(t));
-      return [parts[0]||0, parts[1]||0];
-    };
+    const pair=(text,splitter)=>{ const parts=String(text||'').split(splitter).map(t=>num(t)); return [parts[0]||0, parts[1]||0]; };
+    const clase=(v)=> v<=0?'red': v<=5?'orange':'green';
 
-    /* Colores intensos con borde */
-    function claseSemaforo(val){
-      if(val<=0) return 'red';
-      if(val<=5) return 'orange';
-      return 'green';
+    function limpiar(){
+      input.value=''; tbody.innerHTML=''; t_ops.textContent=''; t_av.textContent=''; t_tot.textContent=''; lastUpdateEl.textContent='Última actualización: —';
     }
 
-    /* === Parser robusto === */
-    function procesar(){
-      const raw = document.getElementById('input').value.trim();
-      if(!raw){ alert('Pega el bloque con encabezados.'); return; }
+    /* ===== Estado compartido =====
+       Guardamos/Leemos un doc con:
+       {
+         rows: [{country, queues, opsTxt, ordersAvail, totalOrd, code}],
+         totals: {opsL,opsR,avail,orders},
+         lastUpdatedHHMM: "09:30", lastUpdatedISO: "...",
+         writeLockUntil: epoch_ms
+       }
+    */
+    let currentState = null;           // lo que mostramos
+    let lastDataUpdateISO = null;      // cuándo se procesó por última vez (para "Ult. act. datos")
+    let writeLockUntil = 0;            // bloqueo escritura
 
-      const rows = raw.split('\n').map(r=>r.split('\t'));
-      const headers = rows[0];
+    const currentRef = doc(db, FIRE_COLLECTION_CURRENT, FIRE_DOC_ID);
+    onSnapshot(currentRef, (snap)=>{
+      if(!snap.exists()) return;
+      const data=snap.data(); currentState=data; writeLockUntil=data.writeLockUntil||0;
+      renderFromState(data);
+      updateLockUI();
+    });
+
+    function updateLockUI(){
+      const now=Date.now();
+      if(now<writeLockUntil){
+        const secs = Math.max(0, Math.ceil((writeLockUntil-now)/1000));
+        lockMsg.textContent = `⏳ Bloqueo de escritura: ${secs}s`;
+        document.getElementById('btnProcesar').disabled = true;
+        document.getElementById('btnRegistrar').disabled = true;
+      }else{
+        lockMsg.textContent = '';
+        document.getElementById('btnProcesar').disabled = false;
+        document.getElementById('btnRegistrar').disabled = false;
+      }
+    }
+    setInterval(updateLockUI, 500);
+
+    function renderFromState(st){
+      // Tabla principal
+      tbody.innerHTML='';
+      (st.rows||[]).forEach(row=>{
+        const flag = row.code? `<img class="flag" src="https://flagcdn.com/w40/${row.code}.png" alt="">` : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${flag}${row.country}</strong></td>
+          <td>${row.queues}</td>
+          <td>${row.opsTxt || '–'}</td>
+          <td class="${clase(row.ordersAvail)}">${row.ordersAvail}</td>
+          <td class="${row.totalOrd===0?'red': (row.totalOrd<10?'orange':'green')}">${row.totalOrd}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      t_ops.textContent = `${st.totals?.opsL||0} | ${st.totals?.opsR||0}`;
+      t_av.textContent  = st.totals?.avail||0;
+      t_tot.textContent = st.totals?.orders||0;
+
+      // Última actualización
+      if(st.lastUpdatedISO){
+        const d=new Date(st.lastUpdatedISO);
+        const fecha=d.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+        const hora =d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        lastUpdateEl.textContent = `Última actualización: ${fecha} – ${hora}`;
+      }
+      // Historial (solo refrescamos después de guardar; aquí no lo tocamos)
+    }
+
+    async function guardarEstadoCompartido(state){
+      // chequear bloqueo
+      const now=Date.now();
+      if(now < writeLockUntil){ toast('⛔ Bloqueado por 30s para evitar choques.'); return; }
+
+      // escribir y activar nuevo lock 30s
+      const newLock = now + 30_000;
+      await setDoc(currentRef, {
+        ...state,
+        writeLockUntil: newLock,
+        serverTS: serverTimestamp()
+      });
+      writeLockUntil = newLock;
+      updateLockUI();
+    }
+
+    /* ===== Procesar pega ===== */
+    function procesar(){
+      const raw = input.value.trim();
+      if(!raw){ toast('Pega el bloque con encabezados.'); return; }
+      const lines = raw.split('\n').map(r=>r.split('\t'));
+      const headers = lines[0]||[];
 
       const ixCountry = getIdx(headers, 'Country');
       const ixQueues  = getIdx(headers, MAP.queues);
       const ixOps     = getIdx(headers, MAP.operators);
       const ixCap     = getIdx(headers, MAP.capacity);
       const ixOrders  = getIdx(headers, MAP.orders);
+      if([ixCountry,ixQueues,ixOps,ixCap,ixOrders].some(x=>x<0)){ toast('Faltan columnas (Country, Description/Name, Number of operators, Capacity, Orders).'); return; }
 
-      if([ixCountry,ixQueues,ixOps,ixCap,ixOrders].some(x=>x<0)){
-        alert('No encontré alguna columna requerida (Country, Description/Name, Number of operators, Capacity, Orders).');
-        return;
-      }
+      const rows=[];
+      let opsL=0, opsR=0, avail=0, orders=0;
 
-      const tbody = document.querySelector('#out tbody');
-      tbody.innerHTML='';
+      for(let i=1;i<lines.length;i++){
+        const r=lines[i]; if(!r || !r.length) continue;
+        const firstCell=(r[0]||'').trim(); if(firstCell==='☰') continue;
 
-      let totalOpsL=0, totalOpsR=0, totalAvail=0, totalOrders=0;
-
-      for(let i=1;i<rows.length;i++){
-        const r = rows[i];
-        if(!r || !r.length) continue;
-
-        const firstCell = (r[0]||'').trim();
-        if(firstCell === '☰') continue;
-
-        const countryRaw = (r[ixCountry]||'').toString().trim();
-        const queues  = (r[ixQueues]||'').toString().trim();
-        const opsTxt  = (r[ixOps]||'').toString().trim();
-        const capTxt  = (r[ixCap]||'').toString().trim();
-        const ordTxt  = (r[ixOrders]||'').toString().trim();
+        const countryRaw=(r[ixCountry]||'').toString().trim();
+        const queues=(r[ixQueues]||'').toString().trim();
+        const opsTxt=(r[ixOps]||'').toString().trim();
+        const capTxt=(r[ixCap]||'').toString().trim();
+        const ordTxt=(r[ixOrders]||'').toString().trim();
 
         if(!(countryRaw && queues && capTxt && ordTxt)) continue;
 
-        const country = countryRaw.replace(/^\s*\d+\.\s*/,'').trim();
-
-        const cap = pair(capTxt, '->');
-        const ord = pair(ordTxt, '|');
-        const ordersAvailable = MAP._alt ? cap[1] : cap[0];
+        const country=countryRaw.replace(/^\s*\d+\.\s*/,'').trim();
+        const cap=pair(capTxt,'->');
+        const ord=pair(ordTxt,'|');
+        const ordersAvail = MAP._alt? cap[1]: cap[0];
         const totalOrd = ord[0];
 
-        const ops = pair(opsTxt, '|');
-        totalOpsL += ops[0]; totalOpsR += ops[1];
-        totalAvail += ordersAvailable; totalOrders += totalOrd;
+        const op = pair(opsTxt,'|'); opsL+=op[0]; opsR+=op[1];
+        avail+=ordersAvail; orders+=totalOrd;
 
-        const code = flagCode(country);
-        const flag = code ? `<img class="flag" src="https://flagcdn.com/w40/${code}.png" alt="">` : '';
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${flag}${country}</strong></td>
-          <td>${queues}</td>
-          <td>${opsTxt || '–'}</td>
-          <td class="${claseSemaforo(ordersAvailable)}">${ordersAvailable}</td>
-          <td class="${totalOrd===0?'red': (totalOrd<10?'orange':'green')}">${totalOrd}</td>
-        `;
-        tbody.appendChild(tr);
+        rows.push({ country, queues, opsTxt, ordersAvail, totalOrd, code:flagCode(country) });
       }
 
-      document.getElementById('t_ops').textContent = `${totalOpsL} | ${totalOpsR}`;
-      document.getElementById('t_av').textContent  = totalAvail;
-      document.getElementById('t_tot').textContent = totalOrders;
+      const state={
+        rows,
+        totals:{ opsL, opsR, avail, orders },
+        lastUpdatedISO: new Date().toISOString(),  // <- guardamos “últ. act. datos”
+      };
+      lastDataUpdateISO = state.lastUpdatedISO;
 
-      // Registrar "Última actualización"
-      const {fecha, hora} = nowStrings();
-      document.getElementById('lastUpdate').textContent = `Última actualización: ${fecha} – ${hora}`;
+      renderFromState(state);          // pinta local
+      guardarEstadoCompartido(state);  // comparte a todos y activa lock
+      toast('✅ Datos procesados y compartidos.');
     }
+
+    /* ===== Registro histórico =====
+       - Primer guardado a 07:15.
+       - Luego cada hora exacta 08:00–17:00.
+       - “Ult. act. datos” = lastUpdatedISO (si no hubo cambios desde 09:30, a las 10:00 guardamos esos mismos datos con 09:30).
+    */
+    function hhmm(d){ return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
+    function ddmmyyyy(d){ return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`; }
+
+    async function registrarHistoricoAuto(){
+      if(!currentState || !(currentState.rows||[]).length) return; // nada que guardar
+      const dNow = new Date();
+
+      const ultimaActISO = lastDataUpdateISO || currentState.lastUpdatedISO || dNow.toISOString();
+      const dAct = new Date(ultimaActISO);
+
+      const batch = currentState.rows.map(row=>({
+        fecha: ddmmyyyy(dNow),
+        fechaISO: dNow.toISOString().slice(0,10),
+        hora: hhmm(dNow),
+        hora24: hhmm(dNow),
+        ts: dNow.getTime(),
+        pais: row.country,
+        ordersAvail: row.ordersAvail,
+        totalOrders: row.totalOrd,
+        ops: row.opsTxt || '0 | 0',
+        ultimaActualizacion: hhmm(dAct)            // <- NUEVA COLUMNA (hora de última carga de datos)
+      }));
+
+      try{
+        const col = collection(db, FIRE_COLLECTION_HIST);
+        await Promise.all(batch.map(b=>addDoc(col, b)));
+        toast('🕒 Histórico guardado.');
+        // Opcional: refrescar última tabla histórico (consulta simple del día)
+        renderHistoricoTablaHoy();
+      }catch(e){
+        console.error(e); toast('⚠️ No se pudo guardar histórico.');
+      }
+    }
+
+    // Botón manual por si quieren forzar un snapshot
+    function registrarManual(){
+      registrarHistoricoAuto();
+    }
+
+    // Horarios programados: 07:15, 08:00 … 17:00
+    const SLOTS = (()=> {
+      const arr = [{h:7,m:15}];
+      for(let h=8; h<=17; h++) arr.push({h, m:0});
+      return arr;
+    })();
+
+    function msToNextSlot(){
+      const now=new Date();
+      for(const s of SLOTS){
+        const t=new Date(); t.setHours(s.h, s.m, 0, 0);
+        if(t.getTime() > now.getTime()) return t.getTime() - now.getTime();
+      }
+      // si pasó el último (17:00), programar para mañana 07:15
+      const t=new Date(now);
+      t.setDate(now.getDate()+1); t.setHours(7,15,0,0);
+      return t.getTime() - now.getTime();
+    }
+
+    function programarAutoSave(){
+      setTimeout(async ()=>{
+        await registrarHistoricoAuto();
+        programarAutoSave(); // reprograma siguiente slot
+      }, msToNextSlot());
+    }
+    programarAutoSave(); // arranca programador
+
+    /* ===== Tabla histórico simple (hoy) ===== */
+    async function renderHistoricoTablaHoy(){
+      const tb = document.querySelector('#tablaHistorico tbody');
+      tb.innerHTML='';
+      try{
+        const hoyISO = new Date().toISOString().slice(0,10);
+        const qy = query(collection(db, FIRE_COLLECTION_HIST), where('fechaISO','==',hoyISO), orderBy('ts','asc'));
+        const snap = await getDocs(qy);
+        snap.forEach(docu=>{
+          const r=docu.data();
+          const tr=document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.hora||''}</td>
+            <td>${r.fecha||''}</td>
+            <td>${r.pais||''}</td>
+            <td>${r.ordersAvail??0}</td>
+            <td>${r.totalOrders??0}</td>
+            <td>${r.ops||'0 | 0'}</td>
+            <td>${r.ultimaActualizacion||''}</td>
+          `;
+          tb.appendChild(tr);
+        });
+      }catch(e){ console.error(e); }
+    }
+    renderHistoricoTablaHoy();
+
   </script>
 </body>
 </html>
