@@ -25,13 +25,15 @@
     .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
     .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
 
-    .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; }
+    .datetime{ font-size:14px; font-weight:600; margin:8px 0 6px; opacity:.9; }
 
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 10px; align-items:center; }
     button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff;
       box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
     button:hover{ background:var(--accent-color); }
     button:active{ transform:translateY(1px); }
+
+    .last-update{ font-size:13px; color:var(--txt-muted); margin:6px 0 12px; }
 
     textarea{ width:100%; min-height:160px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:12px;
       border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; box-sizing:border-box; }
@@ -46,7 +48,7 @@
     /* Banderitas */
     .flag{ width:20px; height:14px; margin-right:6px; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.15); }
 
-    /* Colores intensos con bordes */
+    /* Colores intensos con borde (igual que opo11) */
     .green{ background:var(--green-color); border:1px solid var(--green-color); color:#fff; }
     .red{ background:var(--red-color); border:1px solid var(--red-color); color:#fff; }
     .orange{ background:var(--orange-color); border:1px solid var(--orange-color); color:#fff; }
@@ -78,7 +80,11 @@
       <button onclick="procesar()">⚙️ Procesar</button>
       <button onclick="limpiar()">🧹 Limpiar</button>
       <button onclick="alternarMapeo()">🧭 Cambiar mapeo</button>
+      <!-- Botón Fuente: cambia la constante SOURCE_URL en el JS -->
+      <button id="btnFuente" title="Abrir panel en nueva pestaña">🔗 Fuente (Panel)</button>
     </div>
+
+    <div class="last-update" id="lastUpdate">Última actualización: —</div>
 
     <textarea id="input" placeholder="Pega aquí las filas con encabezados (Country, Description/Name, Number of operators, Capacity, Orders)…"></textarea>
 
@@ -106,17 +112,27 @@
   </main>
 
   <script>
-    /* === Fecha y hora (igual que opo11) === */
+    /* ====== CONFIG EDITABLE ====== */
+    const SOURCE_URL = "https://panel.2wcall.com/queue/control/index?QueueSearch%5Bid%5D=&QueueSearch%5Bname%5D=auto&QueueSearch%5Bpartner_id%5D=&QueueSearch%5Bcountry_id%5D%5B%5D=26&QueueSearch%5Bcountry_id%5D%5B%5D=88&QueueSearch%5Bcountry_id%5D%5B%5D=3&QueueSearch%5Bcountry_id%5D%5B%5D=39&QueueSearch%5Bpriorities%5D=&QueueSearch%5Btype_primary%5D=&QueueSearch%5Bis_primary%5D=0";
+
+    /* === Fecha y hora en cabecera === */
     const pad2=n=>String(n).padStart(2,'0');
+    function nowStrings(){
+      const d=new Date();
+      const fecha=d.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const hora =d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      return {fecha, hora};
+    }
     function actualizarFechaHora(){
-      const ahora=new Date();
-      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const {fecha, hora}=nowStrings();
       document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    /* === Config === */
+    /* === Botón Fuente === */
+    document.getElementById('btnFuente').addEventListener('click', ()=>{ window.open(SOURCE_URL, '_blank'); });
+
+    /* === Mapeo de columnas === */
     let MAP = { queues:"Description|Name", operators:"Number of operators", capacity:"Capacity", orders:"Orders" };
     function alternarMapeo(){
       MAP._alt = !MAP._alt;
@@ -140,6 +156,7 @@
       document.getElementById('t_ops').textContent='';
       document.getElementById('t_av').textContent='';
       document.getElementById('t_tot').textContent='';
+      document.getElementById('lastUpdate').textContent = 'Última actualización: —';
     }
     function getIdx(headers, names){
       const list = names.split('|').map(s=>s.trim().toLowerCase());
@@ -155,7 +172,7 @@
       return [parts[0]||0, parts[1]||0];
     };
 
-    /* Colores intensos con bordes */
+    /* Colores intensos con borde */
     function claseSemaforo(val){
       if(val<=0) return 'red';
       if(val<=5) return 'orange';
@@ -229,6 +246,10 @@
       document.getElementById('t_ops').textContent = `${totalOpsL} | ${totalOpsR}`;
       document.getElementById('t_av').textContent  = totalAvail;
       document.getElementById('t_tot').textContent = totalOrders;
+
+      // Registrar "Última actualización"
+      const {fecha, hora} = nowStrings();
+      document.getElementById('lastUpdate').textContent = `Última actualización: ${fecha} – ${hora}`;
     }
   </script>
 </body>
