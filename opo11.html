@@ -34,6 +34,9 @@
     button:active{ transform:translateY(1px); }
     button[disabled]{ opacity:.55; cursor:not-allowed; }
 
+    .btn-danger{ background:#8d2a2a; border:1px solid #6f2020; }
+    .btn-danger:hover{ background:#a93333; }
+
     textarea{ width:100%; min-height:150px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:12px; border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; box-sizing:border-box; }
 
     table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
@@ -177,6 +180,7 @@
           <th>% Approve</th>
           <th>Reject</th>
           <th>Trash</th>
+          <th>Acciones</th> <!-- NUEVO -->
         </tr>
       </thead>
       <tbody></tbody>
@@ -331,9 +335,9 @@
       }else if(preset==='ayer'){
         const y=addDays(todayISO,-1); return {start:startOf(y), end:startOf(todayISO)};
       }else if(preset==='7d'){
-        const s=addDays(todayISO,-6); return {start:startOf(s), end:startOf(addDays(todayISO,1))};
+        const s=addDays(todayISO,-6); return {start=startOf(s), end:startOf(addDays(todayISO,1))};
       }else if(preset==='dia' && dateISO){
-        return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))};
+        return {start=startOf(dateISO), end=startOf(addDays(dateISO,1))};
       }
       return {start:null, end:null};
     }
@@ -352,18 +356,13 @@
       return rows;
     }
 
-    // ← ESTA FUNCIÓN incluye fallback si falta el índice compuesto
+    // ← Incluye el id del documento (_id) y fallback si falta índice
     async function fetchHistoricoCloud(fp, startTs, endTs){
       const base = collection(db,'historico');
       try {
-        // consulta óptima (puede requerir índice)
         let qy;
         if(fp !== 'todos' && startTs != null && endTs != null){
-          qy = query(base,
-            where('pais','==',fp),
-            where('ts','>=',startTs),
-            where('ts','<', endTs)
-          );
+          qy = query(base, where('pais','==',fp), where('ts','>=',startTs), where('ts','<', endTs));
         } else if(startTs != null && endTs != null){
           qy = query(base, where('ts','>=',startTs), where('ts','<', endTs));
         } else if(fp !== 'todos'){
@@ -372,18 +371,19 @@
           qy = base;
         }
         const snap = await getDocs(qy);
-        const rows = []; snap.forEach(d=>rows.push(d.data()));
+        const rows = [];
+        snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // <<-- guardo id
         return normalizeRows(rows);
 
       } catch (e) {
         if (e.code === 'failed-precondition') {
-          // fallback: consultar por rango y filtrar país en cliente
           let q2 = base;
           if (startTs != null && endTs != null){
             q2 = query(base, where('ts','>=',startTs), where('ts','<', endTs));
           }
           const snap = await getDocs(q2);
-          let rows = []; snap.forEach(d=>rows.push(d.data()));
+          let rows = [];
+          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // <<-- guardo id
           if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
           return normalizeRows(rows);
         }
@@ -428,6 +428,23 @@
         const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
         await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(true); renderGrafico();
       }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
+    }
+
+    // === NUEVO: eliminar registro individual ===
+    async function eliminarRegistro(id){
+      if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
+      if(!auth.currentUser){ mostrarToast("⚠️ No autenticado: no puedes eliminar."); return; }
+      const ok = confirm("¿Seguro que deseas eliminar este registro?");
+      if(!ok) return;
+      try{
+        await deleteDoc(doc(db, 'historico', id));
+        mostrarToast("🗑️ Registro eliminado.");
+        await renderTablaHistorico();
+        renderGrafico();
+      }catch(e){
+        console.error(e);
+        mostrarToast("❌ No se pudo eliminar: " + (e.code || e.message));
+      }
     }
 
     async function ensurePaisesOptions(){
@@ -498,7 +515,24 @@
 
       cloudHistorico.forEach(r=>{
         const tr=document.createElement("tr");
-        tr.innerHTML=`<td>${r.hora||""}</td><td>${r.fecha||""}</td><td>${r.pais||""}</td><td>${r.leads||0}</td><td>${r.news||0}</td><td>${r.recall||0}</td><td>${r.noAnswer||0}</td><td>${r.approve||0}</td><td>${Number(r.pctApprove||0).toFixed(1)}%</td><td>${r.reject||0}</td><td>${r.trash||0}</td>`;
+        tr.innerHTML=`
+          <td>${r.hora||""}</td>
+          <td>${r.fecha||""}</td>
+          <td>${r.pais||""}</td>
+          <td>${r.leads||0}</td>
+          <td>${r.news||0}</td>
+          <td>${r.recall||0}</td>
+          <td>${r.noAnswer||0}</td>
+          <td>${r.approve||0}</td>
+          <td>${Number(r.pctApprove||0).toFixed(1)}%</td>
+          <td>${r.reject||0}</td>
+          <td>${r.trash||0}</td>
+          <td>
+            <button class="btn-danger"
+              ${r._id ? '' : 'disabled'}
+              onclick="eliminarRegistro('${r._id||''}')"
+              title="Eliminar este registro">🗑️ Eliminar</button>
+          </td>`;
         tbody.appendChild(tr);
       });
 
@@ -541,6 +575,7 @@
     window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
     window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
     window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
+    window.eliminarRegistro=eliminarRegistro; // NUEVO
 
     document.addEventListener('DOMContentLoaded', ()=>{
       const prefPreset=readPref(PREF_PRESET,'dia');
