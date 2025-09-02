@@ -34,6 +34,7 @@
     button:active{ transform:translateY(1px); }
     button[disabled]{ opacity:.55; cursor:not-allowed; }
 
+    /* Base del botón peligro */
     .btn-danger{ background:#8d2a2a; border:1px solid #6f2020; }
     .btn-danger:hover{ background:#a93333; }
 
@@ -70,6 +71,17 @@
     .metric .delta.down{ color:#ff9e9e; }
 
     #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+    /* ——— Botón Eliminar compacto solo en la tabla del histórico ——— */
+    #tablaHistorico .btn-danger{
+      padding: 6px 10px;       /* más pequeño que el resto */
+      font-size: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    }
+    #tablaHistorico .btn-danger:hover{
+      background:#a93333;
+    }
   </style>
 </head>
 <body>
@@ -82,8 +94,7 @@
       <a href="estadisticas.html">📈 Estadísticas</a>
       <a href="cobertura.html">🌎 Cobertura</a>
       <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-      <a href="postsale.html">🚚 Post-Sale New Report </a>
-      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a class="active" href="opo11.html">🧰 New Report CC Perú</a>
       <a href="#contacto">📬 Contacto</a>
     </nav>
     <div class="spacer"></div>
@@ -194,7 +205,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- ========= HOTFIX COMPLETO (auth + eliminar fila) ========= -->
+  <!-- ========= Script (auth hotfix + eliminar fila + botón pequeño) ========= -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
@@ -204,7 +215,7 @@
       apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
       authDomain: "gestioncenterdata.firebaseapp.com",
       projectId: "gestioncenterdata",
-      storageBucket: "gestioncenterdata.appspot.com",  // <- formato correcto
+      storageBucket: "gestioncenterdata.appspot.com",
       messagingSenderId: "628401314464",
       appId: "1:628401314464:web:0671233dfd801ee43587c5",
       measurementId: "G-NBFZYTN094"
@@ -217,13 +228,13 @@
     const fbBadge = document.getElementById('fbBadge');
     function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
 
-    // Watchdog: nunca dejar “Conectando…” colgado
+    // Watchdog anti “Conectando…” infinito
     let authSettled = false;
     const authWatchdog = setTimeout(()=>{
       if (!authSettled) {
         console.warn('[GC] Auth watchdog timeout → Solo lectura');
         setBadge('Solo lectura','warn');
-        renderTablaHistorico(); // al menos consulta en RO si reglas lo permiten
+        renderTablaHistorico();
       }
     }, 6000);
 
@@ -573,16 +584,15 @@
       }else{
         setBadge('Solo lectura','warn');
       }
-      renderTablaHistorico(); // en ambos casos cargamos histórico
+      renderTablaHistorico();
     });
 
     // …y luego intentamos sesión anónima
     signInAnonymously(auth).catch(e=>{
       console.error('[GC] signInAnonymously error:', e);
-      // El onAuthStateChanged y el watchdog ya manejan el estado visual.
     });
 
-    // Primer pintado
+    // Primer pintado de preferencia de rango/fecha
     document.addEventListener('DOMContentLoaded', ()=>{
       const prefPreset=readPref(PREF_PRESET,'dia');
       document.getElementById('presetRango').value=prefPreset;
