@@ -12,29 +12,55 @@
     }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
-    /* Sidebar idéntica al index */
-    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+
+    /* ===== Sidebar idéntica al index ===== */
+    aside{
+      background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px;
+      display:flex; flex-direction:column; position:fixed; left:0; top:0;
+    }
     .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s, transform .05s; display:flex; gap:10px; }
+    nav a{
+      color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px;
+      transition:background-color .25s, transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%;
+      white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word;
+    }
     nav a:hover{ background:var(--hover); }
     nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
     .spacer{ flex:1; }
 
+    /* ===== Main ===== */
     main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
-    .title{ font-size:24px; font-weight:800; margin:0 0 6px; }
+    .title{ font-size:24px; font-weight:800; margin:0 0 6px; display:flex; gap:10px; align-items:center; }
     .subtitle{ margin:0 0 14px; color:var(--txt-muted); }
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
-    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; }
-    button.secondary{ background:#344768; border:1px solid #2f446a; }
-    textarea{ width:100%; min-height:160px; background:var(--table-bg); color:var(--txt); border:1px solid var(--accent-color); border-radius:12px; padding:12px; font-family:ui-monospace,Consolas,monospace; }
-    .filters{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin:10px 0 0; }
-    .filters input, .filters select{ background:var(--table-bg); color:var(--txt); border:1px solid var(--primary-color); border-radius:10px; height:38px; padding:0 10px; }
 
-    .group-title{ margin:18px 0 6px; font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px; }
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+    button:hover{ background:var(--accent-color); }
+    button[disabled]{ opacity:.55; cursor:not-allowed; }
+    .secondary{ background:#344768; border:1px solid #2f446a; }
+    .secondary:hover{ background:#3e577f; }
+
+    textarea{
+      width:100%; min-height:160px; background:var(--table-bg); color:var(--txt);
+      border:1px solid var(--accent-color); border-radius:12px; padding:12px; font-family:ui-monospace,Consolas,monospace;
+    }
+
+    .filters{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin:10px 0 0; }
+    .filters input, .filters select{
+      background:var(--table-bg); color:var(--txt); border:1px solid var(--primary-color);
+      border-radius:10px; height:38px; padding:0 10px; min-width:160px;
+    }
+
+    .group-title{
+      margin:18px 0 6px; font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px; opacity:.95;
+    }
     .chip{ font-size:11px; padding:2px 8px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
     .chip.primary{ background:#1b5e20; border-color:#1b5e20; }
 
-    table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); margin-bottom:18px; }
+    table{
+      width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg);
+      border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); margin-bottom:18px;
+    }
     th,td{ padding:10px; border-bottom:1px solid var(--table-border); text-align:center; }
     thead th{ background:var(--header-bg); color:#fff; position:sticky; top:0; z-index:1; }
     td.left, th.left{ text-align:left; }
@@ -66,7 +92,7 @@
       <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
       <a href="postsale.html">🚚 Post-Sale New Report</a>
       <a href="opo11.html">🧰 New Report CC Perú</a>
-      <a class="active" href="queues-pivot.html">🧮 Queues Heatmap</a>
+      <a class="active" href="queues-heatmap.html">🧮 Queues Heatmap</a>
       <a href="#contacto">📬 Contacto</a>
       <a href="newcobertura.html">New Cobertura 1.1</a>
       <a href="tablita.html">Tablita :3</a>
@@ -95,7 +121,6 @@
         <option value="col">🔥 Intensidad por columna</option>
         <option value="row">🔥 Intensidad por fila</option>
       </select>
-      <!-- Se removió el ordenamiento manual para mantener # → 1..n -->
     </div>
 
     <div id="contenedorTablas"></div>
@@ -112,8 +137,8 @@
 
     let rows = [];         // registros normalizados
     let byCountry = {};    // agrupado
-    let rawOrder = [];     // orden original por país (para # 1..n)
 
+    // Parser TSV/CSV
     function parse(raw){
       const sep = raw.includes('\t') ? '\t' : ',';
       const lines = raw.trim().split(/\r?\n/).filter(Boolean);
@@ -146,17 +171,14 @@
         rows = parse(raw);
 
         byCountry = {};
-        rawOrder = {};
         const paisSet = new Set(["todos"]);
-        rows.forEach((r, i)=>{
-          const pais = r.Country;
-          if(!byCountry[pais]) { byCountry[pais]=[]; rawOrder[pais]=[]; }
-          byCountry[pais].push(r);
-          rawOrder[pais].push(i); // índice original para asegurar el orden pegado
-          paisSet.add(pais);
+        rows.forEach(r=>{
+          if(!byCountry[r.Country]) byCountry[r.Country]=[];
+          byCountry[r.Country].push(r);
+          paisSet.add(r.Country);
         });
 
-        // llenar filtro de país
+        // Filtro país
         const fPais = document.getElementById('fPais');
         const sel = fPais.value;
         fPais.innerHTML = "";
@@ -178,7 +200,7 @@
     function borrar(){
       document.getElementById('inputData').value="";
       localStorage.removeItem(LS_KEY);
-      rows=[]; byCountry={}; rawOrder={};
+      rows=[]; byCountry={};
       document.getElementById('contenedorTablas').innerHTML="";
       toast("🧹 Limpio.");
     }
@@ -220,22 +242,29 @@
       let grand = {Total:0, New:0, Recall:0, "No answer":0, Approved:0, Reject:0, Trash:0};
 
       countries.forEach(pais=>{
+        // Filtrar país + búsqueda
         let data = (byCountry[pais]||[]).filter(r=>!q || (r.Name||"").toLowerCase().includes(q));
 
-        // mantener orden original pegado (índice ascendente)
-        const indices = (rawOrder[pais]||[]).slice();
-        data = data
-          .map((row, i) => ({row, idx: indices[i] ?? i}))
-          .sort((a,b)=>a.idx - b.idx)
-          .map(x=>x.row);
+        // ===== ORDEN FIJO 1-1, 2-2, 3-3, 4-4… =====
+        const laneIndex = (name)=>{
+          if(!name) return Number.MAX_SAFE_INTEGER;
+          // Patrón "X-Y" → ordena por Y
+          let m = String(name).match(/(\d+)\s*-\s*(\d+)/);
+          if(m) return parseInt(m[2],10);
+          // fallback: último número del nombre
+          m = String(name).match(/(\d+)\s*$/);
+          return m ? parseInt(m[1],10) : Number.MAX_SAFE_INTEGER;
+        };
+        data.sort((a,b)=> laneIndex(a.Name) - laneIndex(b.Name));
+        // ===== FIN ORDEN =====
 
-        // título
+        // Título
         const h = document.createElement('div');
         h.className = 'group-title';
         h.textContent = `🌎 ${pais}`;
         cont.appendChild(h);
 
-        // tabla
+        // Tabla país
         const tbl = document.createElement('table');
         const thead = document.createElement('thead');
         thead.innerHTML = `<tr>
@@ -257,6 +286,7 @@
         let subt = {Total:0, New:0, Recall:0, "No answer":0, Approved:0, Reject:0, Trash:0};
 
         data.forEach((r, i)=>{
+          // Heatmap
           const rowMax = Math.max(r.New, r.Recall, r["No answer"], r.Approved, r.Reject, r.Trash, 1);
           const aCol = k => colMax[k] ? (r[k]/colMax[k]) : 0;
           const aRow = k => rowMax ? (r[k]/rowMax) : 0;
@@ -285,7 +315,7 @@
 
         tbl.appendChild(tbody);
 
-        // footer subtotales
+        // Subtotales país
         const tfoot = document.createElement('tfoot');
         const pctP = subt.Total ? ((subt.Approved/subt.Total)*100).toFixed(1) : '0.0';
         tfoot.innerHTML = `<tr>
@@ -310,7 +340,7 @@
         const sum = document.createElement('div');
         sum.className = 'totals';
         sum.innerHTML = `<b>TOTAL GLOBAL:</b> Leads ${grand.Total} · New ${grand.New} · Recall ${grand.Recall} · No answer ${grand["No answer"]} · Approved ${grand.Approved} · Reject ${grand.Reject} · Trash ${grand.Trash} · %Approve <b style="${pctG>=30?'color:#2e7d32':pctG<=25?'color:#c62828':'color:#f57c00'}">${pctG}%</b>`;
-        document.getElementById('contenedorTablas').appendChild(sum);
+        cont.appendChild(sum);
       }
     }
 
