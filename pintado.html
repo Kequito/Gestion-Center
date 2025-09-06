@@ -1,1 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – Queues Heatmap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+      --good:#2e7d32; --warn:#f57c00; --bad:#c62828;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+    /* ===== Sidebar idéntica a index ===== */
+    aside{
+      background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px;
+      display:flex; flex-direction:column; position:fixed; left:0; top:0;
+    }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{
+      color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px;
+      transition:background-color .25s, transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%;
+      white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word;
+    }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
 
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
+    .title{ font-size:24px; font-weight:800; margin:0 0 6px; display:flex; gap:10px; align-items:center; }
+    .subtitle{ margin:0 0 14px; color:var(--txt-muted); }
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+    button:hover{ background:var(--accent-color); }
+    button[disabled]{ opacity:.55; cursor:not-allowed; }
+    .secondary{ background:#344768; border:1px solid #2f446a; }
+    .secondary:hover{ background:#3e577f; }
+
+    textarea{
+      width:100%; min-height:160px; background:var(--table-bg); color:var(--txt);
+      border:1px solid var(--accent-color); border-radius:12px; padding:12px; font-family:ui-monospace,Consolas,monospace;
+    }
+
+    .filters{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin:10px 0 0; }
+    .filters input, .filters select{
+      background:var(--table-bg); color:var(--txt); border:1px solid var(--primary-color);
+      border-radius:10px; height:38px; padding:0 10px; min-width:160px;
+    }
+
+    /* Tabla */
+    .group-title{
+      margin:18px 0 6px; font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px; opacity:.95;
+    }
+    .chip{ font-size:11px; padding:2px 8px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+    .chip.primary{ background:#1b5e20; border-color:#1b5e20; }
+
+    table{
+      width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg);
+      border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); margin-bottom:18px;
+    }
+    th,td{ padding:10px; border-bottom:1px solid var(--table-border); text-align:center; }
+    thead th{ background:var(--header-bg); color:#fff; cursor:pointer; position:sticky; top:0; z-index:1; }
+    tbody tr:last-child td{ border-bottom:none; }
+    td.left, th.left{ text-align:left; }
+    tfoot td{ font-weight:800; background:rgba(66,165,245,.16); }
+
+    /* Heatmap (intensidad relativa) */
+    .hm{ border-radius:6px; display:inline-block; min-width:36px; padding:2px 6px; }
+    .hm.approved{ background:rgba(46,125,50,var(--a)); }
+    .hm.reject{ background:rgba(198,40,40,var(--a)); }
+    .hm.trash{ background:rgba(183,28,28,var(--a)); }
+    .hm.na{ background:rgba(66,165,245,var(--a)); }
+    .hm.new{ background:rgba(255,193,7,var(--a)); }
+    .hm.recall{ background:rgba(255,112,67,var(--a)); }
+    .muted{ color:var(--txt-muted); }
+
+    .totals{ margin-top:-10px; margin-bottom:14px; color:var(--txt-muted); font-size:13px; }
+    #toast{ position:fixed; right:20px; bottom:18px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; display:none; }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+      <a href="distribucion.html">📋 Distribución</a>
+      <a href="estadisticas.html">📈 Estadísticas</a>
+      <a href="cobertura.html">🌎 Cobertura</a>
+      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="postsale.html">🚚 Post-Sale New Report</a>
+      <a href="opo11.html">🧰 New Report CC Perú</a>
+      <a class="active" href="queues-pivot.html">🧮 Queues Heatmap</a>
+      <a href="#contacto">📬 Contacto</a>
+      <a href="newcobertura.html">New Cobertura 1.1</a>
+      <a href="tablita.html">Tablita :3</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
+
+  <main>
+    <h1 class="title">🧮 Queues Heatmap</h1>
+    <p class="subtitle">Pega tu tabla (Name, Primary queue, Country, Total, New, Recall, No answer, Approved, Reject, Trash, Duplicate order, System trash, Technical attempt) y genera un heatmap por métricas.</p>
+
+    <div class="toolbar">
+      <button onclick="procesar()">✅ Procesar</button>
+      <button class="secondary" onclick="borrar()">🧹 Limpiar</button>
+      <button class="secondary" onclick="exportCSV()">⬇️ Exportar CSV</button>
+    </div>
+
+    <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (puede ser separado por TAB o coma)…"></textarea>
+
+    <div class="filters">
+      <select id="fPais" onchange="render()">
+        <option value="todos">🌍 Todos los países</option>
+      </select>
+      <input id="fSearch" type="text" placeholder="🔎 Buscar por nombre…" oninput="render()"/>
+      <select id="heatMode" onchange="render()">
+        <option value="col">🔥 Intensidad por columna</option>
+        <option value="row">🔥 Intensidad por fila</option>
+      </select>
+      <select id="sortCol" onchange="render()">
+        <option value="">Ordenar por…</option>
+        <option value="Approved">Approved</option>
+        <option value="Reject">Reject</option>
+        <option value="Trash">Trash</option>
+        <option value="No answer">No answer</option>
+        <option value="Recall">Recall</option>
+        <option value="New">New</option>
+        <option value="Total">Total</option>
+      </select>
+      <select id="sortDir" onchange="render()">
+        <option value="desc">Desc</option>
+        <option value="asc">Asc</option>
+      </select>
+    </div>
+
+    <div id="contenedorTablas"></div>
+    <div id="toast"></div>
+  </main>
+
+  <script>
+    const LS_KEY = 'gc_queues_raw';
+    const toast = (m)=>{ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; t.style.opacity=1; setTimeout(()=>t.style.opacity=0,2200); setTimeout(()=>t.style.display='none',2800); };
+
+    // Mapas de columnas esperadas
+    const COLS = ["Name","Primary queue","Country","Total","New","Recall","No answer","Approved","Reject","Trash","Duplicate order","System trash","Technical attempt"];
+    const NUMERIC = new Set(["Total","New","Recall","No answer","Approved","Reject","Trash","Duplicate order","System trash","Technical attempt"]);
+
+    let rows = [];         // registros normalizados
+    let byCountry = {};    // agrupado
+
+    // Parse genérico TSV/CSV
+    function parse(raw){
+      // detecta separador: si hay TABs, usa TAB; si no, coma
+      const sep = raw.includes('\t') ? '\t' : ',';
+      const lines = raw.trim().split(/\r?\n/).filter(Boolean);
+      if(lines.length<2) throw new Error("No hay filas suficientes.");
+      const headers = lines[0].split(sep).map(h=>h.trim());
+      const idx = {};
+      COLS.forEach(c=>{
+        const i = headers.findIndex(h => h.toLowerCase()===c.toLowerCase());
+        if(i>=0) idx[c]=i;
+      });
+      if(idx["Name"]==null || idx["Country"]==null) throw new Error("Faltan columnas esenciales: Name y Country.");
+      return lines.slice(1).map(line=>{
+        const parts = line.split(sep).map(x=>x.trim());
+        const obj = {};
+        COLS.forEach(c=>{
+          const v = parts[idx[c] ?? -1] ?? "";
+          obj[c] = NUMERIC.has(c) ? (parseFloat(v)||0) : v;
+        });
+        return obj;
+      });
+    }
+
+    function saveRaw(){ localStorage.setItem(LS_KEY, document.getElementById('inputData').value); }
+    function loadRaw(){ return localStorage.getItem(LS_KEY)||""; }
+
+    function procesar(){
+      const raw = document.getElementById('inputData').value.trim();
+      if(!raw){ toast("Pega la tabla para procesar."); return; }
+      try{
+        rows = parse(raw);
+        // agrupar por país
+        byCountry = {};
+        const paisSet = new Set(["todos"]);
+        rows.forEach(r=>{
+          if(!byCountry[r.Country]) byCountry[r.Country]=[];
+          byCountry[r.Country].push(r);
+          paisSet.add(r.Country);
+        });
+        // llenar filtro país (una sola vez o actualizar conservando selección)
+        const fPais = document.getElementById('fPais');
+        const sel = fPais.value;
+        fPais.innerHTML = "";
+        [...paisSet].forEach(p=>{
+          const o=document.createElement('option'); o.value=p; o.textContent=p==="todos"?"🌍 Todos los países":p;
+          fPais.appendChild(o);
+        });
+        if([...fPais.options].some(o=>o.value===sel)) fPais.value=sel;
+
+        saveRaw();
+        render();
+        toast("✅ Datos procesados.");
+      }catch(e){
+        console.error(e);
+        toast("⚠️ " + e.message);
+      }
+    }
+
+    function borrar(){
+      document.getElementById('inputData').value="";
+      localStorage.removeItem(LS_KEY);
+      rows=[]; byCountry={};
+      document.getElementById('contenedorTablas').innerHTML="";
+      toast("🧹 Limpio.");
+    }
+
+    function exportCSV(){
+      if(!rows.length){ toast("No hay datos para exportar."); return; }
+      const headers = COLS.join(",");
+      const data = rows.map(r=>COLS.map(c=>`"${String(r[c]??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const csv = headers+"\n"+data;
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url; a.download=`queues_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    function render(){
+      const cont = document.getElementById('contenedorTablas');
+      cont.innerHTML="";
+
+      if(!rows.length){ 
+        cont.innerHTML = `<p class="muted">Pega datos y presiona <b>Procesar</b> para ver la tabla.</p>`;
+        return;
+      }
+
+      const paisSel = document.getElementById('fPais').value;
+      const q = (document.getElementById('fSearch').value||"").toLowerCase().trim();
+      const heatMode = document.getElementById('heatMode').value; // 'col' | 'row'
+      const sortCol = document.getElementById('sortCol').value;
+      const sortDir = document.getElementById('sortDir').value;
+
+      const countries = paisSel==="todos" ? Object.keys(byCountry).sort() : [paisSel];
+
+      // Precalcular máximos por columna para heatmap por columna
+      const colMax = {};
+      if(heatMode==='col'){
+        ["New","Recall","No answer","Approved","Reject","Trash"].forEach(k=>{
+          colMax[k]=0;
+        });
+        countries.forEach(p=>{
+          (byCountry[p]||[]).forEach(r=>{
+            ["New","Recall","No answer","Approved","Reject","Trash"].forEach(k=>{
+              colMax[k]=Math.max(colMax[k], r[k]||0);
+            });
+          });
+        });
+      }
+
+      // Construir por país
+      let grand = {Total:0, New:0, Recall:0, "No answer":0, Approved:0, Reject:0, Trash:0, "Duplicate order":0, "System trash":0, "Technical attempt":0};
+
+      countries.forEach(pais=>{
+        let data = (byCountry[pais]||[]).filter(r=>!q || (r.Name||"").toLowerCase().includes(q));
+
+        if(sortCol){
+          data.sort((a,b)=>{
+            const A = +a[sortCol]||0, B = +b[sortCol]||0;
+            return sortDir==='asc' ? A-B : B-A;
+          });
+        }
+
+        // título del país
+        const h = document.createElement('div');
+        h.className = 'group-title';
+        h.innerHTML = `🌎 ${pais}`;
+        cont.appendChild(h);
+
+        // tabla del país
+        const tbl = document.createElement('table');
+        const thead = document.createElement('thead');
+        thead.innerHTML = `<tr>
+          <th class="left">Name</th>
+          <th>Primary</th>
+          <th>Total</th>
+          <th>New</th>
+          <th>Recall</th>
+          <th>No answer</th>
+          <th>Approved</th>
+          <th>Reject</th>
+          <th>Trash</th>
+          <th>Duplicate</th>
+          <th>System trash</th>
+          <th>Tech attempt</th>
+          <th>% Approve</th>
+        </tr>`;
+        tbl.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        let subt = {Total:0, New:0, Recall:0, "No answer":0, Approved:0, Reject:0, Trash:0, "Duplicate order":0, "System trash":0, "Technical attempt":0};
+
+        data.forEach(r=>{
+          // heatmap alpha
+          const rowMax = Math.max(r.New, r.Recall, r["No answer"], r.Approved, r.Reject, r.Trash, 1);
+          const aCol = k => colMax[k] ? (r[k]/colMax[k]) : 0;                  // 0..1
+          const aRow = k => rowMax ? (r[k]/rowMax) : 0;
+          const alpha = k => (heatMode==='col'? aCol(k) : aRow(k)) * 0.8 + 0.15; // escala visual
+
+          const pctApprove = r.Total ? ((r.Approved/r.Total)*100).toFixed(1) : '0.0';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="left">${r.Name}</td>
+            <td>${String(r["Primary queue"]).toLowerCase()==='yes' ? '<span class="chip primary">Yes</span>' : '<span class="chip">No</span>'}</td>
+            <td>${r.Total}</td>
+            <td><span class="hm new" style="--a:${alpha('New')}">${r.New}</span></td>
+            <td><span class="hm recall" style="--a:${alpha('Recall')}">${r.Recall}</span></td>
+            <td><span class="hm na" style="--a:${alpha('No answer')}">${r["No answer"]}</span></td>
+            <td><span class="hm approved" style="--a:${alpha('Approved')}">${r.Approved}</span></td>
+            <td><span class="hm reject" style="--a:${alpha('Reject')}">${r.Reject}</span></td>
+            <td><span class="hm trash" style="--a:${alpha('Trash')}">${r.Trash}</span></td>
+            <td>${r["Duplicate order"]}</td>
+            <td>${r["System trash"]}</td>
+            <td>${r["Technical attempt"]}</td>
+            <td style="font-weight:800; ${pctApprove>=30?'color:var(--good)':pctApprove<=25?'color:var(--bad)':'color:var(--warn)'}">${pctApprove}%</td>
+          `;
+          tbody.appendChild(tr);
+
+          // acumular subtotales
+          Object.keys(subt).forEach(k=>{ subt[k]+= (+r[k]||0); grand[k]+= (+r[k]||0); });
+        });
+
+        tbl.appendChild(tbody);
+
+        // footer subtotales país
+        const tfoot = document.createElement('tfoot');
+        const pctP = subt.Total ? ((subt.Approved/subt.Total)*100).toFixed(1) : '0.0';
+        tfoot.innerHTML = `<tr>
+          <td class="left" colspan="2"><b>Total ${pais}</b></td>
+          <td>${subt.Total}</td>
+          <td>${subt.New}</td>
+          <td>${subt.Recall}</td>
+          <td>${subt["No answer"]}</td>
+          <td>${subt.Approved}</td>
+          <td>${subt.Reject}</td>
+          <td>${subt.Trash}</td>
+          <td>${subt["Duplicate order"]}</td>
+          <td>${subt["System trash"]}</td>
+          <td>${subt["Technical attempt"]}</td>
+          <td style="font-weight:800; ${pctP>=30?'color:var(--good)':pctP<=25?'color:var(--bad)':'color:var(--warn)'}">${pctP}%</td>
+        </tr>`;
+        tbl.appendChild(tfoot);
+
+        cont.appendChild(tbl);
+      });
+
+      // Totales globales
+      if(Object.keys(byCountry).length){
+        const pctG = grand.Total ? ((grand.Approved/grand.Total)*100).toFixed(1) : '0.0';
+        const sum = document.createElement('div');
+        sum.className = 'totals';
+        sum.innerHTML = `<b>TOTAL GLOBAL:</b> Leads ${grand.Total} · New ${grand.New} · Recall ${grand.Recall} · No answer ${grand["No answer"]} · Approved ${grand.Approved} · Reject ${grand.Reject} · Trash ${grand.Trash} · %Approve <b style="${pctG>=30?'color:var(--good)':pctG<=25?'color:var(--bad)':'color:var(--warn)'}">${pctG}%</b>`;
+        cont.appendChild(sum);
+      }
+    }
+
+    // Restaurar si había algo guardado
+    (function init(){
+      const raw = loadRaw();
+      if(raw){ document.getElementById('inputData').value = raw; procesar(); }
+      // Guardado automático al salir de textarea
+      document.getElementById('inputData').addEventListener('blur', saveRaw);
+    })();
+  </script>
+</body>
+</html>
