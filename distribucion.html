@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestión Center – Distribución</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
-  <!-- Twemoji para banderas en todos los navegadores -->
-  <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+  <!-- Twemoji confiable (CDNJS) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/twemoji.min.js" crossorigin="anonymous"></script>
   <style>
     :root{
       --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
@@ -27,7 +27,6 @@
     .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; }
     .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
 
-    /* Controles comunes */
     .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
     button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); }
     button:hover{ background:var(--accent-color); }
@@ -54,7 +53,7 @@
     .cname{ font-weight:700; }
     .badge{ min-width:46px; height:46px; border-radius:12px; background:#fff; color:#0d47a1; display:grid; place-items:center; font-weight:900; font-size:18px; border:2px solid var(--header-bg); box-shadow:0 2px 6px rgba(0,0,0,.25); }
 
-    /* ===== Tabla de distribución ===== */
+    /* ===== Tabla ===== */
     table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
     thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:relative; user-select:none; cursor:pointer; }
     tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
@@ -66,7 +65,6 @@
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
@@ -83,13 +81,12 @@
     <div class="spacer"></div>
   </aside>
 
-  <!-- Contenido -->
   <main>
     <h1 class="page-title">📋 Distribución de Operadores</h1>
     <p class="subtitle">Mismo look & feel que el New Report · Filtros rápidos y ordenamiento 3 estados</p>
     <div id="fechaHora" class="datetime"></div>
 
-    <!-- ========= NUEVO: Programados por país ========= -->
+    <!-- ====== Programados por país ====== -->
     <section class="card" id="programadosCard">
       <h2>🗓️ Operadores programados</h2>
       <div class="inline-controls">
@@ -110,28 +107,13 @@
       <div class="grid" id="progGrid"></div>
     </section>
 
-    <!-- ========= Filtros principales (originales) ========= -->
+    <!-- ====== Filtros originales ====== -->
     <div class="filters">
-      <div class="filter-group">
-        <label for="fltTL">Team Leader</label>
-        <select id="fltTL"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltCampania">Campaña</label>
-        <select id="fltCampania"><option value="">Todas</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltDescanso">Descanso</label>
-        <select id="fltDescanso"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltTurno">Turno</label>
-        <select id="fltTurno"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltSearch">Buscar</label>
-        <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
-      </div>
+      <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
+      <div class="filter-group"><label for="fltCampania">Campaña</label><select id="fltCampania"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label for="fltDescanso">Descanso</label><select id="fltDescanso"><option value="">Todos</option></select></div>
+      <div class="filter-group"><label for="fltTurno">Turno</label><select id="fltTurno"><option value="">Todos</option></select></div>
+      <div class="filter-group"><label for="fltSearch">Buscar</label><input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/></div>
       <div class="counter" id="opCounter">Mostrando 0 operadores</div>
     </div>
 
@@ -163,234 +145,102 @@
     const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2200);setTimeout(()=>{t.style.display='none';t.style.transition='';},2800)};
     const pad2=n=>String(n).padStart(2,'0');
     const normaliza = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-
-    function actualizarFechaHora(){
-      const ahora=new Date();
-      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
-    }
+    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // ===== Estado global =====
-    let dataRaw=[];      // [{A..G}]
-    let filtered=[];     // cache para tabla
-    let sortState={ col:null, mode:0 }; // 0 none, 1 desc, 2 asc
+    // ===== Estado =====
+    let dataRaw=[]; let filtered=[]; let sortState={ col:null, mode:0 };
 
-    // ===== Tabla de distribución (como el original) =====
+    // ===== Tabla (original) =====
     function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
     function fillSelect(sel, values){ sel.innerHTML='<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>'+values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
-
-    function buildFilters(rows){
-      const tl=uniqSorted(rows.map(r=>r.A));
-      const camp=uniqSorted(rows.map(r=>r.D));
-      const des=uniqSorted(rows.map(r=>r.E));
-      const tur=uniqSorted(rows.map(r=>r.F));
-      fillSelect(document.getElementById('fltTL'), tl);
-      fillSelect(document.getElementById('fltCampania'), camp);
-      fillSelect(document.getElementById('fltDescanso'), des);
-      fillSelect(document.getElementById('fltTurno'), tur);
-    }
-
+    function buildFilters(rows){ fillSelect(fltTL,uniqSorted(rows.map(r=>r.A))); fillSelect(fltCampania,uniqSorted(rows.map(r=>r.D))); fillSelect(fltDescanso,uniqSorted(rows.map(r=>r.E))); fillSelect(fltTurno,uniqSorted(rows.map(r=>r.F))); }
     function applyFiltersAndRender(){
-      const vTL = document.getElementById('fltTL').value.toLowerCase();
-      const vCa = document.getElementById('fltCampania').value.toLowerCase();
-      const vDe = document.getElementById('fltDescanso').value.toLowerCase();
-      const vTu = document.getElementById('fltTurno').value.toLowerCase();
-      const vQ  = document.getElementById('fltSearch').value.toLowerCase();
-
-      filtered = dataRaw.filter(r=>{
-        const sA = String(r.A||'').toLowerCase();
-        const sB = String(r.B||'').toLowerCase();
-        const sC = String(r.C||'').toLowerCase();
-        const sD = String(r.D||'').toLowerCase();
-        const sE = String(r.E||'').toLowerCase();
-        const sF = String(r.F||'').toLowerCase();
-        return (!vTL||sA===vTL) && (!vCa||sD===vCa) && (!vDe||sE===vDe) && (!vTu||sF===vTu) && (!vQ || sB.includes(vQ) || sC.includes(vQ));
-      });
-
-      if(sortState.col){
-        const col=sortState.col;
-        filtered.sort((a,b)=>{
-          const A=String(a[col]??''); const B=String(b[col]??'');
-          const cmp=A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
-          return sortState.mode===1 ? -cmp : sortState.mode===2 ? cmp : 0;
-        });
-      }
+      const vTL=fltTL.value.toLowerCase(), vCa=fltCampania.value.toLowerCase(), vDe=fltDescanso.value.toLowerCase(), vTu=fltTurno.value.toLowerCase(), vQ=fltSearch.value.toLowerCase();
+      filtered = dataRaw.filter(r=>{const sA=String(r.A||'').toLowerCase(), sB=String(r.B||'').toLowerCase(), sC=String(r.C||'').toLowerCase(), sD=String(r.D||'').toLowerCase(), sE=String(r.E||'').toLowerCase(), sF=String(r.F||'').toLowerCase(); return (!vTL||sA===vTL)&&(!vCa||sD===vCa)&&(!vDe||sE===vDe)&&(!vTu||sF===vTu)&&(!vQ||sB.includes(vQ)||sC.includes(vQ));});
+      if(sortState.col){const col=sortState.col; filtered.sort((a,b)=>{const A=String(a[col]??''),B=String(b[col]??''); const cmp=A.localeCompare(B,'es',{numeric:true,sensitivity:'base'}); return sortState.mode===1?-cmp:sortState.mode===2?cmp:0;});}
       renderTable(filtered);
     }
-
     function renderTable(rows){
-      const tbody=document.querySelector('#tablaDistribucion tbody');
-      tbody.innerHTML='';
-      rows.forEach(r=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${r.A||''}</td>
-          <td>${r.B||''}</td>
-          <td class="perop">${r.C||''}</td>
-          <td>${r.D||''}</td>
-          <td>${r.E||''}</td>
-          <td>${r.F||''}</td>
-          <td>${r.G||''}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-      document.getElementById('opCounter').textContent = `Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
+      const tb=document.querySelector('#tablaDistribucion tbody'); tb.innerHTML='';
+      rows.forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.A||''}</td><td>${r.B||''}</td><td class="perop">${r.C||''}</td><td>${r.D||''}</td><td>${r.E||''}</td><td>${r.F||''}</td><td>${r.G||''}</td>`; tb.appendChild(tr);});
+      opCounter.textContent=`Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
     }
+    function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');}); }
+    function cycleSort(th){ const col=th.dataset.col; if(sortState.col!==col){ sortState={col,mode:1}; } else { sortState.mode=(sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; } resetHeadSortClasses(); if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); } applyFiltersAndRender(); }
+    function exportCSV(){ if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; } const headers=['Team Leader','Operador','PEROP1AM','Campaña','Descanso','Turno','Empresa']; const rows=filtered.map(r=>[r.A||'',r.B||'',r.C||'',r.D||'',r.E||'',r.F||'',r.G||'']); const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
 
-    function resetHeadSortClasses(){
-      document.querySelectorAll('#headRow th').forEach(th=>{
-        th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
-      });
-    }
-    function cycleSort(th){
-      const col=th.dataset.col;
-      if(sortState.col!==col){ sortState={col,mode:1}; }
-      else { sortState.mode = (sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
-      resetHeadSortClasses();
-      if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
-      applyFiltersAndRender();
-    }
-
-    function exportCSV(){
-      if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
-      const headers=['Team Leader','Operador','PEROP1AM','Campaña','Descanso','Turno','Empresa'];
-      const rows=filtered.map(r=>[r.A||'',r.B||'',r.C||'',r.D||'',r.E||'',r.F||'',r.G||'']);
-      const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    }
-
-    // ====== Programados por país ======
-    const COUNTRIES = [
-      {key:'Chile',     flag:'🇨🇱', match:['chile']},
-      {key:'Colombia',  flag:'🇨🇴', match:['colom']},
-      {key:'Costa Rica',flag:'🇨🇷', match:['costa rica','costarica']},
-      {key:'Ecuador',   flag:'🇪🇨', match:['ecuad']},
-      {key:'Mexico',    flag:'🇲🇽', match:['mexic','mx']},
-      {key:'Paraguay',  flag:'🇵🇾', match:['paragu']},
-      {key:'Peru',      flag:'🇵🇪', match:['peru','pe']},
-      {key:'Uruguay',   flag:'🇺🇾', match:['urug']},
-      {key:'Venezuela', flag:'🇻🇪', match:['venez']}
-    ];
-
-    function weekdayISO(d){
-      const wd=['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
-      return wd[d.getDay()];
-    }
-    function detectTurno(val){
-      const s=normaliza(val);
-      if(/\bam\b/.test(s)) return 'am';
-      if(/\bpm\b/.test(s)) return 'pm';
-      return 'ambos';
-    }
-    function getPaisDesdeCampania(camp){
-      const s=normaliza(camp);
-      for(const c of COUNTRIES){
-        if(c.match.some(m=>s.includes(m))) return c.key;
-      }
-      return null;
-    }
+    // ====== Programados ======
+    const COUNTRIES=[{key:'Chile',flag:'🇨🇱',match:['chile']},{key:'Colombia',flag:'🇨🇴',match:['colom']},{key:'Costa Rica',flag:'🇨🇷',match:['costa rica','costarica']},{key:'Ecuador',flag:'🇪🇨',match:['ecuad']},{key:'Mexico',flag:'🇲🇽',match:['mexic','mx']},{key:'Paraguay',flag:'🇵🇾',match:['paragu']},{key:'Peru',flag:'🇵🇪',match:['peru','pe']},{key:'Uruguay',flag:'🇺🇾',match:['urug']},{key:'Venezuela',flag:'🇻🇪',match:['venez']}];
+    function weekdayISO(d){return ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'][d.getDay()];}
+    function detectTurno(val){const s=normaliza(val); if(/\bam\b/.test(s))return 'am'; if(/\bpm\b/.test(s))return 'pm'; return 'ambos';}
+    function getPaisDesdeCampania(camp){const s=normaliza(camp); for(const c of COUNTRIES){ if(c.match.some(m=>s.includes(m))) return c.key;} return null;}
 
     function initProgramadosUI(){
-      // fecha default = hoy
-      const inp=document.getElementById('progFecha');
-      const today=new Date();
-      inp.value = `${today.getFullYear()}-${pad2(today.getMonth()+1)}-${pad2(today.getDate())}`;
-
-      // dibujar tarjetas
-      const grid=document.getElementById('progGrid');
-      grid.innerHTML='';
-      COUNTRIES.forEach(c=>{
-        const tile=document.createElement('div');
-        tile.className='country-tile';
-        tile.id='tile-'+normaliza(c.key);
-        tile.innerHTML=`
-          <div class="country-left">
-            <span class="flag">${c.flag}</span>
-            <div class="cname">${c.key}</div>
-          </div>
-          <div class="badge" data-count>0</div>
-        `;
-        grid.appendChild(tile);
-      });
-
-      // eventos
-      inp.addEventListener('change', ()=>computeProgramados());
-      document.getElementById('progTurno').addEventListener('change', ()=>computeProgramados());
-
-      // parse de emojis -> SVG (banderas siempre visibles)
-      twemoji.parse(grid, {folder:'svg', ext:'.svg'});
+      const inp=progFecha, today=new Date();
+      inp.value=`${today.getFullYear()}-${pad2(today.getMonth()+1)}-${pad2(today.getDate())}`;
+      const grid=progGrid; grid.innerHTML='';
+      COUNTRIES.forEach(c=>{const tile=document.createElement('div'); tile.className='country-tile'; tile.id='tile-'+normaliza(c.key); tile.innerHTML=`<div class="country-left"><span class="flag">${c.flag}</span><div class="cname">${c.key}</div></div><div class="badge" data-count>0</div>`; grid.appendChild(tile);});
+      twemoji.parse(grid,{folder:'svg',ext:'.svg'}); // banderas visibles siempre
+      inp.addEventListener('change',computeProgramados);
+      progTurno.addEventListener('change',computeProgramados);
     }
 
     function computeProgramados(){
+      if(!dataRaw.length) return;
+      const dateSel=new Date(progFecha.value+'T00:00:00'); if(isNaN(dateSel)) return;
+      const turnoSel=normaliza(progTurno.value); const descansoDia=normaliza(weekdayISO(dateSel)).toUpperCase();
+      const counts=Object.fromEntries(COUNTRIES.map(c=>[c.key,0]));
+      for(const r of dataRaw){
+        const paisKey=getPaisDesdeCampania(r.D||''); if(!paisKey) continue;
+        const descanso=normaliza(String(r.E||'')).toUpperCase(); const turnoOp=detectTurno(r.F||'');
+        const trabajaHoy = descanso!==descansoDia; const pasaTurno=(turnoSel==='ambos')||(turnoOp===turnoSel);
+        if(trabajaHoy && pasaTurno) counts[paisKey]+=1;
+      }
+      let total=0; COUNTRIES.forEach(c=>{const n=counts[c.key]||0; total+=n; const el=document.querySelector(`#tile-${normaliza(c.key)} [data-count]`); if(el) el.textContent=n;});
+      progTotal.textContent=`Total: ${total}`;
+    }
+
+    // ===== Carga robusta de JSON (GitHub Pages) =====
+    async function fetchJSONWithFallback(filename){
+      const cacheBuster = `?v=${Date.now()}`;
+      const paths = [
+        `${filename}${cacheBuster}`,                               // ./datadistribucion.json
+        `/${filename}${cacheBuster}`,                              // /datadistribucion.json
+        `${location.pathname.replace(/[^/]+$/,'')}${filename}${cacheBuster}` // /Gestion-Center/datadistribucion.json
+      ];
+      let lastError='';
+      for(const url of paths){
+        try{
+          const res=await fetch(url,{cache:'no-store'});
+          if(res.ok){ return await res.json(); }
+          lastError = `HTTP ${res.status} en ${url}`;
+        }catch(e){ lastError = `${e.message} en ${url}`; }
+      }
+      throw new Error(lastError||'No se pudo obtener el JSON');
+    }
+
+    async function loadData(){
       try{
-        if(!dataRaw.length) return;
-        const dateSel = new Date(document.getElementById('progFecha').value+'T00:00:00');
-        if(isNaN(dateSel)) return;
-
-        const turnoSel = normaliza(document.getElementById('progTurno').value); // 'ambos'|'am'|'pm'
-        const descansoDia = normaliza(weekdayISO(dateSel)).toUpperCase();       // 'LUNES'..'DOMINGO'
-
-        const counts = Object.fromEntries(COUNTRIES.map(c=>[c.key,0]));
-
-        for(const r of dataRaw){
-          const paisKey = getPaisDesdeCampania(r.D||'');
-          if(!paisKey) continue;
-
-          const descanso = normaliza(String(r.E||'')).toUpperCase();
-          const turnoOp  = detectTurno(r.F||'');
-
-          const trabajaHoy = descanso !== descansoDia; // no descansa ese día
-          const pasaTurno  = (turnoSel==='ambos') || (turnoOp===turnoSel);
-
-          if(trabajaHoy && pasaTurno) counts[paisKey] += 1;
-        }
-
-        let total=0;
-        COUNTRIES.forEach(c=>{
-          const n=counts[c.key]||0; total+=n;
-          const el=document.querySelector(`#tile-${normaliza(c.key)} [data-count]`);
-          if(el) el.textContent=n;
-        });
-        document.getElementById('progTotal').textContent=`Total: ${total}`;
+        dataRaw = await fetchJSONWithFallback('datadistribucion.json');
+        buildFilters(dataRaw);
+        initProgramadosUI();
+        computeProgramados();
+        applyFiltersAndRender();
+        toast('✅ Datos de distribución cargados');
       }catch(e){
-        console.error('computeProgramados()', e);
-        // No bloquear la tabla si fallara el widget
+        console.error(e);
+        toast('❌ No se pudo cargar datadistribucion.json');
+        // Render mínimo para que la página no quede “muerta”
+        document.querySelector('#tablaDistribucion tbody').innerHTML='';
       }
     }
 
     // ===== Eventos generales =====
-    document.getElementById('btnReset').addEventListener('click',()=>{
-      document.getElementById('fltTL').value='';
-      document.getElementById('fltCampania').value='';
-      document.getElementById('fltDescanso').value='';
-      document.getElementById('fltTurno').value='';
-      document.getElementById('fltSearch').value='';
-      sortState={col:null,mode:0}; resetHeadSortClasses(); applyFiltersAndRender();
-    });
-    document.getElementById('btnExport').addEventListener('click',exportCSV);
-    ['fltTL','fltCampania','fltDescanso','fltTurno','fltSearch'].forEach(id=>{
-      document.getElementById(id).addEventListener('input',applyFiltersAndRender);
-      document.getElementById(id).addEventListener('change',applyFiltersAndRender);
-    });
+    btnReset.addEventListener('click',()=>{ fltTL.value=''; fltCampania.value=''; fltDescanso.value=''; fltTurno.value=''; fltSearch.value=''; sortState={col:null,mode:0}; resetHeadSortClasses(); applyFiltersAndRender(); });
+    btnExport.addEventListener('click',exportCSV);
+    ['fltTL','fltCampania','fltDescanso','fltTurno','fltSearch'].forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input',applyFiltersAndRender); el.addEventListener('change',applyFiltersAndRender); });
     document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
-
-    // ===== Carga =====
-    async function loadData(){
-      try{
-        const res=await fetch('datadistribucion.json');
-        dataRaw=await res.json();
-        buildFilters(dataRaw);
-        // Inicializar widget y primer cálculo
-        initProgramadosUI();
-        computeProgramados();
-        // Render tabla
-        applyFiltersAndRender();
-        toast('✅ Datos de distribución cargados');
-      }catch(e){ console.error(e); toast('❌ No se pudo cargar datadistribucion.json'); }
-    }
 
     resetHeadSortClasses();
     loadData();
