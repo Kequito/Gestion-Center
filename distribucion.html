@@ -38,14 +38,13 @@
     }
     .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:var(--chip); border:1px solid var(--chip-bd); }
 
-    /* ===== Widget Programados ===== */
+    /* ======= Widget: Programados por país ======= */
     .card{ background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:14px; padding:14px; margin:18px 0; box-shadow:0 4px 10px rgba(0,0,0,.18); }
     .card h2{ margin:0 0 10px; font-size:18px; display:flex; align-items:center; gap:8px; }
     .inline-controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin:10px 0 14px; }
     .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
     @media (max-width: 1100px){ .grid{ grid-template-columns:repeat(2,1fr);} }
     @media (max-width: 720px){ .grid{ grid-template-columns:1fr;} }
-
     .country-tile{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; }
     .country-left{ display:flex; align-items:center; gap:10px; }
     .bandera{ width:28px; height:auto; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.25); }
@@ -85,7 +84,7 @@
     <p class="subtitle">Mismo look & feel que el New Report · Filtros rápidos y ordenamiento 3 estados</p>
     <div id="fechaHora" class="datetime"></div>
 
-    <!-- === NUEVO: Programados por país (con FlagCDN) === -->
+    <!-- ========= NUEVO: Programados por país ========= -->
     <section class="card" id="programadosCard">
       <h2>🗓️ Operadores programados</h2>
       <div class="inline-controls">
@@ -99,6 +98,7 @@
             <option value="ambos">Ambos</option>
             <option value="am">AM (07:00–16:00)</option>
             <option value="pm">PM (13:00–22:00)</option>
+            <option value="noche">Noche (22:00–07:00)</option>
           </select>
         </div>
         <div class="counter" id="progTotal">Total: 0</div>
@@ -106,7 +106,7 @@
       <div class="grid" id="progGrid"></div>
     </section>
 
-    <!-- === Filtros y tabla original === -->
+    <!-- ========= Filtros originales ========= -->
     <div class="filters">
       <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
       <div class="filter-group"><label for="fltCampania">Campaña</label><select id="fltCampania"><option value="">Todas</option></select></div>
@@ -140,36 +140,31 @@
   <div id="toast"></div>
 
   <script>
-    // ========== Utilidades ==========
+    // ===== Utilidades =====
     const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2200);setTimeout(()=>{t.style.display='none';t.style.transition='';},2800)};
     const pad2=n=>String(n).padStart(2,'0');
     const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function ahoraTick(){ const a=new Date(); fechaHora.textContent=`📅 ${a.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} – 🕒 ${a.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`; }
     ahoraTick(); setInterval(ahoraTick,1000);
 
-    // ========== Estado ==========
+    // ===== Estado =====
     let dataRaw=[], filtered=[], sortState={col:null,mode:0};
 
-    // ========== Carga robusta del JSON ==========
+    // ===== Carga de datos =====
     async function loadData(){
-      const base = location.pathname.split('/').slice(0,-1).join('/') || '';
-      const url = `${base}/datadistribucion.json?v=${Date.now()}`;
       try{
-        const res = await fetch(url, {cache:'no-store'});
+        const res=await fetch('datadistribucion.json',{cache:'no-store'});
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        dataRaw = await res.json();
+        dataRaw=await res.json();
         buildFilters(dataRaw);
         initProgramadosUI();
         computeProgramados();
         applyFiltersAndRender();
         toast('✅ Datos de distribución cargados');
-      }catch(e){
-        console.error('Error cargando datadistribucion.json', e);
-        toast('❌ No se pudo cargar datadistribucion.json');
-      }
+      }catch(e){ console.error(e); toast('❌ No se pudo cargar datadistribucion.json'); }
     }
 
-    // ========== Filtros/tabla (como el original) ==========
+    // ===== Filtros/tabla (original) =====
     function uniqSorted(a){ return [...new Set(a.filter(v=>v!=null && String(v).trim()!==''))].sort((x,y)=>String(x).localeCompare(String(y),'es')); }
     function fillSelect(sel, vals){ sel.innerHTML='<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>'+vals.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
     function buildFilters(rows){ fillSelect(fltTL,uniqSorted(rows.map(r=>r.A))); fillSelect(fltCampania,uniqSorted(rows.map(r=>r.D))); fillSelect(fltDescanso,uniqSorted(rows.map(r=>r.E))); fillSelect(fltTurno,uniqSorted(rows.map(r=>r.F))); }
@@ -187,11 +182,7 @@
     }
     function renderTable(rows){
       const tb=document.querySelector('#tablaDistribucion tbody'); tb.innerHTML='';
-      rows.forEach(r=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${r.A||''}</td><td>${r.B||''}</td><td class="perop">${r.C||''}</td><td>${r.D||''}</td><td>${r.E||''}</td><td>${r.F||''}</td><td>${r.G||''}</td>`;
-        tb.appendChild(tr);
-      });
+      rows.forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.A||''}</td><td>${r.B||''}</td><td class="perop">${r.C||''}</td><td>${r.D||''}</td><td>${r.E||''}</td><td>${r.F||''}</td><td>${r.G||''}</td>`; tb.appendChild(tr);});
       opCounter.textContent=`Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
     }
     function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
@@ -212,25 +203,13 @@
       const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
-    // ========== Programados con banderas (FlagCDN) ==========
-    // Mapeo ISO 3166-1 alpha-2 para FlagCDN
-    const ISO2 = {
-      'Chile':'cl','Colombia':'co','Costa Rica':'cr','Ecuador':'ec','Mexico':'mx',
-      'Paraguay':'py','Peru':'pe','Uruguay':'uy','Venezuela':'ve'
-    };
-    // Patrones para detectar país desde el nombre de campaña (columna D)
+    // ====== Programados con banderas (FlagCDN) ======
+    const ISO2 = { 'Chile':'cl','Colombia':'co','Costa Rica':'cr','Ecuador':'ec','Mexico':'mx','Paraguay':'py','Peru':'pe','Uruguay':'uy','Venezuela':'ve' };
     const MATCH = {
-      'Chile':[/chile/],
-      'Colombia':[/colom/],
-      'Costa Rica':[/costa\s*rica|costarica/],
-      'Ecuador':[/ecuad/],
-      'Mexico':[/mexic|mx\b/],
-      'Paraguay':[/paragu/],
-      'Peru':[/per[uú]|\bpe\b/],
-      'Uruguay':[/urug/],
-      'Venezuela':[/venez/]
+      'Chile':[/chile/], 'Colombia':[/colom/], 'Costa Rica':[/costa\s*rica|costarica/],
+      'Ecuador':[/ecuad/], 'Mexico':[/mexic|mx\b/], 'Paraguay':[/paragu/],
+      'Peru':[/per[uú]|\bpe\b/], 'Uruguay':[/urug/], 'Venezuela':[/venez/]
     };
-
     function paisDesdeCampania(camp){
       const s = norm(camp);
       for(const [pais, regs] of Object.entries(MATCH)){
@@ -238,17 +217,43 @@
       }
       return null;
     }
-
     function flagImg(pais){
       const code = ISO2[pais];
       return code ? `<img class="bandera" src="https://flagcdn.com/w40/${code}.png" alt="${pais}">` : '';
     }
 
+    // Ventanas seleccionables (minutos desde 00:00, Noche cruza +24h)
+    const SEL_WINDOWS = { am:[7*60,16*60], pm:[13*60,22*60], noche:[22*60,31*60] };
+
+    // Parse "13:00-22:00" o "13:00–22:00" -> [ini,fin] en minutos; si fin<ini, suma 24h
+    function parseShiftMinutes(s){
+      if(!s) return null;
+      const txt = String(s).replace(/[–—]/g,'-');
+      const re  = /(\d{1,2})[:.](\d{2})/g;
+      const t   = [...txt.matchAll(re)].map(m => (+m[1])*60 + (+m[2]));
+      if(t.length >= 2){
+        let [ini, fin] = [t[0], t[1]];
+        if(fin < ini) fin += 24*60; // cruza medianoche (22:00-07:00)
+        return [ini, fin];
+      }
+      const n = txt.toLowerCase();
+      if(/\bam\b/.test(n)) return [7*60,16*60];
+      if(/\bpm\b/.test(n)) return [13*60,22*60];
+      return null;
+    }
+    function overlaps(selKey, shift){
+      if(selKey === 'ambos') return true;
+      if(!shift) return false;
+      const [s1,e1] = shift;
+      const [ws,we] = SEL_WINDOWS[selKey];
+      const ov = Math.max(0, Math.min(e1, we) - Math.max(s1, ws));
+      return ov > 0;
+    }
+
     function initProgramadosUI(){
-      // fecha hoy
       const t=new Date();
       progFecha.value = `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
-      // grid
+
       const orden = ['Chile','Colombia','Costa Rica','Ecuador','Mexico','Paraguay','Peru','Uruguay','Venezuela'];
       progGrid.innerHTML = orden.map(p=>`
         <div class="country-tile" id="tile-${ISO2[p]}">
@@ -259,15 +264,9 @@
           <div class="badge" data-count>0</div>
         </div>
       `).join('');
+
       progFecha.addEventListener('change', computeProgramados);
       progTurno.addEventListener('change', computeProgramados);
-    }
-
-    function detectTurno(val){
-      const s=norm(val);
-      if(/\bam\b/.test(s)) return 'am';
-      if(/\bpm\b/.test(s)) return 'pm';
-      return 'ambos';
     }
 
     function computeProgramados(){
@@ -275,31 +274,31 @@
       const fecha = new Date(progFecha.value+'T00:00:00');
       if(isNaN(fecha)) return;
       const dia = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'][fecha.getDay()].toUpperCase();
-      const turnoSel = norm(progTurno.value); // ambos|am|pm
+      const turnoSel = document.getElementById('progTurno').value; // ambos|am|pm|noche
 
       const counts = {Chile:0,Colombia:0,'Costa Rica':0,Ecuador:0,Mexico:0,Paraguay:0,Peru:0,Uruguay:0,Venezuela:0};
 
       for(const r of dataRaw){
-        const pais = paisDesdeCampania(r.D||'');
-        if(!pais) continue;
-        const descanso = (r.E||'').toString().toUpperCase(); // en tu JSON vienen días en mayúsculas
-        const turnoOp  = detectTurno(r.F||'');               // AM/PM
-        const trabajaHoy = descanso !== dia;
-        const pasaTurno  = (turnoSel==='ambos') || (turnoOp===turnoSel);
+        const pais = paisDesdeCampania(r.D||''); if(!pais) continue;
+        const descanso = String(r.E||'').toUpperCase();
+        const trabajaHoy = (descanso !== dia);
+
+        const shift = parseShiftMinutes(r.F||'');
+        const pasaTurno = overlaps(turnoSel, shift);
+
         if(trabajaHoy && pasaTurno) counts[pais] += 1;
       }
 
       let total=0;
       for(const [pais, n] of Object.entries(counts)){
         total += n;
-        const id = ISO2[pais];
-        const el = document.querySelector(`#tile-${id} [data-count]`);
+        const el = document.querySelector(`#tile-${ISO2[pais]} [data-count]`);
         if(el) el.textContent = n;
       }
       progTotal.textContent = `Total: ${total}`;
     }
 
-    // ========== Eventos ==========
+    // ===== Eventos generales =====
     btnReset.addEventListener('click',()=>{ fltTL.value=''; fltCampania.value=''; fltDescanso.value=''; fltTurno.value=''; fltSearch.value=''; sortState={col:null,mode:0}; resetHeadSortClasses(); applyFiltersAndRender(); });
     btnExport.addEventListener('click',exportCSV);
     document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
