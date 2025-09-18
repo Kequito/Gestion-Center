@@ -1,185 +1,246 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel de Gestión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión Center — v2.0</title>
 
-    <!-- Fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Fuentes (titulares + texto) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
     <style>
-      /* =================== THEME =================== */
+      /* =========================
+         DESIGN SYSTEM — v2.0
+         ========================= */
       :root{
-        --bg-app:#0b1022; 
-        --bg-aside:#0f1731; 
-        --txt:#e9f1ff; 
-        --txt-muted:#b9c6dc;
-        --hover:#1a2449;
-        --primary:#4f7bfd; 
+        --radius:16px;
+        --radius-sm:12px;
+        --radius-xs:10px;
+
+        /* Tipografía */
+        --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+        /* Duraciones y curvas */
+        --t-fast:.15s;
+        --t-med:.25s;
+        --t-slow:.6s;
+        --curve:cubic-bezier(.2,.7,.2,1);
+
+        /* Elevación */
+        --elev-1:0 6px 20px rgba(0,0,0,.25);
+        --elev-2:0 12px 34px rgba(0,0,0,.35);
+      }
+
+      /* Tema oscuro (default) */
+      [data-theme="dark"]{
+        --bg-app:#070b1a;
+        --bg-aside:#0c1228;
+        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
+        --txt:#e9f1ff;
+        --txt-muted:#b8c6de;
+        --stroke:rgba(255,255,255,.10);
+
+        --primary:#5b8bff;
         --accent:#7ae3ff;
-        --card:#121a3b;
-        --stroke:rgba(255,255,255,.08);
-        --glow-1: #4f7bfd;
-        --glow-2: #7ae3ff;
-        --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+
+        --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
       }
-      *{ box-sizing:border-box }
+
+      /* Tema claro */
+      [data-theme="light"]{
+        --bg-app:#f6f8ff;
+        --bg-aside:#ffffff;
+        --bg-card:linear-gradient(160deg, #ffffff, #f1f5ff);
+        --txt:#0f162e;
+        --txt-muted:#4b5878;
+        --stroke:rgba(15,22,46,.12);
+
+        --primary:#2d5bff;
+        --accent:#00bcd4;
+
+        --chip-ok:#16a34a; --chip-warn:#b7791f; --chip-bad:#dc2626;
+      }
+
+      *{box-sizing:border-box}
+      html,body{height:100%}
       body{
-        margin:0; font-family:'Lexend',sans-serif; color:var(--txt);
-        background: radial-gradient(1200px 1200px at 10% -10%, rgba(79,123,253,.18), transparent 50%),
-                    radial-gradient(800px 800px at 90% 10%, rgba(122,227,255,.15), transparent 55%),
-                    var(--bg-app);
-        min-height:100vh;
+        margin:0; font-family:var(--font-body); color:var(--txt);
+        background:
+          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
+          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
+          var(--bg-app);
+        overflow-x:hidden;
       }
 
-      /* ====== Animación global (opcional según sistema) ====== */
+      /* Accesibilidad: respetar reducción de movimiento */
       @media (prefers-reduced-motion:no-preference){
-        .fade-in{ opacity:0; transform:translateY(6px); will-change:transform,opacity; transition:opacity .6s ease, transform .6s ease }
-        .fade-in.show{ opacity:1; transform:none }
+        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
+        .reveal.show{opacity:1; transform:none}
       }
 
-      /* ====== Sidebar moderno ====== */
+      /* ====== Topbar ====== */
+      .topbar{
+        position:sticky; top:0; z-index:20;
+        backdrop-filter:saturate(120%) blur(8px);
+        background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
+        border-bottom:1px solid var(--stroke);
+        padding:10px 18px; margin-left:280px;
+        display:flex; align-items:center; gap:10px; justify-content:space-between;
+      }
+      .brand{display:flex; align-items:center; gap:10px; font-family:var(--font-title); font-weight:700}
+      .toolbar{display:flex; align-items:center; gap:8px}
+      .search{
+        display:flex; align-items:center; gap:8px; padding:10px 12px; min-width:260px;
+        background:color-mix(in oklab, var(--bg-aside) 94%, transparent); border:1px solid var(--stroke);
+        border-radius:999px; font-size:14px; color:var(--txt-muted)
+      }
+      .search input{
+        background:transparent; border:0; outline:none; color:var(--txt); width:180px; font-family:var(--font-body)
+      }
+      .icon-btn{
+        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 94%, transparent);
+        padding:10px 12px; border-radius:999px; cursor:pointer; color:var(--txt);
+        transition:transform var(--t-fast) ease, background var(--t-med) ease;
+      }
+      .icon-btn:hover{transform:translateY(-1px)}
+      .avatar{
+        width:34px; height:34px; border-radius:50%; border:1px solid var(--stroke);
+        background:linear-gradient(180deg, var(--primary), var(--accent));
+      }
+
+      /* ====== Sidebar ====== */
       aside{
-        position:fixed; inset:0 auto 0 0; width:260px; backdrop-filter:saturate(120%) blur(8px);
-        background: linear-gradient(180deg, rgba(15,23,49,.95), rgba(15,23,49,.88));
+        position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
+        backdrop-filter:saturate(120%) blur(8px);
+        background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
         border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; gap:12px; padding:28px 16px; z-index:10; overflow:auto;
+        display:flex; flex-direction:column; padding:22px 14px; gap:12px; overflow:auto;
       }
       .logo{
-        display:flex; align-items:center; justify-content:center; gap:10px; 
-        font-size:20px; font-weight:700; letter-spacing:.2px; padding:12px 10px;
-        border-radius:14px; background:linear-gradient(132deg, rgba(79,123,253,.18), rgba(122,227,255,.10));
-        border:1px solid var(--stroke); position:relative; isolation:isolate;
+        display:flex; align-items:center; justify-content:center; gap:10px;
+        font-family:var(--font-title); font-size:20px; font-weight:700; letter-spacing:.2px;
+        padding:12px; border-radius:var(--radius); border:1px solid var(--stroke);
+        background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
+        position:relative; isolation:isolate;
       }
       .logo::after{
-        content:""; position:absolute; inset:0; border-radius:14px; pointer-events:none;
-        box-shadow:0 0 24px 2px rgba(79,123,253,.35), 0 0 48px 6px rgba(122,227,255,.18);
-        opacity:.25;
+        content:""; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none;
+        box-shadow:0 0 28px color-mix(in oklab, var(--primary) 35%, transparent),
+                   0 0 42px color-mix(in oklab, var(--accent) 22%, transparent);
+        opacity:.18;
       }
       nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
       nav a{
-        --pad:12px;
-        display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--txt);
-        font-size:15px; padding:10px var(--pad); border-radius:10px; position:relative; 
-        transition:transform .12s ease, background-color .25s ease, color .25s ease;
-        border:1px solid transparent;
+        display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px;
+        text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
+        transition:background var(--t-med) ease, transform var(--t-fast) ease;
       }
-      nav a:hover{ background:var(--hover); transform:translateX(2px); }
+      nav a:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
       nav a.active{
-        background:linear-gradient(90deg, rgba(79,123,253,.25), rgba(122,227,255,.15));
+        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
         border-color:var(--stroke);
       }
-      /* Indicador deslizante */
       .nav-indicator{
         position:absolute; left:0; width:4px; height:40px; border-radius:0 3px 3px 0;
-        background:linear-gradient(180deg, var(--glow-1), var(--glow-2));
-        box-shadow:0 0 12px rgba(122,227,255,.6), 0 0 28px rgba(79,123,253,.35);
-        transition:transform .25s cubic-bezier(.2,.7,.2,1), height .25s ease; 
-        transform:translateY(0); will-change:transform,height;
+        background:linear-gradient(180deg, var(--primary), var(--accent));
+        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
+        transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
       }
-      .spacer{ flex:1 }
+      .spacer{flex:1}
       .logout{
-        width:100%; background:linear-gradient(180deg, #ef4444, #d62c2c);
-        color:#fff; border:0; padding:12px 14px; border-radius:12px; cursor:pointer; font-weight:700;
-        transition:transform .08s ease, filter .2s ease; border:1px solid rgba(255,255,255,.12);
+        width:100%; border:1px solid var(--stroke);
+        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
+        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
+        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
       }
-      .logout:hover{ filter:brightness(1.05) }
-      .logout:active{ transform:translateY(1px) }
+      .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
       /* ====== Main ====== */
-      main{ margin-left:260px; padding:24px 24px 40px; }
+      main{ margin-left:280px; padding:20px 22px 40px; }
 
-      /* Hero con glow */
+      /* Hero con parallax/glow */
       .hero{
-        position:relative; background:linear-gradient(135deg, rgba(79,123,253,.14), rgba(122,227,255,.10));
-        border:1px solid var(--stroke); border-radius:16px; padding:18px 18px 18px 20px; overflow:hidden;
+        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
+        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
+        border:1px solid var(--stroke); overflow:hidden;
       }
-      .hero h1{ margin:0 0 6px; font-size:24px; letter-spacing:.2px }
-      .hero p{ margin:0; color:var(--txt-muted); font-size:14px }
-      .hero .glow{
-        position:absolute; right:-80px; top:-80px; width:220px; height:220px; border-radius:50%;
-        background:radial-gradient(circle at 50% 50%, rgba(122,227,255,.35), transparent 60%);
-        filter:blur(18px); pointer-events:none;
-        animation:float 8s ease-in-out infinite alternate;
-      }
-      @keyframes float{
-        from{ transform:translate3d(0,0,0) }
-        to{ transform:translate3d(-10px,8px,0) }
-      }
-
-      /* Tarjetas */
-      .grid{
-        display:grid; gap:14px; margin-top:16px;
-        grid-template-columns:repeat(2, minmax(280px, 1fr));
-      }
-      .card{
-        background:linear-gradient(160deg, rgba(18,26,59,.82), rgba(18,26,59,.64));
-        border:1px solid var(--stroke); border-radius:16px; padding:14px 16px; position:relative;
-        overflow:hidden; isolation:isolate; transform:translateZ(0);
-        transition:transform .18s ease, box-shadow .25s ease, border-color .25s ease;
-        will-change:transform, box-shadow;
-      }
-      .card::after{
-        content:""; position:absolute; inset:-20% -20% auto auto; width:180px; height:180px; border-radius:50%;
-        background:radial-gradient(circle at 30% 30%, rgba(79,123,253,.25), transparent 60%);
-        filter:blur(24px); opacity:.35; pointer-events:none; transform:translateZ(0);
-      }
-      .card:hover{
-        transform:translateY(-2px);
-        box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 28px rgba(79,123,253,.20);
-        border-color:rgba(255,255,255,.14);
-      }
-      .card h3{ margin:0 0 8px; font-size:15px; color:#dfe8ff; letter-spacing:.3px }
-      .card a{ display:flex; gap:8px; align-items:center; color:#fff; text-decoration:none; padding:8px 0; border-radius:8px; }
-      .card a span{ opacity:.8; transition:opacity .15s ease, transform .15s ease }
-      .card a:hover span{ opacity:1; transform:translateX(2px) }
+      .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
+      .hero p{margin:0; color:var(--txt-muted); font-size:14px}
       .pill{
-        display:inline-flex; align-items:center; gap:8px; font-size:12px; color:#0b1022;
-        background:linear-gradient(180deg, var(--accent), #b7f3ff); padding:6px 10px; border-radius:999px;
-        border:1px solid rgba(255,255,255,.25);
-        box-shadow:0 8px 24px rgba(122,227,255,.35), inset 0 1px 0 rgba(255,255,255,.55);
-        font-weight:700;
+        display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+        background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 50%, white));
+        color:#0b1022; font-weight:700; border:1px solid color-mix(in oklab, var(--accent) 65%, white);
+        box-shadow:0 8px 24px color-mix(in oklab, var(--accent) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.6);
+      }
+      .blob{
+        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
+        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
+        filter:blur(18px); pointer-events:none; transform:translateZ(0);
       }
 
-      /* Sección contacto */
+      /* Grid tarjetas */
+      .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(2, minmax(290px, 1fr))}
+      .card{
+        position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
+        background:var(--bg-card); border:1px solid var(--stroke);
+        box-shadow:var(--elev-1); transition:transform var(--t-med) var(--curve), box-shadow var(--t-med) ease, border-color var(--t-med) ease;
+        transform:translateZ(0);
+      }
+      .card:hover{ transform:translateY(-2px); box-shadow:var(--elev-2); border-color:color-mix(in oklab, var(--primary) 25%, var(--stroke)) }
+      .card h3{ margin:0 0 10px; color:var(--txt); font:600 15px/1.1 var(--font-title) }
+      .card a{ display:flex; align-items:center; gap:8px; color:var(--txt); text-decoration:none; padding:8px 0; border-radius:10px }
+      .card a span{ opacity:.85; transition:opacity var(--t-fast) ease, transform var(--t-fast) ease }
+      .card a:hover span{ opacity:1; transform:translateX(2px) }
+
+      /* Chips métricas */
+      .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+      .chip{
+        display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font:600 12px var(--font-body);
+        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 90%, transparent);
+      }
+      .ok{ background:color-mix(in oklab, var(--chip-ok) 20%, transparent); color:#06250f; border-color:color-mix(in oklab, var(--chip-ok) 45%, transparent) }
+      .warn{ background:color-mix(in oklab, var(--chip-warn) 20%, transparent); color:#301c05; border-color:color-mix(in oklab, var(--chip-warn) 45%, transparent) }
+      .bad{ background:color-mix(in oklab, var(--chip-bad) 20%, transparent); color:#2b0606; border-color:color-mix(in oklab, var(--chip-bad) 45%, transparent) }
+
+      /* Skeletons */
+      .skeleton{
+        position:relative; overflow:hidden; border-radius:10px; background:color-mix(in oklab, var(--bg-aside) 86%, transparent);
+      }
+      .skeleton::after{
+        content:""; position:absolute; inset:0; translate: -100% 0;
+        background:linear-gradient(90deg, transparent, color-mix(in oklab, var(--txt) 8%, transparent), transparent);
+        animation:shimmer 1.4s infinite var(--curve);
+      }
+      @keyframes shimmer{to{translate:100% 0}}
+
+      /* Footer contacto */
       .contact{ margin-top:16px }
-      .muted{ color:var(--txt-muted) }
-
-      /* Grid decorativo sutil */
-      .background-grid{
-        position:fixed; inset:0; z-index:-1; opacity:.08; pointer-events:none;
-        background:
-          linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 28px 28px,
-          linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 28px 28px;
-      }
 
       /* Responsive */
-      @media (max-width: 1024px){
-        aside{ width:230px }
-        main{ margin-left:230px }
-      }
-      @media (max-width: 860px){
-        aside{ position:sticky; top:0; width:auto; border-right:none; border-bottom:1px solid var(--stroke) }
-        main{ margin-left:0; padding:16px }
-        .grid{ grid-template-columns:1fr }
-      }
+      @media (max-width:1080px){ .topbar{margin-left:0} main{margin-left:0} aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)} .grid{grid-template-columns:1fr} }
     </style>
   </head>
   <body>
-    <div class="background-grid" aria-hidden="true"></div>
+    <!-- Fondo en cuadrícula sutil con parallax -->
+    <div id="bg-grid" aria-hidden="true" style="
+      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+      background:
+        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
+    </div>
 
-    <aside class="fade-in">
-      <div class="logo">🧭 <span>Gestión Center</span></div>
-
+    <!-- SIDEBAR -->
+    <aside class="reveal">
+      <div class="logo">🧭 Gestión Center</div>
       <nav role="navigation" aria-label="Navegación principal">
-        <div class="nav-indicator" aria-hidden="true" style="transform:translateY(0);height:40px;"></div>
+        <div class="nav-indicator" aria-hidden="true"></div>
 
         <a href="index.html" class="nav-item">🏠 <span>Inicio</span></a>
         <a href="plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
@@ -195,47 +256,66 @@
         <a href="tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
         <a href="login.html" class="nav-item">🧪 <span>Test</span></a>
       </nav>
-
       <div class="spacer"></div>
-      <button class="logout" onclick="gcLogout()" aria-label="Cerrar sesión">Salir</button>
+      <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
+    <!-- TOPBAR -->
+    <header class="topbar reveal">
+      <div class="brand">🌟 <span>Dashboard</span></div>
+      <div class="toolbar">
+        <div class="search">
+          🔎 <input type="search" placeholder="Buscar sección u operador…" aria-label="Buscar"/>
+        </div>
+        <button class="icon-btn" id="themeToggle" title="Cambiar tema" aria-label="Cambiar tema">🌓</button>
+        <div class="avatar" title="Kevin"></div>
+      </div>
+    </header>
+
+    <!-- CONTENIDO -->
     <main>
       <!-- HERO -->
-      <section class="hero fade-in" style="--delay:0s">
-        <div class="glow" aria-hidden="true"></div>
+      <section class="hero reveal" style="--delay:0s">
+        <div class="blob" aria-hidden="true"></div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
           <div>
-            <h1>Bienvenido, Team Leader Kevin 🚀</h1>
-            <p class="muted">Sesión verificada ✅ | Accesos rápidos y estado general.</p>
+            <h1>Hola Kevin, listo para romperla hoy 💪</h1>
+            <p>Sesión verificada ✅ | Accesos rápidos y estado general.</p>
           </div>
           <div class="pill">Online • Operaciones</div>
+        </div>
+
+        <!-- Chips métricas del día (inician como skeleton) -->
+        <div class="chips" id="kpis" style="margin-top:12px">
+          <div class="chip skeleton" style="width:140px; height:28px"></div>
+          <div class="chip skeleton" style="width:160px; height:28px"></div>
+          <div class="chip skeleton" style="width:120px; height:28px"></div>
         </div>
       </section>
 
       <!-- CARDS -->
       <section class="grid">
-        <article class="card fade-in" style="--delay:.05s">
+        <article class="card reveal" style="--delay:.05s">
           <h3>Reportes diarios</h3>
           <a href="estadisticas.html">📈 <span>Ir a Estadísticas</span></a>
           <a href="opo11.html">🧰 <span>New Report CC Perú</span></a>
           <a href="postsale.html">🚚 <span>Post-Sale New Report</span></a>
         </article>
 
-        <article class="card fade-in" style="--delay:.1s">
+        <article class="card reveal" style="--delay:.1s">
           <h3>Operaciones</h3>
           <a href="distribucion.html">📋 <span>Distribución</span></a>
           <a href="camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
           <a href="pintado.html">🧮 <span>Queues Heatmap</span></a>
         </article>
 
-        <article class="card fade-in" style="--delay:.15s">
+        <article class="card reveal" style="--delay:.15s">
           <h3>Cobertura</h3>
           <a href="cobertura.html">🌎 <span>Mapa de cobertura</span></a>
           <a href="newcobertura.html">🧭 <span>New Cobertura 1.1</span></a>
         </article>
 
-        <article class="card fade-in" style="--delay:.2s">
+        <article class="card reveal" style="--delay:.2s">
           <h3>Utilidades</h3>
           <a href="tablita.html">📄 <span>Tablita :3</span></a>
           <a href="login.html">🧪 <span>Test</span></a>
@@ -243,75 +323,95 @@
       </section>
 
       <!-- CONTACTO -->
-      <section id="contacto" class="contact fade-in" style="--delay:.25s">
+      <section id="contacto" class="contact reveal" style="--delay:.25s">
         <article class="card">
           <h3>Contacto</h3>
           <p class="muted" style="margin:.4rem 0 0">
-            ¿Sugerencias para la página? Escríbeme y lo iteramos :3
+            ¿Ideas para mejorar? Escríbeme y lo iteramos :3
           </p>
         </article>
       </section>
     </main>
 
     <script type="module">
-      // ====== Activo dinámico + indicador deslizante ======
+      // ========= Nave activo + indicador =========
       const items = [...document.querySelectorAll('nav .nav-item')];
       const indicator = document.querySelector('.nav-indicator');
-      const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
       function setActive(){
         let active = items[0];
         items.forEach(a=>{
           const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
-          if (href && href === path) active = a;
-          a.classList.toggle('active', a === active);
+          if(href && href === current) active = a;
+          a.classList.toggle('active', a===active);
           a.toggleAttribute('aria-current', a===active ? 'page' : false);
         });
-        // Posicionar indicador
         const rect = active.getBoundingClientRect();
-        const parent = active.parentElement.getBoundingClientRect();
-        const h = rect.height;
-        const y = rect.top - parent.top + active.parentElement.scrollTop;
-        indicator.style.height = `${h}px`;
+        const p = active.parentElement.getBoundingClientRect();
+        const y = rect.top - p.top + active.parentElement.scrollTop;
+        indicator.style.height = rect.height + 'px';
         indicator.style.transform = `translateY(${y}px)`;
       }
       setActive();
-      // Recalcular en resize/scroll del nav
       const nav = document.querySelector('nav');
       nav.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
 
-      // ====== Revelado suave con IntersectionObserver ======
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!prefersReduced && 'IntersectionObserver' in window){
-        const obs = new IntersectionObserver((entries)=>{
-          entries.forEach(e=>{
-            if(e.isIntersecting){ e.target.classList.add('show'); obs.unobserve(e.target); }
-          });
-        }, { root:null, rootMargin:'0px 0px -10% 0px', threshold:0.1 });
-        document.querySelectorAll('.fade-in').forEach(el=>{
-          // pequeña demora escalonada si tiene --delay
+      // ========= Reveal al scroll =========
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(!reduced && 'IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries)=>{
+          for(const e of entries){
+            if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); }
+          }
+        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        document.querySelectorAll('.reveal').forEach(el=>{
           const delay = el.style.getPropertyValue('--delay') || '0s';
-          el.style.transitionDelay = delay;
-          obs.observe(el);
+          el.style.transitionDelay = delay; io.observe(el);
         });
       } else {
-        document.querySelectorAll('.fade-in').forEach(el=>el.classList.add('show'));
+        document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
       }
 
-      // ====== Seguridad: avisar si gcLogout no está expuesto ======
-      if (typeof window.gcLogout !== 'function') {
-        console.warn('gcLogout no está definido. En guard.js expón la función: window.gcLogout = async () => { /* signOut + redirect */ }');
-      }
+      // ========= Toggle tema (persistente) =========
+      const KEY='gc-theme';
+      const root=document.documentElement;
+      const btn=document.getElementById('themeToggle');
+      const saved=localStorage.getItem(KEY);
+      if(saved) root.setAttribute('data-theme', saved);
+      btn.addEventListener('click', ()=>{
+        const now = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', now);
+        localStorage.setItem(KEY, now);
+      });
 
-      // ====== Mostrar la página cuando el guard confirme ======
-      // (Tu guard.js debe llamar a: document.documentElement.style.visibility = 'visible' cuando la sesión es válida)
-      // Aquí solo añadimos un fallback por si ya estuviera visible post-auth:
+      // ========= Parallax sutil del fondo de cuadrícula =========
+      const bg=document.getElementById('bg-grid');
+      let rafId=null;
+      function parallax(e){
+        const x=(e.clientX / window.innerWidth - .5)*6;
+        const y=(e.clientY / window.innerHeight - .5)*6;
+        if(rafId) cancelAnimationFrame(rafId);
+        rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
+      }
+      if(!reduced) window.addEventListener('mousemove', parallax);
+
+      // ========= KPIs demo con skeleton -> contenido =========
+      const kpis=document.getElementById('kpis');
       setTimeout(()=>{
-        if (document.documentElement.style.visibility !== 'visible'){
-          // No forzamos, dejamos que guard.js lo haga; esto es solo defensa suave.
-        }
-      }, 150);
+        kpis.innerHTML = `
+          <div class="chip ok">✅ Approve <strong style="margin-left:6px">34%</strong></div>
+          <div class="chip warn">⚠️ Reject <strong style="margin-left:6px">9%</strong></div>
+          <div class="chip bad">🗑️ Trash <strong style="margin-left:6px">12%</strong></div>
+        `;
+      }, 800);
+
+      // ========= Seguridad: logout expuesto por guard.js =========
+      if (typeof window.gcLogout !== 'function') {
+        console.warn('gcLogout no está definido. En guard.js expón la función global: window.gcLogout = async () => { /* signOut + redirect */ }');
+      }
+
+      // Nota: guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
     </script>
   </body>
 </html>
