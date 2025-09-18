@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center — Acceso</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0f172a; --panel:#111827; --txt:#e5e7eb; --muted:#94a3b8; --acc:#3b82f6; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font-family:Lexend,system-ui}
+    .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
+    .card{width:100%;max-width:420px;background:var(--panel);border:1px solid #1f2937;border-radius:16px;padding:24px}
+    h1{margin:0 0 8px;font-size:24px}
+    p{margin:0 0 16px;color:var(--muted)}
+    label{display:block;margin:12px 0 6px}
+    input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:var(--txt)}
+    button{width:100%;padding:12px;border-radius:12px;border:0;background:var(--acc);color:white;font-weight:600;margin-top:12px;cursor:pointer}
+    .link{display:block;text-align:center;margin-top:10px;color:#93c5fd;cursor:pointer}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#1f2937;color:#93c5fd;font-weight:600}
+    .hidden{display:none}
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #1f2937}
+    .content{padding:16px}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="wrap">
+  <div class="card">
+    <h1>Inicia sesión</h1>
+    <p>Usa tu cuenta para entrar a Gestión Center.</p>
+    <label>Email</label>
+    <input id="email" type="email" placeholder="tucorreo@empresa.com"/>
+    <label>Contraseña</label>
+    <input id="pass" type="password" placeholder="••••••••"/>
+    <button onclick="loginEmail()">Entrar con Email</button>
+    <button onclick="loginGoogle()">Entrar con Google</button>
+    <span class="link" onclick="signUp()">Crear cuenta (solo prueba)</span>
+    <p id="msg" style="color:#fca5a5;margin-top:8px;"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+  <div class="topbar">
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="badge" id="userEmail">Cargando…</span>
+      <span class="badge" id="userRank">SIN RANGO</span>
+    </div>
+    <div>
+      <button style="width:auto;padding:8px 12px;background:#ef4444" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div class="content">
+    <h2>👋 Bienvenido a Gestión Center</h2>
+    <p>Esta vista solo aparece con sesión iniciada. Aquí ya puedes renderizar tu dashboard.</p>
+
+    <!-- Ejemplos de “guard” de UI para cuando activemos rangos -->
+    <section data-role="admin" style="margin-top:12px;border:1px dashed #334155;border-radius:12px;padding:12px">
+      <strong>Solo ADMIN</strong> — (se ocultará si no eres admin).
+    </section>
+    <section data-role="tl" style="margin-top:12px;border:1px dashed #334155;border-radius:12px;padding:12px">
+      <strong>Solo TL</strong> — (se ocultará si no eres TL/supervisor/admin).
+    </section>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+    createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup,
+    signOut, setPersistence, browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ===== TU CONFIG (la que me pasaste) =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
+    authDomain: "gestioncenterdata.firebaseapp.com",
+    projectId: "gestioncenterdata",
+    storageBucket: "gestioncenterdata.firebasestorage.app",
+    messagingSenderId: "628401314464",
+    appId: "1:628401314464:web:0671233dfd801ee43587c5",
+    measurementId: "G-NBFZYTN094"
+  };
+
+  // Init
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+  auth.languageCode = 'es';
+  // Mantener sesión al recargar
+  await setPersistence(auth, browserLocalPersistence).catch(()=>{ /* ignore */ });
+
+  const $ = (id)=>document.getElementById(id);
+  const loginView = $("loginView");
+  const appView   = $("appView");
+  const msg = $("msg");
+
+  // ==== Auth actions ====
+  window.loginEmail = async ()=>{
+    msg.textContent="";
+    try{
+      const email = $("email").value.trim();
+      const pass  = $("pass").value.trim();
+      await signInWithEmailAndPassword(auth, email, pass);
+    }catch(e){ msg.textContent = e.message; }
+  };
+
+  window.loginGoogle = async ()=>{
+    msg.textContent="";
+    try{
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    }catch(e){ msg.textContent = e.message; }
+  };
+
+  window.signUp = async ()=>{
+    msg.textContent="";
+    try{
+      const email = $("email").value.trim();
+      const pass  = $("pass").value.trim();
+      await createUserWithEmailAndPassword(auth, email, pass);
+    }catch(e){ msg.textContent = e.message; }
+  };
+
+  window.logout = ()=> signOut(auth);
+
+  // ==== Firestore: crear doc /users/{uid} si no existe ====
+  async function ensureUserDoc(user){
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, {
+        email: user.email || null,
+        displayName: user.displayName || "",
+        createdAt: serverTimestamp(),
+        perop: "",
+        teamId: ""
+        // OJO: el rango NO se guarda aquí; lo pondremos como custom claim en la Fase 2.
+      });
+    }
+  }
+
+  // ==== UI helpers ====
+  function show(view){
+    if(view==="login"){ loginView.classList.remove("hidden"); appView.classList.add("hidden"); }
+    else { loginView.classList.add("hidden"); appView.classList.remove("hidden"); }
+  }
+
+  function applyRoleGuards(rank){
+    const can = (required)=>{
+      // admin y supervisor ven casi todo; el resto solo su rol
+      if(rank==="admin" || rank==="supervisor") return true;
+      return rank===required;
+    };
+    document.querySelectorAll("[data-role]").forEach(el=>{
+      const need = el.getAttribute("data-role");
+      el.style.display = can(need) ? "" : "none";
+    });
+  }
+
+  async function paintHeader(user){
+    // En Fase 1 no hay claims todavía; si existen, los mostramos.
+    const token = await user.getIdTokenResult(true);
+    const rank = token.claims?.rank || "viewer"; // placeholder
+    $("userEmail").textContent = user.email ?? user.uid;
+    $("userRank").textContent  = rank.toUpperCase();
+    applyRoleGuards(rank);
+  }
+
+  // ==== Auth state ====
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){ show("login"); $("userEmail").textContent="Sin sesión"; $("userRank").textContent="SIN RANGO"; return; }
+    await ensureUserDoc(user);
+    await paintHeader(user);
+    show("app");
+  });
+</script>
+</body>
+</html>
