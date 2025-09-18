@@ -36,6 +36,14 @@
         /* Elevación */
         --elev-1:0 6px 20px rgba(0,0,0,.25);
         --elev-2:0 12px 34px rgba(0,0,0,.35);
+
+        /* Controles (override selects) */
+        --ctl-bg: rgba(255,255,255,.06);
+        --ctl-bd: rgba(255,255,255,.10);
+        --menu-bg:#0f182f;
+        --menu-hov:#1b2544;
+        --menu-txt:#e9f1ff;
+        --menu-muted:#b8c6de;
       }
 
       /* Tema oscuro (default) */
@@ -138,7 +146,7 @@
         filter:blur(18px); pointer-events:none; transform:translateZ(0);
       }
 
-      /* Grid tarjetas base (no usamos cards aquí pero mantenemos spacing consistente) */
+      /* Grid tarjetas base */
       .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(2, minmax(290px, 1fr))}
 
       /* ===== Distribución — estilos específicos ===== */
@@ -151,10 +159,38 @@
       .inline-controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin:10px 0 14px; }
       .filter-group{ display:flex; flex-direction:column; gap:6px; }
       .filter-group label{ font-size:12px; color:var(--txt-muted); }
-      .filter-group select, .filter-group input[type="text"], .filter-group input[type="date"]{
-        padding:8px 12px; border-radius:12px; border:1px solid var(--stroke); background:rgba(255,255,255,.03);
-        color:var(--txt); min-width:170px; height:38px; outline:none;
+
+      /* Campos base */
+      .filter-group input[type="text"], .filter-group input[type="date"]{
+        padding:8px 12px; border-radius:12px; border:1px solid var(--ctl-bd); background:var(--ctl-bg);
+        color:var(--menu-txt); min-width:170px; height:38px; outline:none;
       }
+
+      /* === SELECT en modo oscuro + menú de opciones legible === */
+      .filter-group select{
+        padding:8px 12px; border-radius:12px; border:1px solid var(--ctl-bd);
+        background:var(--ctl-bg); color:var(--menu-txt); min-width:170px; height:38px; outline:none;
+        color-scheme: dark; appearance:none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--menu-txt) 50%),
+          linear-gradient(135deg, var(--menu-txt) 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) 16px, calc(100% - 12px) 16px;
+        background-size:6px 6px, 6px 6px;
+        background-repeat:no-repeat;
+      }
+      .filter-group select option,
+      .filter-group select optgroup{
+        background:var(--menu-bg);
+        color:var(--menu-txt);
+      }
+      .filter-group select option:checked{ background:var(--menu-hov) !important; color:var(--menu-txt) }
+      .filter-group select option:hover{ background:var(--menu-hov) !important }
+      .filter-group select:focus{
+        box-shadow:0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent);
+        border-color: color-mix(in oklab, var(--primary) 45%, var(--ctl-bd));
+      }
+
       .counter{
         margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px;
         background:rgba(255,255,255,.06); border:1px solid var(--stroke);
@@ -380,7 +416,7 @@
         console.warn('gcLogout no está definido. En guard.js expón la función global: window.gcLogout = async () => { /* signOut + redirect */ }');
       }
 
-      // ========= Fecha/hora =========
+      // ========= Fecha/hora del hero =========
       const fechaHora = document.getElementById('fechaHora');
       function ahoraTick(){
         const a=new Date();
@@ -394,9 +430,10 @@
       // ===== Toast util =====
       const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2200);setTimeout(()=>{t.style.display='none';t.style.transition='';},2800)};
 
-      const pad2=n=>String(n).padStart(2,'0');
       const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
       const collator = new Intl.Collator('es', {numeric:true, sensitivity:'base'});
+      const pad2=n=>String(n).padStart(2,'0');
+      const todayISO = () => { const t=new Date(); return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`; };
 
       // ===== Estado =====
       let dataRaw=[], filtered=[], originalIndexMap=new WeakMap();
@@ -536,8 +573,11 @@
         const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       }
 
-      // ===== Programados por país =====
+      // ====== Programados por país (FIX de clasificación de turnos) ======
+      // Ventanas seleccionables (minutos desde 00:00, Noche cruza +24h)
       const SEL_WINDOWS = { am:[7*60,16*60], pm:[13*60,22*60], noche:[22*60,31*60] };
+
+      // Parse "13:00-22:00" o "13:00–22:00" -> [ini,fin] en minutos; si fin<ini, suma 24h
       function parseShiftMinutes(s){
         if(!s) return null;
         const txt = String(s).replace(/[–—]/g,'-');
@@ -551,19 +591,37 @@
         const n = norm(txt);
         if(/\bam\b/.test(n)) return [7*60,16*60];
         if(/\bpm\b/.test(n)) return [13*60,22*60];
+        if(/\bnoche|night\b/.test(n)) return [22*60,31*60];
         return null;
       }
-      function overlaps(selKey, shift){
-        if(selKey === 'ambos') return true;
-        if(!shift) return false;
-        const [s1,e1] = shift;
-        const [ws,we] = SEL_WINDOWS[selKey];
-        const ov = Math.max(0, Math.min(e1, we) - Math.max(s1, ws));
-        return ov > 0;
+      function overlapLen([s1,e1],[s2,e2]){
+        return Math.max(0, Math.min(e1, e2) - Math.max(s1, s2));
       }
+      // Clasifica un turno en UNA sola ventana: 'am' | 'pm' | 'noche' | 'indef'
+      function classifyShiftKey(shift, rawText){
+        const n = (String(rawText||'').toLowerCase());
+        if(/\bnoche|night\b/.test(n)) return 'noche';
+        if(/\bam\b/.test(n)) return 'am';
+        if(/\bpm\b/.test(n)) return 'pm';
+        if(!shift) return 'indef';
+
+        const [s,e] = shift;
+        const dur   = Math.max(1, e - s);
+        const am = overlapLen(shift, SEL_WINDOWS.am);
+        const pm = overlapLen(shift, SEL_WINDOWS.pm);
+        const no = overlapLen(shift, SEL_WINDOWS.noche);
+        const max = Math.max(am, pm, no);
+
+        if(max/dur >= 0.5) return (max===am?'am':max===pm?'pm':'noche');
+
+        if(s >= 22*60 || e > 24*60) return 'noche';
+        if(s < 12*60) return 'am';
+        return 'pm';
+      }
+
       function initProgramadosUI(){
-        const t=new Date();
-        progFecha.value = `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
+        // Siempre arrancar en HOY (local)
+        progFecha.value = todayISO();
 
         const orden = ['Chile','Colombia','Costa Rica','Ecuador','Mexico','Paraguay','Peru','Uruguay','Venezuela'];
         progGrid.innerHTML = orden.map(p=>`
@@ -579,24 +637,36 @@
         progFecha.addEventListener('change', computeProgramados);
         progTurno.addEventListener('change', computeProgramados);
       }
+
       function computeProgramados(){
         if(!dataRaw.length) return;
-        const fecha = new Date(progFecha.value+'T00:00:00');
-        if(isNaN(fecha)) return;
-        const diaIdx = fecha.getDay();
+
+        // Día seleccionado (para descanso); normalizado sin tildes
+        const fecha = new Date((progFecha.value || todayISO()) + 'T00:00:00');
         const dias = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
-        const dia = dias[diaIdx].toUpperCase();
-        const turnoSel = document.getElementById('progTurno').value;
+        const dia  = dias[fecha.getDay()].toUpperCase();
+
+        const turnoSel = document.getElementById('progTurno').value; // ambos|am|pm|noche
 
         const counts = {Chile:0,Colombia:0,'Costa Rica':0,Ecuador:0,Mexico:0,Paraguay:0,Peru:0,Uruguay:0,Venezuela:0};
 
         for(const r of dataRaw){
           const pais = paisDesdeCampania(r.D||''); if(!pais) continue;
-          const descanso = norm(r.E||'').toUpperCase();
+
+          // ¿Trabaja hoy?
+          const descanso = (String(r.E||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')).toUpperCase();
           const trabajaHoy = (descanso !== dia);
-          const shift = parseShiftMinutes(r.F||'');
-          const pasaTurno = overlaps(turnoSel, shift);
-          if(trabajaHoy && pasaTurno) counts[pais] += 1;
+          if(!trabajaHoy) continue;
+
+          // Clasificación única del turno
+          const shift = parseShiftMinutes(r.F||'');         // [ini, fin]
+          const key   = classifyShiftKey(shift, r.F||'');   // 'am' | 'pm' | 'noche' | 'indef'
+
+          if(turnoSel === 'ambos'){
+            counts[pais] += 1;                 // todos los que trabajan hoy (incluye 'indef')
+          }else if(key === turnoSel){
+            counts[pais] += 1;                 // solo los de esa ventana
+          }
         }
 
         let total=0;
