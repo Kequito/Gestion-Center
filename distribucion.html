@@ -53,12 +53,17 @@
 
     /* ===== Tabla ===== */
     table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
-    thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:relative; user-select:none; cursor:pointer; }
+    thead th{
+      position:sticky; top:0; z-index:1;
+      background:var(--header-bg); color:#fff; padding:10px; text-align:center; user-select:none; cursor:pointer;
+    }
     tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
     thead th:first-child, tbody td:first-child{ text-align:left; }
     .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.9; }
     .sort-none::after{ content:""; } .sort-desc::after{ content:" ↓"; font-weight:900; } .sort-asc::after{ content:" ↑"; font-weight:900; }
+    .sort-index{ font-size:10px; margin-left:6px; padding:1px 5px; border-radius:999px; background:rgba(255,255,255,.15); }
 
+    #empty{ padding:18px; text-align:center; color:var(--txt-muted); }
     #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
   </style>
 </head>
@@ -81,10 +86,10 @@
 
   <main>
     <h1 class="page-title">📋 Distribución de Operadores</h1>
-    <p class="subtitle">Mismo look & feel que el New Report · Filtros rápidos y ordenamiento 3 estados</p>
+    <p class="subtitle">Mismo look & feel que el New Report · Filtros rápidos · Orden 3 estados (⇧ para multi-columna)</p>
     <div id="fechaHora" class="datetime"></div>
 
-    <!-- ========= NUEVO: Programados por país ========= -->
+    <!-- ========= Programados por país ========= -->
     <section class="card" id="programadosCard">
       <h2>🗓️ Operadores programados</h2>
       <div class="inline-controls">
@@ -106,7 +111,7 @@
       <div class="grid" id="progGrid"></div>
     </section>
 
-    <!-- ========= Filtros originales ========= -->
+    <!-- ========= Filtros ========= -->
     <div class="filters">
       <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
       <div class="filter-group"><label for="fltCampania">Campaña</label><select id="fltCampania"><option value="">Todas</option></select></div>
@@ -135,6 +140,7 @@
       </thead>
       <tbody></tbody>
     </table>
+    <div id="empty" style="display:none">Sin resultados con los filtros actuales.</div>
   </main>
 
   <div id="toast"></div>
@@ -146,9 +152,12 @@
     const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function ahoraTick(){ const a=new Date(); fechaHora.textContent=`📅 ${a.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} – 🕒 ${a.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`; }
     ahoraTick(); setInterval(ahoraTick,1000);
+    const collator = new Intl.Collator('es', {numeric:true, sensitivity:'base'});
 
     // ===== Estado =====
-    let dataRaw=[], filtered=[], sortState={col:null,mode:0};
+    let dataRaw=[], filtered=[], originalIndexMap=new WeakMap();
+    let sortPriority=[]; // [{col:'F', dir:1|-1}, ...] 1=desc, -1=asc
+    const STORAGE_KEY='dist_state_v1';
 
     // ===== Carga de datos =====
     async function loadData(){
@@ -156,44 +165,118 @@
         const res=await fetch('datadistribucion.json',{cache:'no-store'});
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
         dataRaw=await res.json();
+        // índice estable para ordenamientos estables
+        dataRaw.forEach((r,i)=>originalIndexMap.set(r,i));
         buildFilters(dataRaw);
         initProgramadosUI();
+        restoreState(); // carga filtros/orden si hay
         computeProgramados();
         applyFiltersAndRender();
         toast('✅ Datos de distribución cargados');
       }catch(e){ console.error(e); toast('❌ No se pudo cargar datadistribucion.json'); }
     }
 
-    // ===== Filtros/tabla (original) =====
+    // ===== Filtros/tabla =====
     function uniqSorted(a){ return [...new Set(a.filter(v=>v!=null && String(v).trim()!==''))].sort((x,y)=>String(x).localeCompare(String(y),'es')); }
     function fillSelect(sel, vals){ sel.innerHTML='<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>'+vals.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
-    function buildFilters(rows){ fillSelect(fltTL,uniqSorted(rows.map(r=>r.A))); fillSelect(fltCampania,uniqSorted(rows.map(r=>r.D))); fillSelect(fltDescanso,uniqSorted(rows.map(r=>r.E))); fillSelect(fltTurno,uniqSorted(rows.map(r=>r.F))); }
+    function buildFilters(rows){
+      fillSelect(fltTL,uniqSorted(rows.map(r=>r.A)));
+      fillSelect(fltCampania,uniqSorted(rows.map(r=>r.D)));
+      fillSelect(fltDescanso,uniqSorted(rows.map(r=>r.E)));
+      fillSelect(fltTurno,uniqSorted(rows.map(r=>r.F)));
+    }
+
     function applyFiltersAndRender(){
       const vTL=norm(fltTL.value), vCa=norm(fltCampania.value), vDe=norm(fltDescanso.value), vTu=norm(fltTurno.value), vQ=norm(fltSearch.value);
       filtered = dataRaw.filter(r=>{
         const sA=norm(r.A), sB=norm(r.B), sC=norm(r.C), sD=norm(r.D), sE=norm(r.E), sF=norm(r.F);
         return (!vTL||sA===vTL)&&(!vCa||sD===vCa)&&(!vDe||sE===vDe)&&(!vTu||sF===vTu)&&(!vQ||sB.includes(vQ)||sC.includes(vQ));
       });
-      if(sortState.col){
-        const col=sortState.col;
-        filtered.sort((a,b)=>String(a[col]??'').localeCompare(String(b[col]??''),'es',{numeric:true,sensitivity:'base'})*(sortState.mode===1?-1:1));
+
+      // Ordenamiento multi-columna (estable)
+      if(sortPriority.length){
+        filtered.sort((a,b)=>{
+          for(const {col,dir} of sortPriority){
+            const av = a[col] ?? '', bv = b[col] ?? '';
+            const c = collator.compare(String(av), String(bv));
+            if(c !== 0) return c * dir;
+          }
+          // estabilidad
+          return originalIndexMap.get(a) - originalIndexMap.get(b);
+        });
       }
+
       renderTable(filtered);
+      saveState(); // guarda filtros/orden actuales
     }
+
+    function paisDesdeCampania(camp){
+      const s = norm(camp);
+      for(const [pais, regs] of Object.entries(MATCH)){
+        if(regs.some(rx=>rx.test(s))) return pais;
+      }
+      return null;
+    }
+
     function renderTable(rows){
       const tb=document.querySelector('#tablaDistribucion tbody'); tb.innerHTML='';
-      rows.forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.A||''}</td><td>${r.B||''}</td><td class="perop">${r.C||''}</td><td>${r.D||''}</td><td>${r.E||''}</td><td>${r.F||''}</td><td>${r.G||''}</td>`; tb.appendChild(tr);});
+      if(!rows.length){ document.getElementById('empty').style.display='block'; }
+      else { document.getElementById('empty').style.display='none'; }
+
+      rows.forEach(r=>{
+        const pais = paisDesdeCampania(r.D||'');
+        const flag = flagImg(pais);
+        const tr=document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.A||''}</td>
+          <td>${r.B||''}</td>
+          <td class="perop">${r.C||''}</td>
+          <td>${flag?`${flag} `:''}${r.D||''}</td>
+          <td>${r.E||''}</td>
+          <td>${r.F||''}</td>
+          <td>${r.G||''}</td>
+        `;
+        tb.appendChild(tr);
+      });
       opCounter.textContent=`Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
     }
-    function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
-    function cycleSort(th){
-      const col=th.dataset.col;
-      if(sortState.col!==col){ sortState={col,mode:1}; }
-      else { sortState.mode=(sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
+
+    function resetHeadSortClasses(){
+      document.querySelectorAll('#headRow th').forEach(th=>{
+        th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
+        const badge = th.querySelector('.sort-index'); if(badge) badge.remove();
+      });
+    }
+    function repaintSortBadges(){
       resetHeadSortClasses();
-      if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
+      const mapIndex = new Map(sortPriority.map((s,i)=>[s.col, i+1]));
+      document.querySelectorAll('#headRow th').forEach(th=>{
+        const col=th.dataset.col;
+        const entry = sortPriority.find(s=>s.col===col);
+        if(entry){
+          th.classList.remove('sort-none');
+          th.classList.add(entry.dir===1?'sort-desc':'sort-asc');
+          const sup=document.createElement('span'); sup.className='sort-index'; sup.textContent=mapIndex.get(col);
+          th.appendChild(sup);
+        }
+      });
+    }
+    function toggleSort(th, additive){ // additive = Shift
+      const col=th.dataset.col;
+      // 3 estados: quitar -> desc (1) -> asc (-1) -> quitar
+      const idx = sortPriority.findIndex(s=>s.col===col);
+      if(!additive) sortPriority = (idx>-1) ? [sortPriority[idx]] : []; // si no es shift, dejamos solo esta col (respetando su estado si existía)
+      if(idx===-1){
+        sortPriority.push({col, dir:1}); // desc por defecto
+      }else{
+        const cur = sortPriority[idx];
+        if(cur.dir===1){ cur.dir=-1; }
+        else { sortPriority.splice(idx,1); } // se quita
+      }
+      repaintSortBadges();
       applyFiltersAndRender();
     }
+
     function exportCSV(){
       if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
       const headers=['Team Leader','Operador','PEROP1AM','Campaña','Descanso','Turno','Empresa'];
@@ -206,21 +289,11 @@
     // ====== Programados con banderas (FlagCDN) ======
     const ISO2 = { 'Chile':'cl','Colombia':'co','Costa Rica':'cr','Ecuador':'ec','Mexico':'mx','Paraguay':'py','Peru':'pe','Uruguay':'uy','Venezuela':'ve' };
     const MATCH = {
-      'Chile':[/chile/], 'Colombia':[/colom/], 'Costa Rica':[/costa\s*rica|costarica/],
-      'Ecuador':[/ecuad/], 'Mexico':[/mexic|mx\b/], 'Paraguay':[/paragu/],
-      'Peru':[/per[uú]|\bpe\b/], 'Uruguay':[/urug/], 'Venezuela':[/venez/]
+      'Chile':[/\bchile\b/], 'Colombia':[/colom/], 'Costa Rica':[/costa\s*rica|costarica/],
+      'Ecuador':[/ecuad/], 'Mexico':[/\bmexic|\bmx\b/], 'Paraguay':[/paragu/],
+      'Peru':[/\bper[uú]|\bpe\b/], 'Uruguay':[/urug/], 'Venezuela':[/venez/]
     };
-    function paisDesdeCampania(camp){
-      const s = norm(camp);
-      for(const [pais, regs] of Object.entries(MATCH)){
-        if(regs.some(rx=>rx.test(s))) return pais;
-      }
-      return null;
-    }
-    function flagImg(pais){
-      const code = ISO2[pais];
-      return code ? `<img class="bandera" src="https://flagcdn.com/w40/${code}.png" alt="${pais}">` : '';
-    }
+    function flagImg(pais){ const code = ISO2[pais||'']; return code ? `<img class="bandera" src="https://flagcdn.com/w40/${code}.png" alt="${pais}">` : ''; }
 
     // Ventanas seleccionables (minutos desde 00:00, Noche cruza +24h)
     const SEL_WINDOWS = { am:[7*60,16*60], pm:[13*60,22*60], noche:[22*60,31*60] };
@@ -236,7 +309,7 @@
         if(fin < ini) fin += 24*60; // cruza medianoche (22:00-07:00)
         return [ini, fin];
       }
-      const n = txt.toLowerCase();
+      const n = norm(txt);
       if(/\bam\b/.test(n)) return [7*60,16*60];
       if(/\bpm\b/.test(n)) return [13*60,22*60];
       return null;
@@ -273,14 +346,18 @@
       if(!dataRaw.length) return;
       const fecha = new Date(progFecha.value+'T00:00:00');
       if(isNaN(fecha)) return;
-      const dia = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'][fecha.getDay()].toUpperCase();
+      const diaIdx = fecha.getDay();
+      // Día en mayúsculas SIN tildes para comparar
+      const dias = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+      const dia = dias[diaIdx].toUpperCase();
       const turnoSel = document.getElementById('progTurno').value; // ambos|am|pm|noche
 
       const counts = {Chile:0,Colombia:0,'Costa Rica':0,Ecuador:0,Mexico:0,Paraguay:0,Peru:0,Uruguay:0,Venezuela:0};
 
       for(const r of dataRaw){
         const pais = paisDesdeCampania(r.D||''); if(!pais) continue;
-        const descanso = String(r.E||'').toUpperCase();
+        // Normalizar descanso para ignorar tildes (MIÉRCOLES vs MIERCOLES)
+        const descanso = norm(r.E||'').toUpperCase();
         const trabajaHoy = (descanso !== dia);
 
         const shift = parseShiftMinutes(r.F||'');
@@ -298,15 +375,58 @@
       progTotal.textContent = `Total: ${total}`;
     }
 
-    // ===== Eventos generales =====
-    btnReset.addEventListener('click',()=>{ fltTL.value=''; fltCampania.value=''; fltDescanso.value=''; fltTurno.value=''; fltSearch.value=''; sortState={col:null,mode:0}; resetHeadSortClasses(); applyFiltersAndRender(); });
+    // ===== Persistencia de estado =====
+    function saveState(){
+      const state = {
+        filters:{
+          tl: fltTL.value, ca: fltCampania.value, de: fltDescanso.value, tu: fltTurno.value, q: fltSearch.value
+        },
+        sort: sortPriority
+      };
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch{}
+    }
+    function restoreState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return;
+        const s = JSON.parse(raw);
+        if(s.filters){
+          fltTL.value = s.filters.tl ?? '';
+          fltCampania.value = s.filters.ca ?? '';
+          fltDescanso.value = s.filters.de ?? '';
+          fltTurno.value = s.filters.tu ?? '';
+          fltSearch.value = s.filters.q ?? '';
+        }
+        if(Array.isArray(s.sort)) sortPriority = s.sort.filter(x=>x && x.col && (x.dir===1||x.dir===-1));
+        repaintSortBadges();
+      }catch{}
+    }
+
+    // ===== Eventos =====
+    btnReset.addEventListener('click',()=>{
+      fltTL.value=''; fltCampania.value=''; fltDescanso.value=''; fltTurno.value=''; fltSearch.value='';
+      sortPriority=[]; repaintSortBadges();
+      applyFiltersAndRender();
+      try{ localStorage.removeItem(STORAGE_KEY);}catch{}
+    });
     btnExport.addEventListener('click',exportCSV);
-    document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
-    ['fltTL','fltCampania','fltDescanso','fltTurno','fltSearch'].forEach(id=>{
-      const el=document.getElementById(id); el.addEventListener('input',applyFiltersAndRender); el.addEventListener('change',applyFiltersAndRender);
+
+    // Click en cabeceras: click normal = solo esa col; Shift-click = añadir/alternar multi
+    document.querySelectorAll('#headRow th').forEach(th=>{
+      th.addEventListener('click',(ev)=>toggleSort(th, ev.shiftKey));
     });
 
-    resetHeadSortClasses();
+    // Debounce para búsqueda
+    let qTimer=null;
+    fltSearch.addEventListener('input',()=>{
+      clearTimeout(qTimer);
+      qTimer=setTimeout(applyFiltersAndRender, 180);
+    });
+    ['fltTL','fltCampania','fltDescanso','fltTurno'].forEach(id=>{
+      const el=document.getElementById(id); el.addEventListener('change',applyFiltersAndRender);
+    });
+
+    // Inicio
     loadData();
   </script>
 </body>
