@@ -76,39 +76,72 @@
         backdrop-filter:saturate(120%) blur(8px);
         background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
         border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; padding:22px 14px; gap:12px; overflow:auto;
+        display:flex; flex-direction:column; padding:18px 14px; gap:12px; overflow:auto;
       }
-      .logo{
-        display:flex; align-items:center; justify-content:center; gap:10px;
-        font-family:var(--font-title); font-size:20px; font-weight:700; letter-spacing:.2px;
-        padding:12px; border-radius:var(--radius); border:1px solid var(--stroke);
+
+      /* Header del sidebar (logo + nombre) */
+      .brand{
+        display:flex; align-items:center; gap:10px; padding:10px; border-radius:var(--radius);
+        border:1px solid var(--stroke);
         background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        position:relative; isolation:isolate;
+        text-decoration:none; color:var(--txt);
       }
-      .logo::after{
-        content:""; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none;
-        box-shadow:0 0 28px color-mix(in oklab, var(--primary) 35%, transparent),
-                   0 0 42px color-mix(in oklab, var(--accent) 22%, transparent);
-        opacity:.18;
+      .brand img{
+        width:28px; height:28px; object-fit:contain; border-radius:8px; background:#0000;
+        filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));
       }
-      nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
-      nav a{
-        display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px;
+      .brand span{
+        font-family:var(--font-title); font-size:18px; font-weight:700; letter-spacing:.2px;
+      }
+
+      /* Grupos colapsables */
+      nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
+      .nav-group{ border:1px solid var(--stroke); border-radius:14px; overflow:hidden; background:color-mix(in oklab, var(--bg-aside) 92%, transparent) }
+      .nav-head{
+        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
+        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
+      }
+      .nav-head .chev{ transition:transform var(--t-med) var(--curve); }
+      .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
+
+      .nav-body{ overflow:hidden; transition: grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
+      .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
+      .nav-body-inner{ min-height:0; padding:6px }
+
+      /* Items */
+      .nav-item{
+        display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:10px;
         text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
         transition:background var(--t-med) ease, transform var(--t-fast) ease;
       }
-      nav a:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      nav a.active{
+      .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
+      .nav-item.active{
         background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
         border-color:var(--stroke);
       }
+
+      /* Indicador activo (líquido) */
       .nav-indicator{
-        position:absolute; left:0; width:4px; height:40px; border-radius:0 3px 3px 0;
+        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
         background:linear-gradient(180deg, var(--primary), var(--accent));
         box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
         transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
+        pointer-events:none;
       }
+
       .spacer{flex:1}
+
+      /* Card de Rango */
+      .role-card{
+        display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px;
+        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
+      }
+      .role-dot{
+        width:14px; height:14px; border-radius:50%;
+        box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25);
+      }
+      .role-text small{ color:var(--txt-muted) }
+
       .logout{
         width:100%; border:1px solid var(--stroke);
         background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
@@ -154,8 +187,12 @@
       .card a span{ opacity:.85; transition:opacity var(--t-fast) ease, transform var(--t-fast) ease }
       .card a:hover span{ opacity:1; transform:translateX(2px) }
 
-      /* Footer contacto */
-      .contact{ margin-top:16px }
+      /* Sombras de scroll en aside */
+      aside::before, aside::after{
+        content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
+      }
+      aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
+      aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
 
       /* Responsive */
       @media (max-width:1080px){
@@ -166,7 +203,7 @@
     </style>
   </head>
   <body>
-    <!-- Fondo en cuadrícula sutil con parallax -->
+    <!-- Fondo en cuadrícula sutil -->
     <div id="bg-grid" aria-hidden="true" style="
       position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
       background:
@@ -176,31 +213,72 @@
 
     <!-- SIDEBAR -->
     <aside class="reveal">
-      <div class="logo">🧭 Gestión Center</div>
-      <nav role="navigation" aria-label="Navegación principal">
+      <!-- Header: logo + nombre (click → index) -->
+      <a class="brand" href="./index.html" id="brandLink">
+        <img id="brandLogo" src="./images/logogestioncenter.webp" alt="Logo Gestión Center">
+        <span>Gestión Center</span>
+      </a>
+
+      <!-- NAV agrupado -->
+      <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
         <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
-        <a href="./plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
-        <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
-        <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
-        <a href="./cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
-        <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
-        <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
-        <a href="./opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
-        <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
-        <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
-        <a href="./newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
-        <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
-        <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
+
+        <section class="nav-group" data-key="grp-reportes">
+          <button class="nav-head"><span class="chev">▾</span> 📊 Reportes</button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="./estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
+            <a href="./opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
+            <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
+          </div></div>
+        </section>
+
+        <section class="nav-group" data-key="grp-operaciones">
+          <button class="nav-head"><span class="chev">▾</span> 🛠️ Operaciones</button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+            <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+            <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+            <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
+          </div></div>
+        </section>
+
+        <section class="nav-group" data-key="grp-cobertura">
+          <button class="nav-head"><span class="chev">▾</span> 🌎 Cobertura</button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="./cobertura.html" class="nav-item">🗺️ <span>Mapa de cobertura</span></a>
+            <a href="./newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
+          </div></div>
+        </section>
+
+        <section class="nav-group" data-key="grp-utils">
+          <button class="nav-head"><span class="chev">▾</span> 🧩 Utilidades</button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
+            <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
+            <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
+          </div></div>
+        </section>
       </nav>
+
       <div class="spacer"></div>
+
+      <!-- RANGO -->
+      <div class="role-card" id="roleCard" title="Rango del usuario">
+        <div class="role-dot" id="roleDot"></div>
+        <div class="role-text">
+          <strong id="roleName">Invitado</strong><br>
+          <small id="roleDesc">Acceso limitado</small>
+        </div>
+      </div>
+
       <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
     <!-- CONTENIDO -->
     <main>
-      <!-- HERO (sin mini KPIs) -->
+      <!-- HERO -->
       <section class="hero reveal">
         <div class="blob" aria-hidden="true"></div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
@@ -253,11 +331,11 @@
     </main>
 
     <script type="module">
-      // ========= Nave activo + indicador =========
+      // ========= Activo + indicador =========
       const items = [...document.querySelectorAll('nav .nav-item')];
       const indicator = document.querySelector('.nav-indicator');
-      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
       function setActive(){
+        const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
         let active = items[0];
         items.forEach(a=>{
           const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
@@ -265,16 +343,30 @@
           a.classList.toggle('active', a===active);
           a.toggleAttribute('aria-current', a===active ? 'page' : false);
         });
+        // Posicionar indicador relativo al nav
+        const nav = document.getElementById('gc-nav');
+        const navRect = nav.getBoundingClientRect();
         const rect = active.getBoundingClientRect();
-        const p = active.parentElement.getBoundingClientRect();
-        const y = rect.top - p.top + active.parentElement.scrollTop;
+        const y = rect.top - navRect.top + nav.scrollTop;
         indicator.style.height = rect.height + 'px';
         indicator.style.transform = `translateY(${y}px)`;
       }
       setActive();
-      const nav = document.querySelector('nav');
-      nav.addEventListener('scroll', setActive);
+      const navEl = document.getElementById('gc-nav');
+      navEl.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
+
+      // ========= Grupos colapsables con memoria =========
+      document.querySelectorAll('.nav-group').forEach(g=>{
+        const key=g.dataset.key, head=g.querySelector('.nav-head');
+        const saved=localStorage.getItem(key);
+        if(saved==='0') g.classList.add('is-collapsed');
+        head.addEventListener('click', ()=>{
+          g.classList.toggle('is-collapsed');
+          localStorage.setItem(key, g.classList.contains('is-collapsed')?'0':'1');
+          setActive(); // reubicar indicador si cambia altura
+        });
+      });
 
       // ========= Reveal al scroll =========
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -292,7 +384,7 @@
         document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
       }
 
-      // ========= Parallax sutil del fondo de cuadrícula =========
+      // ========= Parallax sutil del fondo =========
       const bg=document.getElementById('bg-grid');
       let rafId=null;
       function parallax(e){
@@ -303,33 +395,78 @@
       }
       if(!reduced) window.addEventListener('mousemove', parallax);
 
+      // ========= RANGO (lee de guard.js o de localStorage o query ?role=...) =========
+      const ROLE_STYLE = {
+        'owner':   { name:'Owner',       desc:'Control total',      color:'#f59e0b', gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)' },
+        'admin':   { name:'Admin',       desc:'Administración',     color:'#f59e0b', gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)' },
+        'supervisor':{name:'Supervisor', desc:'Lidera TLs',         color:'#5b8bff', gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)' },
+        'team leader':{name:'Team Leader',desc:'Lidera equipo',     color:'#a78bfa', gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)' },
+        'analista': { name:'Analista',    desc:'Calidad / Datos',    color:'#22d3ee', gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)' },
+        'calidad':  { name:'Calidad',     desc:'Auditoría',          color:'#22d3ee', gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)' },
+        'operador': { name:'Operador',    desc:'Ventas / Gestión',   color:'#22c55e', gradient:'linear-gradient(135deg,#22c55e,#16a34a)' },
+        'invitado': { name:'Invitado',    desc:'Acceso limitado',    color:'#94a3b8', gradient:'linear-gradient(135deg,#94a3b8,#64748b)' },
+      };
+
+      // Fuente del rol:
+      // 1) window.gcRole (defínelo en guard.js tras login)
+      // 2) localStorage('gc-role')
+      // 3) query param ?role=Team%20Leader (para pruebas)
+      function getRole(){
+        const qp = new URLSearchParams(location.search).get('role');
+        const w = (window.gcRole || '').toString().trim();
+        const ls = (localStorage.getItem('gc-role') || '').trim();
+        return (qp || w || ls || 'Invitado');
+      }
+
+      function applyRoleUI(roleRaw){
+        const r = roleRaw.toLowerCase();
+        const key = Object.keys(ROLE_STYLE).find(k=>r.includes(k)) || 'invitado';
+        const cfg = ROLE_STYLE[key];
+        const dot = document.getElementById('roleDot');
+        const name= document.getElementById('roleName');
+        const desc= document.getElementById('roleDesc');
+        dot.style.background = cfg.gradient;
+        dot.style.boxShadow = `0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
+        name.textContent = cfg.name;
+        desc.textContent = cfg.desc;
+        // Guardar en LS una forma normalizada
+        localStorage.setItem('gc-role', cfg.name);
+      }
+
+      applyRoleUI(getRole());
+
       // ========= Seguridad: logout expuesto por guard.js =========
       if (typeof window.gcLogout !== 'function') {
         console.warn('gcLogout no está definido. En guard.js expón la función global: window.gcLogout = async () => { /* signOut + redirect */ }');
       }
-      // Nota: guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
+      // guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
     </script>
 
-    <!-- 🔒 Normalizador de enlaces del sidebar (GH Pages de proyecto / dominio propio) -->
+    <!-- 🔧 Normalizador de rutas (GitHub Pages de proyecto / dominio propio) -->
     <script>
     (() => {
       const isGhProject = location.hostname.endsWith('github.io');
       const PROJECT_SLUG = 'Gestion-Center'; // ¡respeta mayúsculas!
       const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
 
-      document.querySelectorAll('nav a.nav-item[href]').forEach(a => {
+      // Normalizar HREF de enlaces del nav
+      document.querySelectorAll('nav a.nav-item[href], .brand[href]').forEach(a => {
         const href = a.getAttribute('href');
-        if (!href) return;
-        // Deja anclas internas tal cual
-        if (href.startsWith('#')) return;
-        // Ya absoluta: no tocar
-        if (/^https?:\/\//i.test(href)) return;
-        // Normaliza relativo
+        if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
         const clean = href.replace(/^\.?\//, '');
         a.setAttribute('href', base + clean);
       });
+
+      // Normalizar SRC del logo para GH Pages
+      const logo = document.getElementById('brandLogo');
+      if (logo) {
+        let src = logo.getAttribute('src') || './images/logogestioncenter.webp';
+        if (!/^https?:\/\//i.test(src)) {
+          src = src.replace(/^\.?\//, '');
+          logo.setAttribute('src', base + src);
+        }
+      }
     })();
     </script>
   </body>
 </html>
-
