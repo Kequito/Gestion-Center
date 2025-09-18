@@ -1,467 +1,560 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestión Center – Plan de trabajo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
-  <style>
-    /* ===== Tema base ===== */
-    :root{
-      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
-      --primary-color:#0D47A1; --accent-color:#42a5f5; --surface:#22314f; --border:#2f446a; --header-bg:#0d47a1;
-      --green:#2e7d32; --red:#c62828; --orange:#f57c00; --yellow:#fbc02d; --chip:#1b2a48;
-    }
-    *{box-sizing:border-box}
-    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión Center — Plan de trabajo</title>
 
-    /* ===== Sidebar ===== */
-    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
-    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
-    nav a:hover{ background:var(--hover); }
-    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
-    .spacer{ flex:1; }
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    /* ===== Main ===== */
-    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
-    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
-    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
-    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
+    <!-- 🔒 Ocultar hasta validar sesión -->
+    <style>html{visibility:hidden}</style>
+    <script type="module" src="./assets/guard.js"></script>
 
-    /* ===== KPIs ===== */
-    .kpis{ display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:10px; margin:12px 0 8px; }
-    .kpi{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
-    .kpi .label{ font-size:12px; color:var(--txt-muted); }
-    .kpi .value{ font-size:18px; font-weight:800; margin-top:4px; }
+    <style>
+      :root{
+        --bg-app:#0f172a; --bg-aside:#0b1224; --txt:#e6f0ff; --txt-muted:#bcd2f0; --hover:#131c33;
+        --primary-color:#2563eb; --accent-color:#60a5fa; --surface:#0f1b36; --border:#1c2b52; --header-bg:#0b63c7;
+        --green:#22c55e; --red:#ef4444; --orange:#f59e0b; --yellow:#eab308; --chip:#0b1733;
+      }
+      *{box-sizing:border-box}
+      body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+      a{ color:inherit }
 
-    /* ===== Topbar ===== */
-    .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:8px 0 16px; }
-    .pill{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:14px; }
-    .select{ background:var(--surface); color:var(--txt); border:1px solid var(--primary-color); border-radius:10px; padding:8px 12px; height:38px; }
-    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
-    button:hover{ background:var(--accent-color); }
-    button:active{ transform:translateY(1px); }
+      /* ===== Sidebar ===== */
+      .sidebar-toggle{ display:none; position:fixed; top:14px; left:14px; z-index:1200; background:var(--surface); border:1px solid var(--border); color:#fff; border-radius:10px; padding:10px 12px; }
+      aside{ background:var(--bg-aside); width:240px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; transition:transform .25s ease; }
+      aside.hidden{ transform:translateX(-260px); }
+      .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+      nav a{ color:var(--txt); margin:10px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.25; overflow-wrap:anywhere; }
+      nav a:hover{ background:var(--hover); }
+      nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+      .spacer{ flex:1; }
 
-    /* ===== Progreso ===== */
-    .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; height:12px; overflow:hidden; position:relative; }
-    .progress>span{ display:block; height:100%; width:0%; transition:width .35s ease, background .25s; }
-    .progress-label{ font-size:12px; color:var(--txt-muted); min-width:140px; text-align:right; }
+      /* ===== Main ===== */
+      main{ margin-left:240px; padding:24px; width:calc(100% - 240px); }
+      .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 6px; }
+      .subtitle{ margin:0 0 12px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+      .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.95; }
 
-    /* ===== Secciones ===== */
-    .section{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin:14px 0; box-shadow:0 4px 10px rgba(0,0,0,.18); }
-    .section-header{ display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
-    .section-header h2{ font-size:18px; margin:0; }
-    .section-header .time{ color:var(--txt-muted); font-size:13px; margin-left:auto; }
-    .section.collapsed .section-body{ display:none; }
+      /* ===== KPIs ===== */
+      .kpis{ display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:12px; margin:12px 0 10px; }
+      .kpi{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:12px; padding:12px; }
+      .kpi .label{ font-size:12px; color:var(--txt-muted); }
+      .kpi .value{ font-size:18px; font-weight:800; margin-top:4px; }
 
-    /* ===== Tareas ===== */
-    .task{ display:grid; grid-template-columns:28px 1fr 240px; gap:12px; align-items:start; padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
-    .task:hover{ background:rgba(0,0,0,.16); }
-    .task.done{ background:rgba(46,125,50,.22); border-color:#2e7d3270; }
-    .task .chk{ width:18px; height:18px; margin-top:2px; }
-    .task .title{ font-weight:700; display:flex; align-items:center; gap:8px; }
-    .status-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow:0 0 0 2px rgba(0,0,0,.2) inset; }
-    .status-pending{ background:#fbc02d; }
-    .status-done{ background:#2e7d32; }
-    .task .desc{ color:var(--txt-muted); font-size:13px; margin-top:3px; }
-    .task .meta{ font-size:12px; color:#cfe3ff; }
-    .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
-    .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:var(--chip); white-space:nowrap; }
+      /* ===== Topbar ===== */
+      .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:8px 0 16px; }
+      .pill{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:14px; }
+      .select{ background:var(--surface); color:var(--txt); border:1px solid var(--primary-color); border-radius:10px; padding:8px 12px; height:38px; }
+      button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+      button:hover{ background:var(--accent-color); }
+      button:active{ transform:translateY(1px); }
 
-    /* ===== Tooltip ===== */
-    .tip-btn{ background:transparent; border:1px solid var(--border); color:#fff; border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer; }
-    .tip{ display:none; margin-top:8px; background:rgba(0,0,0,.25); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:#e4f1ff; }
-    .tip.visible{ display:block; }
+      /* ===== Progreso ===== */
+      .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; height:12px; overflow:hidden; position:relative; }
+      .progress>span{ display:block; height:100%; width:0%; transition:width .35s ease, background .25s; }
+      .progress-label{ font-size:12px; color:var(--txt-muted); min-width:140px; text-align:right; }
 
-    /* ===== PDF Viewer ===== */
-    .pdf{ width:100%; height:560px; border:none; }
+      /* ===== Secciones ===== */
+      .section{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin:14px 0; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+      .section-header{ display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+      .section-header h2{ font-size:18px; margin:0; }
+      .section-header .time{ color:var(--txt-muted); font-size:13px; margin-left:auto; }
+      .section.collapsed .section-body{ display:none; }
 
-    /* ===== Toast ===== */
-    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+      /* ===== Tareas ===== */
+      .task{ display:grid; grid-template-columns:28px 1fr 240px; gap:12px; align-items:start; padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
+      .task:hover{ background:rgba(0,0,0,.16); }
+      .task.done{ background:rgba(34,197,94,.16); border-color:#22c55e66; }
+      .task .chk{ width:18px; height:18px; margin-top:2px; }
+      .task .title{ font-weight:700; display:flex; align-items:center; gap:8px; }
+      .status-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow:0 0 0 2px rgba(0,0,0,.2) inset; }
+      .status-pending{ background:#facc15; }
+      .status-done{ background:#22c55e; }
+      .task .desc{ color:var(--txt-muted); font-size:13px; margin-top:3px; }
+      .task .meta{ font-size:12px; color:#cfe3ff; }
+      .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+      .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:var(--chip); white-space:nowrap; }
 
-    /* ===== Modal Histórico ===== */
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:1100; }
-    .modal{ background:#1f2f50; border:1px solid var(--border); width:min(720px,92vw); border-radius:14px; padding:16px; }
-    .modal h3{ margin:0 0 8px; }
-    .log-list{ max-height:50vh; overflow:auto; display:grid; gap:8px; }
-    .log-item{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
-    .log-meta{ color:#cfd8dc; font-size:12px; }
-  </style>
-</head>
-<body>
-  <!-- ===== Sidebar ===== -->
-  <aside>
-    <div class="logo">🧭 Gestión Center</div>
-    <nav>
-      <a href="index.html">🏠 Inicio</a>
-      <a class="active" href="plandetrabajo.html">✅ Plan de trabajo</a>
-      <a href="distribucion.html">📋 Distribución</a>
-      <a href="estadisticas.html">📈 Estadísticas</a>
-      <a href="cobertura.html">🌎 Cobertura</a>
-      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-      <a href="postsale.html">🚚 Post-Sale New Report </a>
-      <a href="opo11.html">🧰 New Report CC Perú</a>
-      <a href="#contacto">📬 Contacto</a>
-    </nav>
-    <div class="spacer"></div>
-  </aside>
+      /* ===== Tooltip ===== */
+      .tip-btn{ background:transparent; border:1px solid var(--border); color:#fff; border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer; }
+      .tip{ display:none; margin-top:8px; background:rgba(0,0,0,.25); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:#e4f1ff; }
+      .tip.visible{ display:block; }
 
-  <!-- ===== Main ===== -->
-  <main>
-    <h1 class="page-title">✅ Plan de Trabajo – Team Leaders</h1>
-    <p class="subtitle">Basado en la versión vigente · Turno AM/PM equivalente · ayudas didácticas y progreso con recordatorios</p>
-    <div id="fechaHora" class="datetime"></div>
+      /* ===== PDF Viewer ===== */
+      .pdf{ width:100%; height:560px; border:none; }
 
-    <!-- KPIs -->
-    <div class="kpis">
-      <div class="kpi"><div class="label">Tareas con horario</div><div class="value" id="kpiTimed">0 / 0</div></div>
-      <div class="kpi"><div class="label">% Avance</div><div class="value" id="kpiPct">0%</div></div>
-      <div class="kpi"><div class="label">Turno seleccionado</div><div class="value" id="kpiShift">AM</div></div>
-      <div class="kpi"><div class="label">Tiempo restante del turno</div><div class="value" id="kpiTimeLeft">--:--</div></div>
-    </div>
+      /* ===== Toast ===== */
+      #toast{ position:fixed; bottom:18px; right:20px; background:#111827; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; transition:opacity .2s ease; }
 
-    <div class="topbar">
-      <div class="pill">
-        <strong>Turno:</strong>
-        <select id="selTurno" class="select">
-          <option value="AM">AM (7:00–4:00)</option>
-          <option value="PM">PM (1:00–10:00)</option>
-        </select>
+      /* ===== Modal Histórico ===== */
+      .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:1100; }
+      .modal{ background:#0f1b36; border:1px solid var(--border); width:min(720px,92vw); border-radius:14px; padding:16px; }
+      .modal h3{ margin:0 0 8px; }
+      .log-list{ max-height:50vh; overflow:auto; display:grid; gap:8px; }
+      .log-item{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+
+      /* ===== Responsive ===== */
+      @media (max-width: 980px){
+        .sidebar-toggle{ display:block; }
+        aside{ transform:translateX(-260px); }
+        aside.show{ transform:none; }
+        main{ margin-left:0; width:100%; padding-top:60px; }
+        .task{ grid-template-columns:24px 1fr; }
+        .task .tools{ justify-content:flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Toggle sidebar (mobile) -->
+    <button id="btnSidebar" class="sidebar-toggle" aria-label="Abrir menú">☰</button>
+
+    <!-- ===== Sidebar ===== -->
+    <aside id="sidebar">
+      <div class="logo">🧭 Gestión Center</div>
+      <nav>
+        <a href="index.html">🏠 Inicio</a>
+        <a class="active" href="plandetrabajo.html">✅ Plan de trabajo</a>
+        <a href="distribucion.html">📋 Distribución</a>
+        <a href="estadisticas.html">📈 Estadísticas</a>
+        <a href="cobertura.html">🌎 Cobertura</a>
+        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+        <a href="postsale.html">🚚 Post-Sale New Report</a>
+        <a href="opo11.html">🧰 New Report CC Perú</a>
+        <a href="#contacto">📬 Contacto</a>
+      </nav>
+      <div class="spacer"></div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main>
+      <h1 class="page-title">✅ Plan de Trabajo – Team Leaders</h1>
+      <p class="subtitle">Versión vigente · Turno AM/PM equivalente · ayudas didácticas y progreso con recordatorios</p>
+      <div id="fechaHora" class="datetime" aria-live="polite"></div>
+
+      <!-- KPIs -->
+      <div class="kpis" role="region" aria-label="Indicadores clave">
+        <div class="kpi"><div class="label">Tareas con horario</div><div class="value" id="kpiTimed">0 / 0</div></div>
+        <div class="kpi"><div class="label">% Avance</div><div class="value" id="kpiPct">0%</div></div>
+        <div class="kpi"><div class="label">Turno seleccionado</div><div class="value" id="kpiShift">AM</div></div>
+        <div class="kpi"><div class="label">Estado del turno</div><div class="value" id="kpiTimeLeft">--</div></div>
       </div>
-      <button id="btnResetDay">🧹 Reset del día</button>
-      <button id="btnClearAll">🗑️ Borrar guardado</button>
-      <button id="btnLog">📜 Ver Histórico del Día</button>
-      <div class="progress" title="Avance de tareas con horario"><span id="progBar"></span></div>
-      <div class="progress-label" id="progLabel">0% completado</div>
-    </div>
 
-    <!-- Secciones renderizadas por JS -->
-    <div id="sections"></div>
-
-    <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
-    <!-- Embed robusto con fallback -->
-    <div style="border-radius:12px; overflow:hidden; box-shadow:0 6px 12px rgba(0,0,0,.25); border:1px solid var(--border);">
-      <object data="Plan_de_trabajo_TEAM_LEADER.pdf#view=FitH" type="application/pdf" class="pdf">
-        <div style="padding:16px">
-          <p>No se pudo cargar el PDF desde <code>Plan_de_trabajo_TEAM_LEADER.pdf</code>.</p>
-          <p>
-            ➜ Ver/descargar:
-            <a href="Plan_de_trabajo_TEAM_LEADER.pdf" target="_blank" style="color:#80d6ff; text-decoration:underline;">
-              abrir en nueva pestaña
-            </a>
-          </p>
-          <small style="color:#cfd8dc">
-            Sugerencia: asegúrate de que el archivo esté en la misma carpeta que <code>plandetrabajo.html</code>
-            y que el nombre coincida exactamente (mayúsculas y guiones bajos).
-          </small>
+      <div class="topbar">
+        <div class="pill">
+          <strong>Turno:</strong>
+          <select id="selTurno" class="select" aria-label="Seleccionar turno">
+            <option value="AM">AM (7:00–16:00)</option>
+            <option value="PM">PM (13:00–22:00)</option>
+          </select>
         </div>
-      </object>
-    </div>
-  </main>
-
-  <div id="toast"></div>
-
-  <!-- Modal Histórico -->
-  <div id="modalBackdrop" class="modal-backdrop">
-    <div class="modal">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <h3>📜 Histórico del Día</h3>
-        <div style="display:flex; gap:8px;">
-          <button id="btnExportLog" class="tip-btn">⬇️ Exportar .txt</button>
-          <button id="btnCloseModal" class="tip-btn">✖️ Cerrar</button>
-        </div>
+        <button id="btnResetDay" title="Marcar como pendientes las tareas con horario">🧹 Reset del día</button>
+        <button id="btnClearAll" title="Borrar guardado local (estado y colapsados)">🗑️ Borrar guardado</button>
+        <button id="btnLog" title="Ver historial de acciones del día">📜 Ver Histórico del Día</button>
+        <div class="progress" title="Avance de tareas con horario"><span id="progBar"></span></div>
+        <div class="progress-label" id="progLabel">0% completado</div>
       </div>
-      <p class="subtitle" id="logDate"></p>
-      <div id="logList" class="log-list"></div>
+
+      <!-- Secciones renderizadas por JS -->
+      <div id="sections"></div>
+
+      <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
+      <div style="border-radius:12px; overflow:hidden; box-shadow:0 6px 12px rgba(0,0,0,.25); border:1px solid var(--border);">
+        <object data="Plan_de_trabajo_TEAM_LEADER.pdf#view=FitH" type="application/pdf" class="pdf" aria-label="Visor PDF Plan de trabajo">
+          <div style="padding:16px">
+            <p>No se pudo cargar el PDF desde <code>Plan_de_trabajo_TEAM_LEADER.pdf</code>.</p>
+            <p>
+              ➜ Ver/descargar:
+              <a href="Plan_de_trabajo_TEAM_LEADER.pdf" target="_blank" style="color:#80d6ff; text-decoration:underline;">
+                abrir en nueva pestaña
+              </a>
+            </p>
+            <small style="color:#cfd8dc">
+              Asegúrate de que el archivo esté en la misma carpeta que <code>plandetrabajo.html</code>
+              y que el nombre coincida exactamente (mayúsculas y guiones bajos).
+            </small>
+          </div>
+        </object>
+      </div>
+    </main>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Modal Histórico -->
+    <div id="modalBackdrop" class="modal-backdrop">
+      <div class="modal">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <h3>📜 Histórico del Día</h3>
+          <div style="display:flex; gap:8px;">
+            <button id="btnClearLog" class="tip-btn" title="Vaciar historial del día">🧽 Limpiar</button>
+            <button id="btnExportLog" class="tip-btn" title="Exportar historial a .txt">⬇️ Exportar .txt</button>
+            <button id="btnCloseModal" class="tip-btn" title="Cerrar">✖️ Cerrar</button>
+          </div>
+        </div>
+        <p class="subtitle" id="logDate"></p>
+        <div id="logList" class="log-list"></div>
+      </div>
     </div>
-  </div>
 
-  <script>
-    /* ===== Utilidades ===== */
-    const STORAGE_KEY='plan_vigente_v4';
-    const LOG_KEY_PREFIX='plan_log_';
-    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>{t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.opacity=1;},3200);};
-    const pad=n=>String(n).padStart(2,'0');
-    const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
-    function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
-    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+    <script>
+      /* ===== Utilidades ===== */
+      const STORAGE_KEY='plan_vigente_v4';           // Compatibilidad con tu key actual
+      const LOG_KEY_PREFIX='plan_log_';
+      const toastQueue = [];
+      let toastLock = false;
 
-    /* ===== Plan (sin notas y con dos tareas eliminadas) ===== */
-    const PLAN = {
-      blocks:[
-        { id:'primera', title:'📌 Primera hora de gestión', time:{AM:'7:00–8:00',PM:'1:00–2:00'}, tasks:[
-          {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM.`},
-        ]},
-        { id:'segunda', title:'📌 Segunda hora de gestión', time:{AM:'8:00–9:00',PM:'2:00–3:00'}, tasks:[
-          {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break.`},
-          {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para quienes no completaron su jornada.', tip:`Verificar PEROP1AMs, identificar operadores, motivo del tiempo incompleto.`},
-        ]},
-        { id:'tercera', title:'📌 Tercera hora de gestión', time:{AM:'9:00–10:00',PM:'3:00–4:00'}, tasks:[
-          {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:`Se realiza con información del día anterior.`},
-          {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:`1) Nadie gestionando sin programar. 2) Ausentes se desprograman. 3) Coherencia horario oficial/real.`},
-        ]},
-        { id:'ultima', title:'📌 Última hora de gestión', time:{AM:'3:00–4:00',PM:'9:00–10:00'}, tasks:[
-          {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día.', tip:`Objetivo: cierre limpio de jornada.`},
-        ]},
-      ],
-      continuous:[
-        // Eliminadas: Leads Daily y Órdenes con mala publicidad
-        {id:'c.2', title:'Verificación de estadísticas de campañas', desc:'Monitoreo de leads, conectados, ACD, ventas, SAVE, etc.'},
-      ],
-      policy:[
-        '1) Primer incumplimiento: recordatorio inmediato.',
-        '2) Segundo incumplimiento: llamado de atención formal.',
-        '3) Reincidencia: informe a RRHH para evaluación.'
-      ]
-    };
+      const toast=(m)=>{
+        toastQueue.push(m);
+        if (toastLock) return;
+        const t=document.getElementById('toast');
+        const showNext=()=>{
+          if (!toastQueue.length) { toastLock=false; t.style.display='none'; return; }
+          toastLock=true;
+          const msg=toastQueue.shift();
+          t.textContent=msg;
+          t.style.display='block';
+          t.style.opacity=1;
+          setTimeout(()=>{ t.style.opacity=0; }, 2200);
+          setTimeout(()=>{ showNext(); }, 2600);
+        };
+        showNext();
+      };
 
-    /* ===== Persistencia ===== */
-    function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
-    function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function defaultState(){
-      const st={ shift:'AM', tasks:{}, collapsed:{}, lastReminder:'' };
-      PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; }));
-      PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; });
-      return st;
-    }
-    let state = Object.assign(defaultState(), loadState());
+      const pad=n=>String(n).padStart(2,'0');
+      const todayStr=()=>{const d=new Date();return \`\${d.getFullYear()}-\${pad(d.getMonth()+1)}-\${pad(d.getDate())}\`};
 
-    /* ===== Histórico ===== */
-    function getLog(dateStr=todayStr()){
-      try{ return JSON.parse(localStorage.getItem(LOG_KEY_PREFIX+dateStr)) || [] }catch{ return [] }
-    }
-    function pushLog(entry, dateStr=todayStr()){
-      const arr=getLog(dateStr);
-      arr.push(entry);
-      localStorage.setItem(LOG_KEY_PREFIX+dateStr, JSON.stringify(arr));
-    }
+      function actualizarFechaHora(){
+        const ahora=new Date();
+        const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+        const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        document.getElementById('fechaHora').textContent=\`📅 \${fecha} – 🕒 \${hora}\`;
+      }
+      actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    /* ===== Render ===== */
-    const sectionsEl = document.getElementById('sections');
+      /* ===== Plan (sin notas y con dos tareas eliminadas) ===== */
+      const PLAN = {
+        blocks:[
+          { id:'primera', title:'📌 Primera hora de gestión', time:{AM:'7:00–8:00',PM:'13:00–14:00'}, tasks:[
+            {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:\`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM.\`},
+          ]},
+          { id:'segunda', title:'📌 Segunda hora de gestión', time:{AM:'8:00–9:00',PM:'14:00–15:00'}, tasks:[
+            {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:\`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break.\`},
+            {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para quienes no completaron su jornada.', tip:\`Verificar PEROP1AMs, identificar operadores, motivo del tiempo incompleto.\`},
+          ]},
+          { id:'tercera', title:'📌 Tercera hora de gestión', time:{AM:'9:00–10:00',PM:'15:00–16:00'}, tasks:[
+            {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:\`Se realiza con información del día anterior.\`},
+            {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:\`1) Nadie gestionando sin programar. 2) Ausentes se desprograman. 3) Coherencia horario oficial/real.\`},
+          ]},
+          { id:'ultima', title:'📌 Última hora de gestión', time:{AM:'15:00–16:00',PM:'21:00–22:00'}, tasks:[
+            {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día.', tip:\`Objetivo: cierre limpio de jornada.\`},
+          ]},
+        ],
+        continuous:[
+          {id:'c.2', title:'Verificación de estadísticas de campañas', desc:'Monitoreo de leads, conectados, ACD, ventas, SAVE, etc.'},
+        ],
+        policy:[
+          '1) Primer incumplimiento: recordatorio inmediato.',
+          '2) Segundo incumplimiento: llamado de atención formal.',
+          '3) Reincidencia: informe a RRHH para evaluación.'
+        ]
+      };
 
-    function render(){
-      document.getElementById('selTurno').value = state.shift;
-      sectionsEl.innerHTML='';
+      /* ===== Persistencia ===== */
+      function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
+      function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      function defaultState(){
+        const st={ shift:autoShift(), tasks:{}, collapsed:{}, lastReminder:'' };
+        PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; }));
+        PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; });
+        return st;
+      }
+      function autoShift(){
+        const h=new Date().getHours();
+        return (h>=12? 'PM':'AM');
+      }
+      let state = Object.assign(defaultState(), loadState());
+      if (!('shift' in loadState())) { // primera carga: respeta autoShift
+        saveState(state);
+      }
 
-      // Bloques con horario
-      PLAN.blocks.forEach(block=>{
-        const sec=document.createElement('section'); sec.className='section';
-        if(state.collapsed[block.id]) sec.classList.add('collapsed');
+      /* ===== Histórico ===== */
+      function getLog(dateStr=todayStr()){
+        try{ return JSON.parse(localStorage.getItem(LOG_KEY_PREFIX+dateStr)) || [] }catch{ return [] }
+      }
+      function setLog(arr,dateStr=todayStr()){
+        localStorage.setItem(LOG_KEY_PREFIX+dateStr, JSON.stringify(arr||[]));
+      }
+      function pushLog(entry, dateStr=todayStr()){
+        const arr=getLog(dateStr);
+        arr.push(entry);
+        setLog(arr,dateStr);
+      }
 
-        const head=document.createElement('div'); head.className='section-header';
-        head.innerHTML=`<h2>${block.title}</h2><div class="time">${state.shift} · ${block.time[state.shift]}</div>`;
-        head.addEventListener('click',()=>{ state.collapsed[block.id]=!state.collapsed[block.id]; saveState(state); render(); });
+      /* ===== Render ===== */
+      const sectionsEl = document.getElementById('sections');
 
-        const body=document.createElement('div'); body.className='section-body';
+      function render(){
+        document.getElementById('selTurno').value = state.shift;
+        sectionsEl.innerHTML='';
 
-        block.tasks.forEach(task=>{
+        // Bloques con horario
+        PLAN.blocks.forEach(block=>{
+          const sec=document.createElement('section'); sec.className='section';
+          if(state.collapsed[block.id]) sec.classList.add('collapsed');
+
+          const head=document.createElement('div'); head.className='section-header';
+          head.innerHTML=\`<h2>\${block.title}</h2><div class="time">\${state.shift} · \${block.time[state.shift]}</div>\`;
+          head.addEventListener('click',()=>{ state.collapsed[block.id]=!state.collapsed[block.id]; saveState(state); render(); });
+
+          const body=document.createElement('div'); body.className='section-body';
+
+          block.tasks.forEach(task=>{
+            const done=!!state.tasks[task.id];
+            const el=document.createElement('div'); el.className='task'+(done?' done':'');
+
+            el.innerHTML=\`
+              <input class="chk" id="chk-\${task.id}" type="checkbox" \${done?'checked':''} aria-label="Marcar \${task.title}">
+              <div>
+                <div class="title">
+                  <span class="status-dot \${done?'status-done':'status-pending'}"></span>
+                  \${task.id} · \${task.title}
+                  <button class="tip-btn" data-tip="tip-\${task.id}" title="Ver tip" aria-expanded="false">ℹ️</button>
+                </div>
+                <div class="desc">\${task.desc||''}</div>
+                <div class="meta">\${state.shift} · \${block.time[state.shift]}</div>
+                <div id="tip-\${task.id}" class="tip" role="note">\${task.tip?task.tip:''}</div>
+              </div>
+              <div class="tools">
+                <span class="chip">⏱️ Bloque</span>
+                <span class="chip">💾 Auto-guardado</span>
+              </div>\`;
+
+            el.querySelector('.chk').addEventListener('change',ev=>{
+              const checked=ev.target.checked;
+              state.tasks[task.id]=checked; saveState(state);
+              el.classList.toggle('done',checked);
+              el.querySelector('.status-dot').className = 'status-dot ' + (checked?'status-done':'status-pending');
+              updateProgress();
+              const now=new Date();
+              pushLog({ts:now.toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:block.id, time:block.time[state.shift], shift:state.shift});
+              toast(checked?'✅ Tarea completada':'↩️ Tarea pendiente');
+              updateKPIs();
+            });
+
+            el.querySelector('.tip-btn').addEventListener('click',ev=>{
+              ev.preventDefault();
+              const btn=ev.currentTarget;
+              const id=btn.dataset.tip;
+              const tip=document.getElementById(id);
+              const visible = tip.classList.toggle('visible');
+              btn.setAttribute('aria-expanded', visible?'true':'false');
+            });
+
+            body.appendChild(el);
+          });
+
+          sec.appendChild(head); sec.appendChild(body);
+          sectionsEl.appendChild(sec);
+        });
+
+        // Tareas continuas
+        const secC=document.createElement('section'); secC.className='section';
+        if(state.collapsed['continuas']) secC.classList.add('collapsed');
+        const headC=document.createElement('div'); headC.className='section-header';
+        headC.innerHTML=\`<h2>🔁 Tareas de actualización continua</h2><div class="time">Todo el día</div>\`;
+        headC.addEventListener('click',()=>{ state.collapsed['continuas']=!state.collapsed['continuas']; saveState(state); render(); });
+
+        const bodyC=document.createElement('div'); bodyC.className='section-body';
+        PLAN.continuous.forEach(task=>{
           const done=!!state.tasks[task.id];
           const el=document.createElement('div'); el.className='task'+(done?' done':'');
 
-          el.innerHTML=`
-            <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''}>
+          el.innerHTML=\`
+            <input class="chk" id="chk-\${task.id}" type="checkbox" \${done?'checked':''} aria-label="Marcar \${task.title}">
             <div>
               <div class="title">
-                <span class="status-dot ${done?'status-done':'status-pending'}"></span>
-                ${task.id} · ${task.title}
-                <button class="tip-btn" data-tip="tip-${task.id}" title="Ver tip">ℹ️</button>
+                <span class="status-dot \${done?'status-done':'status-pending'}"></span>
+                \${task.title}
               </div>
-              <div class="desc">${task.desc||''}</div>
-              <div class="meta">${state.shift} · ${block.time[state.shift]}</div>
-              <div id="tip-${task.id}" class="tip">${task.tip?task.tip:''}</div>
+              <div class="desc">\${task.desc||''}</div>
+              <div class="meta">⏳ Sin horario fijo</div>
             </div>
             <div class="tools">
-              <span class="chip">⏱️ Bloque</span>
+              <span class="chip">🗂️ Seguimiento</span>
               <span class="chip">💾 Auto-guardado</span>
-            </div>`;
+            </div>\`;
 
           el.querySelector('.chk').addEventListener('change',ev=>{
             const checked=ev.target.checked;
             state.tasks[task.id]=checked; saveState(state);
             el.classList.toggle('done',checked);
             el.querySelector('.status-dot').className = 'status-dot ' + (checked?'status-done':'status-pending');
+            pushLog({ts:new Date().toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:'continuas', time:'-', shift:state.shift});
             updateProgress();
-            const now=new Date();
-            pushLog({ts:now.toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:block.id, time:block.time[state.shift], shift:state.shift});
-            toast(checked?'✅ Tarea completada':'↩️ Tarea pendiente');
             updateKPIs();
           });
 
-          el.querySelector('.tip-btn').addEventListener('click',ev=>{
-            ev.preventDefault();
-            const id=ev.currentTarget.dataset.tip;
-            const tip=document.getElementById(id);
-            tip.classList.toggle('visible');
-          });
-
-          body.appendChild(el);
+          bodyC.appendChild(el);
         });
+        secC.appendChild(headC); secC.appendChild(bodyC); sectionsEl.appendChild(secC);
 
-        sec.appendChild(head); sec.appendChild(body);
-        sectionsEl.appendChild(sec);
-      });
+        // Política
+        const secP=document.createElement('section'); secP.className='section';
+        const headP=document.createElement('div'); headP.className='section-header';
+        headP.innerHTML=\`<h2>⚠️ Política de incumplimiento</h2><div class="time">Aplicación gradual</div>\`;
+        const bodyP=document.createElement('div'); bodyP.className='section-body';
+        const ul=document.createElement('ul'); ul.style.margin='6px 0 0 16px'; ul.style.padding='0';
+        PLAN.policy.forEach(p=>{ const li=document.createElement('li'); li.style.margin='8px 0'; li.textContent=p; ul.appendChild(li); });
+        bodyP.appendChild(ul); secP.appendChild(headP); secP.appendChild(bodyP); sectionsEl.appendChild(secP);
 
-      // Tareas continuas (solo 1)
-      const secC=document.createElement('section'); secC.className='section';
-      if(state.collapsed['continuas']) secC.classList.add('collapsed');
-      const headC=document.createElement('div'); headC.className='section-header';
-      headC.innerHTML=`<h2>🔁 Tareas de actualización continua</h2><div class="time">Todo el día</div>`;
-      headC.addEventListener('click',()=>{ state.collapsed['continuas']=!state.collapsed['continuas']; saveState(state); render(); });
+        updateProgress();
+        updateKPIs();
+      }
 
-      const bodyC=document.createElement('div'); bodyC.className='section-body';
-      PLAN.continuous.forEach(task=>{
-        const done=!!state.tasks[task.id];
-        const el=document.createElement('div'); el.className='task'+(done?' done':'');
+      /* ===== Progreso y KPIs ===== */
+      function updateProgress(){
+        const timedIds = PLAN.blocks.flatMap(b=>b.tasks.map(t=>t.id));
+        const total = timedIds.length;
+        const done = timedIds.filter(id=>!!state.tasks[id]).length;
+        const pct = total? Math.round(done*100/total) : 0;
+        const bar=document.getElementById('progBar');
+        bar.style.width=pct+'%';
+        bar.style.background = pct<50 ? 'linear-gradient(90deg,#ef4444,#f87171)'
+                          : pct<80 ? 'linear-gradient(90deg,#eab308,#fde047)'
+                                   : 'linear-gradient(90deg,#60a5fa,#93c5fd)';
+        document.getElementById('progLabel').textContent=pct+"% completado";
+        document.getElementById('kpiTimed').textContent = \`\${done} / \${total}\`;
+        document.getElementById('kpiPct').textContent = \`\${pct}%\`;
+      }
 
-        el.innerHTML=`
-          <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''}>
-          <div>
-            <div class="title">
-              <span class="status-dot ${done?'status-done':'status-pending'}"></span>
-              ${task.title}
-            </div>
-            <div class="desc">${task.desc||''}</div>
-            <div class="meta">⏳ Sin horario fijo</div>
-          </div>
-          <div class="tools">
-            <span class="chip">🗂️ Seguimiento</span>
-            <span class="chip">💾 Auto-guardado</span>
-          </div>`;
+      function shiftBounds(shift){
+        // Retorna inicio y fin como objetos Date de HOY
+        const dStart = new Date(), dEnd = new Date();
+        if(shift==='AM'){ dStart.setHours(7,0,0,0); dEnd.setHours(16,0,0,0); }
+        else { dStart.setHours(13,0,0,0); dEnd.setHours(22,0,0,0); }
+        return [dStart,dEnd];
+      }
 
-        el.querySelector('.chk').addEventListener('change',ev=>{
-          const checked=ev.target.checked;
-          state.tasks[task.id]=checked; saveState(state);
-          el.classList.toggle('done',checked);
-          el.querySelector('.status-dot').className = 'status-dot ' + (checked?'status-done':'status-pending');
-          pushLog({ts:new Date().toISOString(), task:task.id, title:task.title, action:checked?'Completada':'Pendiente', block:'continuas', time:'-', shift:state.shift});
-          updateProgress();
-          updateKPIs();
-        });
-
-        bodyC.appendChild(el);
-      });
-      secC.appendChild(headC); secC.appendChild(bodyC); sectionsEl.appendChild(secC);
-
-      // Política
-      const secP=document.createElement('section'); secP.className='section';
-      const headP=document.createElement('div'); headP.className='section-header';
-      headP.innerHTML=`<h2>⚠️ Política de incumplimiento</h2><div class="time">Aplicación gradual</div>`;
-      const bodyP=document.createElement('div'); bodyP.className='section-body';
-      const ul=document.createElement('ul'); ul.style.margin='6px 0 0 16px'; ul.style.padding='0';
-      PLAN.policy.forEach(p=>{ const li=document.createElement('li'); li.style.margin='8px 0'; li.textContent=p; ul.appendChild(li); });
-      bodyP.appendChild(ul); secP.appendChild(headP); secP.appendChild(bodyP); sectionsEl.appendChild(secP);
-
-      updateProgress();
-      updateKPIs();
-    }
-
-    /* ===== Progreso y KPIs ===== */
-    function updateProgress(){
-      const timedIds = PLAN.blocks.flatMap(b=>b.tasks.map(t=>t.id));
-      const total = timedIds.length;
-      const done = timedIds.filter(id=>!!state.tasks[id]).length;
-      const pct = total? Math.round(done*100/total) : 0;
-      const bar=document.getElementById('progBar');
-      bar.style.width=pct+'%';
-      bar.style.background = pct<50 ? 'linear-gradient(90deg,#c62828,#ef5350)'
-                        : pct<80 ? 'linear-gradient(90deg,#fbc02d,#ffd54f)'
-                                 : 'linear-gradient(90deg,#42a5f5,#80d6ff)';
-      document.getElementById('progLabel').textContent=pct+"% completado";
-      document.getElementById('kpiTimed').textContent = `${done} / ${total}`;
-      document.getElementById('kpiPct').textContent = `${pct}%`;
-    }
-
-    function updateKPIs(){
-      document.getElementById('kpiShift').textContent = state.shift;
-      const now=new Date();
-      const end = new Date();
-      if(state.shift==='AM'){ end.setHours(16,0,0,0); }
-      else { end.setHours(22,0,0,0); }
-      let diffMs = end - now;
-      if(diffMs<0) diffMs=0;
-      const hh = Math.floor(diffMs/3600000);
-      const mm = Math.floor((diffMs%3600000)/60000);
-      document.getElementById('kpiTimeLeft').textContent = `${pad(hh)}:${pad(mm)}`;
-    }
-
-    /* ===== Recordatorios 10 min antes del bloque ===== */
-    const REMIND_MIN = 10;
-    function parseBlockRange(label){ const [start,end] = label.split('–').map(s=>s.trim()); return [start,end]; }
-    function asTodayTime(hhmm){ const [h,m] = hhmm.split(':').map(Number); const d = new Date(); d.setHours(h,m,0,0); return d; }
-    function remindersTick(){
-      const now=new Date();
-      PLAN.blocks.forEach(b=>{
-        const [from] = parseBlockRange(b.time[state.shift]);
-        const start = asTodayTime(from);
-        const remindAt = new Date(start - REMIND_MIN*60000);
-        const key = `${todayStr()}_${state.shift}_${b.id}`;
-        if(now>=remindAt && now - remindAt < 30000 && state.lastReminder!==key){
-          state.lastReminder=key; saveState(state);
-          toast(`⏰ En ${REMIND_MIN} min: ${b.title} (${b.time[state.shift]})`);
+      function updateKPIs(){
+        document.getElementById('kpiShift').textContent = state.shift;
+        const now=new Date();
+        const [start,end]=shiftBounds(state.shift);
+        let label='';
+        if (now<start){
+          const diffMs = start-now;
+          const hh = Math.floor(diffMs/3600000);
+          const mm = Math.floor((diffMs%3600000)/60000);
+          label = \`Por iniciar en \${pad(hh)}:\${pad(mm)}\`;
+        } else if (now>=start && now<=end){
+          const diffMs = end-now;
+          const hh = Math.floor(diffMs/3600000);
+          const mm = Math.floor((diffMs%3600000)/60000);
+          label = \`En curso · Restante \${pad(hh)}:\${pad(mm)}\`;
+        } else {
+          label = 'Fuera de turno';
         }
+        document.getElementById('kpiTimeLeft').textContent = label;
+      }
+
+      /* ===== Recordatorios 10 min antes del bloque ===== */
+      const REMIND_MIN = 10;
+      function parseBlockRange(label){ const [start,end] = label.split('–').map(s=>s.trim()); return [start,end]; }
+      function asTodayTime(hhmm){ const [h,m] = hhmm.split(':').map(Number); const d = new Date(); d.setHours(h,m,0,0); return d; }
+      function remindersTick(){
+        const now=new Date();
+        PLAN.blocks.forEach(b=>{
+          const [from] = parseBlockRange(b.time[state.shift]);
+          const start = asTodayTime(from);
+          const remindAt = new Date(start - REMIND_MIN*60000);
+          const key = \`\${todayStr()}_\${state.shift}_\${b.id}\`;
+          if(now>=remindAt && now - remindAt < 25000 && state.lastReminder!==key){
+            state.lastReminder=key; saveState(state);
+            toast(\`⏰ En \${REMIND_MIN} min: \${b.title} (\${b.time[state.shift]})\`);
+          }
+        });
+      }
+      setInterval(remindersTick, 5000);
+
+      /* ===== Eventos globales ===== */
+      document.getElementById('selTurno').addEventListener('change',e=>{ state.shift=e.target.value; saveState(state); render(); });
+
+      document.getElementById('btnResetDay').addEventListener('click',()=>{
+        PLAN.blocks.forEach(b=>b.tasks.forEach(t=> state.tasks[t.id]=false ));
+        saveState(state); render(); toast('🧹 Tareas con horario reseteadas');
       });
-    }
-    setInterval(remindersTick, 5000);
 
-    /* ===== Eventos globales ===== */
-    document.getElementById('selTurno').addEventListener('change',e=>{ state.shift=e.target.value; saveState(state); render(); });
-    document.getElementById('btnResetDay').addEventListener('click',()=>{
-      PLAN.blocks.forEach(b=>b.tasks.forEach(t=> state.tasks[t.id]=false ));
-      saveState(state); render(); toast('🧹 Tareas con horario reseteadas');
-    });
-    document.getElementById('btnClearAll').addEventListener('click',()=>{
-      localStorage.removeItem(STORAGE_KEY);
-      state=defaultState(); render(); toast('🗑️ Guardado eliminado');
-    });
-
-    /* ===== Modal Histórico ===== */
-    const backdrop=document.getElementById('modalBackdrop');
-    const logList=document.getElementById('logList');
-    document.getElementById('btnLog').addEventListener('click',()=>{
-      backdrop.style.display='flex';
-      document.getElementById('logDate').textContent = `Fecha: ${todayStr()} · Turno actual: ${state.shift}`;
-      renderLog();
-    });
-    document.getElementById('btnCloseModal').addEventListener('click',()=>{ backdrop.style.display='none'; });
-
-    function renderLog(){
-      const rows = getLog(todayStr());
-      logList.innerHTML = rows.length? '' : '<div class="log-item">Sin registros todavía.</div>';
-      rows.slice().reverse().forEach(r=>{
-        const d=new Date(r.ts);
-        const el=document.createElement('div'); el.className='log-item';
-        el.innerHTML = `
-          <div><strong>${r.action}</strong> — ${r.task}${r.title?` · ${r.title}`:''}</div>
-          <div class="log-meta">Bloque: ${r.block} · Horario: ${r.time} · Turno: ${r.shift} · ${d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
-        `;
-        logList.appendChild(el);
+      document.getElementById('btnClearAll').addEventListener('click',()=>{
+        localStorage.removeItem(STORAGE_KEY);
+        state=defaultState(); render(); toast('🗑️ Guardado eliminado');
       });
-    }
 
-    document.getElementById('btnExportLog').addEventListener('click',()=>{
-      const rows = getLog(todayStr());
-      const lines = [
-        `Histórico del día ${todayStr()} (Turno: ${state.shift})`,
-        '---------------------------------------------',
-        ...rows.map(r=>{
+      /* ===== Sidebar responsive ===== */
+      const sidebar = document.getElementById('sidebar');
+      const btnSidebar = document.getElementById('btnSidebar');
+      btnSidebar.addEventListener('click',()=>{ sidebar.classList.toggle('show'); });
+      // Cerrar al hacer click fuera en móviles
+      document.addEventListener('click',(e)=>{
+        if (window.innerWidth>980) return;
+        if (!sidebar.contains(e.target) && e.target!==btnSidebar) sidebar.classList.remove('show');
+      });
+
+      /* ===== Modal Histórico ===== */
+      const backdrop=document.getElementById('modalBackdrop');
+      const logList=document.getElementById('logList');
+      document.getElementById('btnLog').addEventListener('click',()=>{
+        backdrop.style.display='flex';
+        document.getElementById('logDate').textContent = \`Fecha: \${todayStr()} · Turno actual: \${state.shift}\`;
+        renderLog();
+      });
+      document.getElementById('btnCloseModal').addEventListener('click',()=>{ backdrop.style.display='none'; });
+
+      function renderLog(){
+        const rows = getLog(todayStr());
+        logList.innerHTML = rows.length? '' : '<div class="log-item">Sin registros todavía.</div>';
+        rows.slice().reverse().forEach(r=>{
           const d=new Date(r.ts);
-          const hhmmss = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-          return `[${hhmmss}] ${r.action} - ${r.task} ${r.title?('· '+r.title):''} | Bloque:${r.block} | Horario:${r.time} | Turno:${r.shift}`;
-        })
-      ];
-      const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(blob);
-      a.download=`historico_${todayStr()}_${state.shift}.txt`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
+          const hhmmss = \`\${pad(d.getHours())}:\${pad(d.getMinutes())}:\${pad(d.getSeconds())}\`;
+          const el=document.createElement('div'); el.className='log-item';
+          el.innerHTML = \`
+            <div><strong>\${r.action}</strong> — \${r.task}\${r.title?(\` · \${r.title}\`):''}</div>
+            <div class="log-meta">Bloque: \${r.block} · Horario: \${r.time} · Turno: \${r.shift} · \${hhmmss}</div>
+          \`;
+          logList.appendChild(el);
+        });
+      }
 
-    /* ===== Init ===== */
-    function init(){ render(); updateKPIs(); }
-    init();
-  </script>
-</body>
+      document.getElementById('btnExportLog').addEventListener('click',()=>{
+        const rows = getLog(todayStr());
+        const lines = [
+          \`Histórico del día \${todayStr()} (Turno: \${state.shift})\`,
+          '---------------------------------------------',
+          ...rows.map(r=>{
+            const d=new Date(r.ts);
+            const hhmmss = \`\${pad(d.getHours())}:\${pad(d.getMinutes())}:\${pad(d.getSeconds())}\`;
+            return \`[\${hhmmss}] \${r.action} - \${r.task} \${r.title?('· '+r.title):''} | Bloque:\${r.block} | Horario:\${r.time} | Turno:\${r.shift}\`;
+          })
+        ];
+        const blob=new Blob([lines.join('\\n')],{type:'text/plain;charset=utf-8'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download=\`historico_\${todayStr()}_\${state.shift}.txt\`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      document.getElementById('btnClearLog').addEventListener('click',()=>{
+        setLog([], todayStr());
+        renderLog();
+        toast('🧽 Histórico del día limpiado');
+      });
+
+      /* ===== Init ===== */
+      function init(){ render(); updateKPIs(); }
+      init();
+    </script>
+  </body>
 </html>
-
