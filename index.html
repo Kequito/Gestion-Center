@@ -8,88 +8,26 @@
 
     <!-- 🔒 Guard de autenticación: oculta hasta validar sesión -->
     <style>html{visibility:hidden}</style>
-    <script type="module" src="Gestion-Center/assets/guard.js"></script>
+    <!-- ✅ Ruta correcta para GitHub Pages del repo Gestion-Center -->
+    <script type="module" src="./assets/guard.js"></script>
 
     <style>
-      /* ===== Tema base (idéntico a Estadísticas) ===== */
       :root{
         --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
         --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
       }
       *{ box-sizing: border-box; }
-
-      body {
-        margin: 0;
-        font-family: 'Lexend', sans-serif;
-        background: var(--bg-app);
-        color: var(--txt);
-        display: flex;
-        min-height: 100vh;
-      }
-
-      /* ===== Sidebar ===== */
-      aside{
-        background: var(--bg-aside);
-        width: 220px;
-        height: 100vh;
-        padding: 40px 20px;
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        left: 0;
-        top: 0;
-      }
-      .logo{
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 32px;
-        text-align: center;
-        line-height: 1.2;
-      }
-      nav a{
-        color: var(--txt);
-        margin: 14px 0;
-        text-decoration: none;
-        font-size: 15px;
-        padding: 10px 12px;
-        border-radius: 8px;
-        transition: background-color .25s, transform .05s;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        width: 100%;
-        white-space: normal;
-        line-height: 1.2;
-        overflow-wrap: anywhere;
-        word-break: break-word;
-      }
-      nav a:hover{ background: var(--hover); }
-      nav a.active{ background: var(--hover); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+      body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+      aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+      .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+      nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s, transform .05s; display:flex; gap:10px; overflow-wrap:anywhere; }
+      nav a:hover{ background:var(--hover); }
+      nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
       .spacer{ flex:1; }
-
-      /* ===== Contenido principal (si lo agregas luego) ===== */
-      .main-content {
-        flex-grow: 1;
-        padding: 60px;
-        padding-left: 260px; /* espacio para el aside fijo */
-        box-sizing: border-box;
-      }
-
-      /* Botón salir */
-      .logout{
-        margin-top:12px;
-        width:100%;
-        background:#ef4444;
-        color:#fff;
-        border:0;
-        padding:10px 12px;
-        border-radius:10px;
-        cursor:pointer;
-      }
+      .logout{ margin-top:12px; width:100%; background:#ef4444; color:#fff; border:0; padding:10px 12px; border-radius:10px; cursor:pointer; }
     </style>
   </head>
   <body>
-    <!-- ===== Barra lateral ===== -->
     <aside>
       <div class="logo">🧭 Gestión Center</div>
       <nav>
@@ -108,10 +46,7 @@
         <a href="login.html">Test</a>
       </nav>
       <div class="spacer"></div>
-      <!-- Cerrar sesión (usa window.gcLogout del guard) -->
       <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
-
-    <!-- (Tu index no trae contenido principal; queda libre para tu dashboard) -->
   </body>
 </html>
