@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Gestión</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+
+    <!-- Mejora de fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <!-- 🔒 Guard de autenticación: oculta hasta validar sesión -->
     <style>html{visibility:hidden}</style>
@@ -16,21 +20,70 @@
         --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
         --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
       }
-      *{ box-sizing: border-box; }
-      body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
-      aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+      *{ box-sizing:border-box; }
+      body{
+        margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt);
+        min-height:100vh;
+      }
+      /* Lateral */
+      aside{
+        background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px;
+        display:flex; flex-direction:column; position:fixed; left:0; top:0; overflow:auto;
+        border-right:1px solid rgba(255,255,255,.06);
+      }
       .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-      nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s, transform .05s; display:flex; gap:10px; overflow-wrap:anywhere; }
+      nav{ display:flex; flex-direction:column; }
+      nav a{
+        color:var(--txt); margin:12px 0; text-decoration:none; font-size:15px; padding:10px 12px;
+        border-radius:8px; transition:background-color .25s, transform .05s; display:flex; gap:10px;
+        overflow-wrap:anywhere; outline:none;
+      }
       nav a:hover{ background:var(--hover); }
-      nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+      nav a.active{
+        background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+      }
+      nav a:focus-visible{
+        outline:2px solid var(--accent-color); outline-offset:2px;
+      }
       .spacer{ flex:1; }
-      .logout{ margin-top:12px; width:100%; background:#ef4444; color:#fff; border:0; padding:10px 12px; border-radius:10px; cursor:pointer; }
+      .logout{
+        margin-top:12px; width:100%; background:#ef4444; color:#fff; border:0; padding:10px 12px;
+        border-radius:10px; cursor:pointer; font-weight:600;
+      }
+      .logout:hover{ filter:brightness(1.05); }
+
+      /* Main */
+      main{
+        margin-left:220px; padding:24px; min-height:100vh;
+      }
+      .hero{
+        background:linear-gradient(135deg, rgba(66,165,245,.12), rgba(13,71,161,.12));
+        border:1px solid rgba(255,255,255,.08);
+        padding:18px 20px; border-radius:14px; margin-bottom:18px;
+      }
+      .hero h1{ margin:0 0 6px; font-size:22px; }
+      .hero p{ margin:0; color:var(--txt-muted); font-size:14px; }
+
+      .quick-grid{
+        display:grid; grid-template-columns:repeat(2, minmax(220px, 1fr)); gap:12px;
+      }
+      .card{
+        background:#1e2e4b; border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:14px 16px;
+      }
+      .card a{ color:#fff; text-decoration:none; display:block; padding:8px 0; }
+      .card a:hover{ text-decoration:underline; }
+
+      @media (max-width: 900px){
+        aside{ position:sticky; width:auto; height:auto; }
+        main{ margin-left:0; padding:16px; }
+        .quick-grid{ grid-template-columns:1fr; }
+      }
     </style>
   </head>
   <body>
     <aside>
       <div class="logo">🧭 Gestión Center</div>
-      <nav>
+      <nav role="navigation" aria-label="Navegación principal">
         <a href="index.html" class="active">🏠 Inicio</a>
         <a href="plandetrabajo.html">✅ Plan de trabajo</a>
         <a href="distribucion.html">📋 Distribución</a>
@@ -46,8 +99,59 @@
         <a href="login.html">Test</a>
       </nav>
       <div class="spacer"></div>
-      <button class="logout" onclick="gcLogout()">Salir</button>
+      <button class="logout" onclick="gcLogout()" aria-label="Cerrar sesión">Salir</button>
     </aside>
+
+    <main>
+      <section class="hero" aria-live="polite">
+        <h1>¡Bienvenido al Panel de Gestión!</h1>
+        <p>Sesión verificada ✅ | Accesos rápidos y estado general.</p>
+      </section>
+
+      <section class="quick-grid">
+        <div class="card">
+          <strong>Reportes diarios</strong>
+          <a href="estadisticas.html">📈 Ir a Estadísticas</a>
+          <a href="opo11.html">🧰 New Report CC Perú</a>
+          <a href="postsale.html">🚚 Post-Sale New Report</a>
+        </div>
+        <div class="card">
+          <strong>Operaciones</strong>
+          <a href="distribucion.html">📋 Distribución</a>
+          <a href="camprev.html">👥 Selector de Apoyo 2.0</a>
+          <a href="pintado.html">🧮 Queues Heatmap</a>
+        </div>
+      </section>
+
+      <section id="contacto" style="margin-top:22px;">
+        <div class="card">
+          <strong>Contacto</strong>
+          <p style="color:var(--txt-muted); margin:.5rem 0 0;">
+            ¿Sugerencias para la página? Escríbeme y lo iteramos :3
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Utilidades: activo dinámico + verificación de gcLogout -->
+    <script type="module">
+      // Marcar activo según la ruta
+      const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('nav a').forEach(a=>{
+        const href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
+        if(href && href === path){
+          a.classList.add('active');
+          a.setAttribute('aria-current','page');
+        } else {
+          a.classList.remove('active');
+          a.removeAttribute('aria-current');
+        }
+      });
+
+      // Aviso si gcLogout no está expuesto por guard.js
+      if (typeof window.gcLogout !== 'function') {
+        console.warn('gcLogout no está definido. En guard.js expón la función: window.gcLogout = async () => { /* signOut + redirect */ }');
+      }
+    </script>
   </body>
 </html>
-
