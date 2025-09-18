@@ -31,7 +31,6 @@
         --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
         --primary:#5b8bff; --accent:#7ae3ff;
         --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
-        /* Tabla & controles */
         --table-bg:rgba(20,28,56,.7); --table-head:#111a39; --table-border:rgba(255,255,255,.10);
         --btn:#30478b; --btn-hover:#3f62c5; --btn-alt:#2a3d5e;
       }
@@ -41,16 +40,12 @@
 
       /* ===== Fondo continuo + luces + ruido anti-banding ===== */
       body{
-        margin:0;
-        font-family:var(--font-body);
-        color:var(--txt);
-        background:
-          linear-gradient(180deg, #070b1a 0%, #0a1022 40%, #0b1329 100%);
+        margin:0; font-family:var(--font-body); color:var(--txt);
+        background:linear-gradient(180deg, #070b1a 0%, #0a1022 40%, #0b1329 100%);
         overflow-x:hidden;
       }
       body::before{
-        content:"";
-        position:fixed; inset:-20% -10% -20% -10%;
+        content:""; position:fixed; inset:-20% -10% -20% -10%;
         z-index:-2; pointer-events:none;
         background:
           radial-gradient(1200px 1200px at 12% -10%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 65%),
@@ -58,15 +53,14 @@
         filter:blur(18px) saturate(110%);
       }
       body::after{
-        content:"";
-        position:fixed; inset:0;
+        content:""; position:fixed; inset:0;
         z-index:-1; pointer-events:none; opacity:.05; mix-blend-mode:soft-light;
-        background-image: url('data:image/svg+xml;utf8,\
+        background-image:url('data:image/svg+xml;utf8,\
         <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140">\
           <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>\
           <rect width="100%" height="100%" filter="url(%23n)" opacity="0.35"/>\
         </svg>');
-        background-size: 180px 180px;
+        background-size:180px 180px;
       }
 
       @media (prefers-reduced-motion:no-preference){
@@ -200,7 +194,7 @@
     </style>
   </head>
   <body>
-    <!-- Patrón de cuadrícula sutil (parallax): opcional, se mantiene -->
+    <!-- Patrón de cuadrícula sutil -->
     <div id="bg-grid" aria-hidden="true" style="
       position:fixed; inset:0; z-index:-3; opacity:.07; pointer-events:none;
       background:
@@ -305,7 +299,7 @@ PEROP1AM-39726
       <!-- TABLA -->
       <section class="card reveal" style="--delay:.1s">
         <div style="overflow:auto">
-          <table id="tblCampRev">
+          <table id="tblCampRev" title="Click: ordenar • Shift+Click: añadir como orden secundario • Clic repetido: descendente → ascendente → quitar">
             <thead>
               <tr id="headRow">
                 <th data-col="teamLeader" class="sort-none">Team Leader</th>
@@ -362,7 +356,7 @@ PEROP1AM-39726
         document.querySelectorAll('.reveal').forEach(el=>{ const d=el.style.getPropertyValue('--delay')||'0s'; el.style.transitionDelay=d; io.observe(el); });
       }else{ document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // ========= Parallax sutil (grid) =========
+      // ========= Parallax sutil =========
       const bg=document.getElementById('bg-grid'); let rafId=null;
       function parallax(e){
         const x=(e.clientX / window.innerWidth - .5)*6;
@@ -381,19 +375,16 @@ PEROP1AM-39726
       }
       actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-      // ========= Utilidades Selector =========
+      // ========= Utilidades =========
       const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
-      const norm = s => String(s||'')
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // sin tildes
-        .replace(/\s+/g,' ')                             // colapsar espacios
-        .trim().toLowerCase();
+      const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
       const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
       const STATE_KEY='selector_apoyo_v2_state';
 
       // ========= Estado =========
       let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
 
-      // ========= Carga de datos con cache-bust =========
+      // ========= Carga =========
       async function loadJSON(url){
         const sep=url.includes('?')?'&':'?';
         const r=await fetch(url+sep+'t='+(Date.now()));
@@ -402,18 +393,14 @@ PEROP1AM-39726
       }
       async function loadData(){
         try{
-          const [distrib,camp]=await Promise.all([
-            loadJSON('datadistribucion.json'),
-            loadJSON('camprev.json')
-          ]);
+          const [distrib,camp]=await Promise.all([ loadJSON('datadistribucion.json'), loadJSON('camprev.json') ]);
           rawDistrib=distrib; rawCamp=camp;
           dataFinal=rawCamp.reduce((acc,row)=>{
             const op=rawDistrib.find(o=>String(o.C)===String(row.A));
             if(op){
               acc.push({
                 teamLeader: op.A||'', nombre: op.B||'', perop: row.A||'', campania: row.B||'',
-                orders: Number(row.C)||0, approve: String(row.E||'').toString(),
-                reject: String(row.M||'').toString(), trash: String(row.O||'').toString(),
+                orders: Number(row.C)||0, approve: String(row.E||''), reject: String(row.M||''), trash: String(row.O||''),
                 avg: Number(row.P)||0, descanso: op.E||'', turno: op.F||''
               });
             }
@@ -450,61 +437,52 @@ PEROP1AM-39726
         return includeMode ? inList : !inList;
       }
 
-      // ======= FIX: filtros combinables + búsqueda multi-palabra =======
+      // ======= Filtros combinables + búsqueda multi-palabra =======
       function applyFiltersAndRender(){
-        const vTL = norm(document.getElementById('fltTL').value.trim());
-        const vCa = norm(document.getElementById('fltCamp').value.trim());
-        const vDe = norm(document.getElementById('fltDesc').value.trim());
-        const vTu = norm(document.getElementById('fltTurno').value.trim());
+        const vTL = norm(document.getElementById('fltTL').value);
+        const vCa = norm(document.getElementById('fltCamp').value);
+        const vDe = norm(document.getElementById('fltDesc').value);
+        const vTu = norm(document.getElementById('fltTurno').value);
 
         const qRaw = norm(document.getElementById('fltSearch').value);
-        const qTokens = qRaw.split(/\s+/).filter(Boolean); // TODAS deben coincidir
+        const qTokens = qRaw.split(/\s+/).filter(Boolean);
 
         const includeMode = document.getElementById('toggleInclude').checked;
         const lists = parsePeropList(document.getElementById('fltList').value);
 
         filtered = dataFinal.filter(r=>{
-          const a = norm(r.teamLeader);
-          const b = norm(r.nombre);
-          const c = norm(r.perop);
-          const d = norm(r.campania);
-          const e = norm(r.descanso);
-          const f = norm(r.turno);
+          const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
 
-          // 1) Filtros exactos obligatorios
-          if (vTL && a !== vTL) return false;
-          if (vCa && d !== vCa) return false;
-          if (vDe && e !== vDe) return false;
-          if (vTu && f !== vTu) return false;
+          if (vTL && a!==vTL) return false;
+          if (vCa && d!==vCa) return false;
+          if (vDe && e!==vDe) return false;
+          if (vTu && f!==vTu) return false;
 
-          // 2) Lista PEROP (incluye/excluye)
-          const peropClean = String(r.perop).replace(/\s+/g,'').toUpperCase();
-          const peropNum   = (peropClean.match(/(\d{3,})$/)||[])[1] || '';
-          const hasList    = (lists.full.size>0 || lists.digits.size>0);
+          const peropClean=String(r.perop).replace(/\s+/g,'').toUpperCase();
+          const peropNum=(peropClean.match(/(\d{3,})$/)||[])[1]||'';
+          const hasList=(lists.full.size>0||lists.digits.size>0);
           if (hasList){
-            const inList = lists.full.has(peropClean) || (peropNum && lists.digits.has(peropNum));
+            const inList=lists.full.has(peropClean)||(peropNum && lists.digits.has(peropNum));
             if (includeMode && !inList) return false;
             if (!includeMode &&  inList) return false;
           }
 
-          // 3) Búsqueda: todas las palabras deben estar en NOMBRE o PEROP
           if (qTokens.length){
-            const ok = qTokens.every(tok => b.includes(tok) || c.includes(tok));
-            if (!ok) return false;
+            const ok=qTokens.every(tok=> b.includes(tok)||c.includes(tok));
+            if(!ok) return false;
           }
           return true;
         });
 
-        // Orden acumulativo (igual)
         if (sortState.length){
           filtered.sort((x,y)=>{
             for (const {col,mode} of sortState){
               let A=x[col], B=y[col];
-              if (['orders','avg'].includes(col)){ A=Number(A)||0; B=Number(B)||0; }
-              else if (['approve','reject','trash'].includes(col)){ A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0; }
+              if(['orders','avg'].includes(col)){ A=Number(A)||0; B=Number(B)||0; }
+              else if(['approve','reject','trash'].includes(col)){ A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0; }
               else { A=String(A); B=String(B); }
               const cmp=(typeof A==='number'&&typeof B==='number')?(A-B):A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
-              if (cmp!==0) return mode===1 ? -cmp : cmp;
+              if(cmp!==0) return mode===1 ? -cmp : cmp; // 1=desc, 2=asc
             }
             return 0;
           });
@@ -558,7 +536,7 @@ PEROP1AM-39726
         document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
       }
 
-      // ===== Orden 3 estados =====
+      // ===== Orden 3 estados (último click = prioridad 1; Shift+Click = secundaria) =====
       function resetHeadSortClasses(){
         document.querySelectorAll('#headRow th').forEach(th=>{
           th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
@@ -571,14 +549,32 @@ PEROP1AM-39726
           if(thEl && mode){ thEl.classList.remove('sort-none'); thEl.classList.add(mode===1?'sort-desc':'sort-asc'); }
         });
       }
-      function cycleSort(th){
-        const col=th.dataset.col; if(!col) return;
-        const wasDesc=th.classList.contains('sort-desc'); const wasAsc=th.classList.contains('sort-asc');
-        let existing=sortState.find(s=>s.col===col);
-        if(!wasDesc && !wasAsc){ if(existing) existing.mode=1; else sortState.push({col,mode:1}); }
-        else if(wasDesc){ if(existing) existing.mode=2; else sortState.push({col,mode:2}); }
-        else if(wasAsc){ sortState=sortState.filter(s=>s.col!==col); }
-        refreshHeadSortClasses(); applyFiltersAndRender();
+      function cycleSort(th, e = { shiftKey:false }){
+        const col = th?.dataset?.col;
+        if(!col) return;
+
+        // Estado previo de esa columna
+        const idx = sortState.findIndex(s => s.col === col);
+        let nextMode = 1; // primer click => descendente
+        if (idx !== -1){
+          const was = sortState[idx].mode;
+          if (was === 1) nextMode = 2;           // desc -> asc
+          else if (was === 2){                   // asc -> none (quitar)
+            sortState.splice(idx, 1);
+            refreshHeadSortClasses();
+            applyFiltersAndRender();
+            return;
+          }
+          // quitar versión previa para reinsertar con nueva prioridad
+          sortState.splice(idx, 1);
+        }
+
+        const entry = { col, mode: nextMode };
+        if (e.shiftKey) sortState.push(entry);   // secundaria
+        else            sortState.unshift(entry); // primaria
+
+        refreshHeadSortClasses();
+        applyFiltersAndRender();
       }
 
       // ===== Exportar / Copiar =====
@@ -638,7 +634,9 @@ PEROP1AM-39726
       [fltTL,fltCamp,fltDesc,fltTurno].forEach(el=>el.addEventListener('change',applyFiltersAndRender));
       [fltSearch,fltList].forEach(el=>el.addEventListener('input',onInput));
       toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
-      document.querySelectorAll('#headRow th').forEach(th=>th.addEventListener('click',()=>cycleSort(th)));
+
+      // <<< cambio importante: pasar el evento para soportar Shift+Click >>>
+      document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',(e)=>cycleSort(th, e)));
 
       // Atajos
       document.addEventListener('keydown',(e)=>{
