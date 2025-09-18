@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin</title>
+  <style>html{visibility:hidden} body{font-family:system-ui;background:#0f172a;color:#e5e7eb;padding:16px}</style>
+  <script type="module" src="./assets/guard.js"></script>
+</head>
+<body>
+  <h1>Panel Admin</h1>
+  <p>Si ves esto, ya eres <strong>ADMIN</strong>.</p>
+
+  <script type="module">
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    const auth = getAuth();
+
+    async function requireAdmin(){
+      const u = auth.currentUser;
+      if (!u) return; // el guard ya redirige al login si no hay sesión
+      const t = await u.getIdTokenResult(true);
+      if (t.claims?.rank !== "admin") {
+        // sin permiso: vuelve al home
+        const parts = location.pathname.split('/').filter(Boolean);
+        const base  = parts.length ? `/${parts[0]}/` : '/';
+        location.replace(base + "index.html");
+      } else {
+        document.documentElement.style.visibility = "visible";
+      }
+    }
+
+    requireAdmin();
+  </script>
+</body>
+</html>
