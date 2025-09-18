@@ -1,554 +1,607 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestión Center – Selector de Apoyo 2.0</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
-      --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
-      --green:#2e7d32; --red:#c62828; --orange:#f57c00;
-    }
-    *{box-sizing:border-box}
-    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión Center — Selector de Apoyo 2.0</title>
 
-    /* Sidebar */
-    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
-    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
-    nav a:hover{ background:var(--hover); }
-    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
-    .spacer{ flex:1; }
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    /* Main */
-    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
-    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
-    .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
-    .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
+    <!-- 🔒 Ocultar hasta validar sesión -->
+    <style>html{visibility:hidden}</style>
+    <script type="module" src="./assets/guard.js"></script>
 
-    /* Filtros */
-    .filters{ display:grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap:12px; align-items:end; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 12px; }
-    .filter-group{ display:flex; flex-direction:column; gap:6px; }
-    .filter-group label{ font-size:12px; color:var(--txt-muted); }
-    .filter-group select, .filter-group input[type="text"], .filter-group textarea{
-      padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color);
-      background:var(--table-bg); color:var(--txt); height:38px;
-    }
-    .filter-group textarea{ height:auto; min-height:38px; resize:vertical; line-height:1.2; font-family:'Lexend',sans-serif; }
-    .grid-span-2{ grid-column: span 2; }
-    .grid-span-3{ grid-column: span 3; }
+    <style>
+      /* =========================
+         DESIGN SYSTEM — v2.0
+         ========================= */
+      :root{
+        --radius:16px; --radius-sm:12px; --radius-xs:10px;
+        --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
+        --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
+      }
+      [data-theme="dark"]{
+        --bg-app:#070b1a; --bg-aside:#0c1228;
+        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
+        --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
+        --primary:#5b8bff; --accent:#7ae3ff;
+        --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
+        /* Tabla & controles */
+        --table-bg:rgba(20,28,56,.7); --table-head:#111a39; --table-border:rgba(255,255,255,.10);
+        --btn:#30478b; --btn-hover:#3f62c5; --btn-alt:#2a3d5e;
+      }
 
-    .rowstats{
-      display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px;
-    }
-    .chip{
-      background:#334766; border:1px solid #2a3d5e; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700;
-    }
-    .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; align-self:center; }
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0; font-family:var(--font-body); color:var(--txt);
+        background:
+          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
+          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
+          var(--bg-app);
+        overflow-x:hidden;
+      }
 
-    /* Toolbar */
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
-    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
-    button:hover{ background:var(--accent-color); }
-    button:active{ transform:translateY(1px); }
-    .btn-alt{ background:#2f446a; }
-    .toggle{
-      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid #2a3d5e; background:#334766; border-radius:10px; cursor:pointer; user-select:none;
-    }
-    .toggle input{ appearance:none; width:32px; height:18px; border-radius:999px; background:#6b7fa3; position:relative; outline:none; transition:background .2s; }
-    .toggle input:checked{ background:#43a047; }
-    .toggle input::after{
-      content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; top:2px; left:2px; transition:left .2s;
-    }
-    .toggle input:checked::after{ left:16px; }
-    .toggle span{ font-size:12px; color:var(--txt-muted) }
+      @media (prefers-reduced-motion:no-preference){
+        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
+        .reveal.show{opacity:1; transform:none}
+      }
 
-    /* Tabla */
-    table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); position:relative; }
-    thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
-    tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
-    thead th:first-child, tbody td:first-child{ text-align:left; }
-    .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.95; cursor:copy; }
+      /* ====== Sidebar (idéntica) ====== */
+      aside{
+        position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
+        backdrop-filter:saturate(120%) blur(8px);
+        background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
+        border-right:1px solid var(--stroke);
+        display:flex; flex-direction:column; padding:22px 14px; gap:12px; overflow:auto;
+      }
+      .logo{
+        display:flex; align-items:center; justify-content:center; gap:10px;
+        font-family:var(--font-title); font-size:20px; font-weight:700; letter-spacing:.2px;
+        padding:12px; border-radius:var(--radius); border:1px solid var(--stroke);
+        background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
+        position:relative; isolation:isolate;
+      }
+      .logo::after{
+        content:""; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none;
+        box-shadow:0 0 28px color-mix(in oklab, var(--primary) 35%, transparent),
+                   0 0 42px color-mix(in oklab, var(--accent) 22%, transparent);
+        opacity:.18;
+      }
+      nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
+      nav a{
+        display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px;
+        text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
+        transition:background var(--t-med) ease, transform var(--t-fast) ease;
+      }
+      nav a:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
+      nav a.active{
+        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
+        border-color:var(--stroke);
+      }
+      .nav-indicator{
+        position:absolute; left:0; width:4px; height:40px; border-radius:0 3px 3px 0;
+        background:linear-gradient(180deg, var(--primary), var(--accent));
+        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
+        transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
+      }
+      .spacer{flex:1}
+      .logout{
+        width:100%; border:1px solid var(--stroke);
+        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
+        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
+        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
+      }
+      .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
-    /* Orden 3 estados */
-    .sort-none::after{ content:""; }
-    .sort-desc::after{ content:" ↓"; font-weight:900; }
-    .sort-asc::after{ content:" ↑"; font-weight:900; }
+      /* ====== Main ====== */
+      main{ margin-left:280px; padding:24px 22px 40px; }
+      .hero{
+        position:relative; border-radius:var(--radius); padding:18px 20px;
+        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
+        border:1px solid var(--stroke); overflow:hidden; margin-bottom:14px;
+      }
+      .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
+      .hero p{margin:0; color:var(--txt-muted); font-size:14px}
+      .blob{
+        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
+        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
+        filter:blur(18px); pointer-events:none; transform:translateZ(0);
+      }
 
-    /* Semáforo de % */
-    .pct{ font-weight:800; }
-    .pct.red{ color:#ff8a80; }
-    .pct.orange{ color:#ffcc80; }
-    .pct.green{ color:#80e27e; }
+      /* ====== Cards/Contenedores ====== */
+      .card{
+        position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
+        background:var(--bg-card); border:1px solid var(--stroke);
+        box-shadow:var(--elev-1); transform:translateZ(0);
+      }
 
-    /* Toast */
-    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+      /* ====== CONTROLES SELECTOR 2.0 ====== */
+      .filters{
+        display:grid; grid-template-columns:repeat(5, minmax(180px,1fr)); gap:12px; align-items:end;
+        background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius); padding:12px; margin:10px 0 12px;
+      }
+      .filter-group{ display:flex; flex-direction:column; gap:6px; }
+      .filter-group label{ font-size:12px; color:var(--txt-muted); }
+      .filter-group select,.filter-group input[type="text"],.filter-group textarea{
+        padding:9px 12px; border-radius:12px; border:1px solid var(--table-border);
+        background:var(--table-bg); color:var(--txt); height:40px; outline:none;
+      }
+      .filter-group textarea{ height:auto; min-height:40px; resize:vertical; line-height:1.2; font-family:var(--font-body) }
+      .grid-span-2{ grid-column: span 2; } .grid-span-3{ grid-column: span 3; }
 
-    @media (max-width: 1200px){
-      .filters{ grid-template-columns: repeat(3, minmax(170px,1fr)); }
-    }
-    @media (max-width: 960px){
-      .filters{ grid-template-columns: repeat(2, minmax(140px,1fr)); }
-      main{ padding:18px; }
-      .page-title{ font-size:20px; }
-    }
-  </style>
-</head>
-<body>
-  <!-- Sidebar -->
-  <aside>
-    <div class="logo">🧭 Gestión Center</div>
-    <nav>
-      <a href="index.html">🏠 Inicio</a>
-      <a href="plandetrabajo.html">✅ Plan de trabajo</a>
-      <a href="distribucion.html">📋 Distribución</a>
-      <a href="estadisticas.html">📈 Estadísticas</a>
-      <a href="cobertura.html">🌎 Cobertura</a>
-      <a class="active" href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-      <a href="postsale.html">🚚 Post-Sale New Report</a>
-      <a href="opo11.html">🧰 New Report CC Perú</a>
-      <a href="#contacto">📬 Contacto</a>
-    </nav>
-    <div class="spacer"></div>
-  </aside>
+      .rowstats{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px; }
+      .chip{ background:#334766; border:1px solid #2a3d5e; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700; }
+      .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; align-self:center; }
 
-  <!-- Contenido -->
-  <main>
-    <h1 class="page-title">👥 Selector de Apoyo – Ver 2.0</h1>
-    <p class="subtitle">Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> · filtros, orden acumulativo y lista de PEROP</p>
-    <div id="fechaHora" class="datetime"></div>
+      .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
+      button{
+        padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:12px;
+        background:var(--btn); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25);
+        transition:background var(--t-med), transform var(--t-fast);
+      }
+      button:hover{ background:var(--btn-hover) } button:active{ transform:translateY(1px) }
+      .btn-alt{ background:var(--btn-alt) }
 
-    <div class="filters">
-      <div class="filter-group">
-        <label for="fltTL">Team Leader</label>
-        <select id="fltTL"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltCamp">Campaña</label>
-        <select id="fltCamp"><option value="">Todas</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltDesc">Descanso</label>
-        <select id="fltDesc"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltTurno">Turno</label>
-        <select id="fltTurno"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-group">
-        <label for="fltSearch">Buscar</label>
-        <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
-      </div>
+      .toggle{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid #2a3d5e; background:#334766; border-radius:12px; cursor:pointer; user-select:none; }
+      .toggle input{ appearance:none; width:34px; height:18px; border-radius:999px; background:#6b7fa3; position:relative; outline:none; transition:background .2s; }
+      .toggle input:checked{ background:#43a047; }
+      .toggle input::after{ content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; top:2px; left:2px; transition:left .2s; }
+      .toggle input:checked::after{ left:18px; }
+      .toggle span{ font-size:12px; color:var(--txt-muted) }
 
-      <!-- Lista PEROP + toggle incluir/excluir -->
-      <div class="filter-group grid-span-3">
-        <label for="fltList">Lista PEROP1AM (uno por línea o separados por , ;)</label>
-        <textarea id="fltList" rows="4" placeholder="Ejemplo:
+      /* ====== Tabla ====== */
+      table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+      thead th{ background:var(--table-head); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
+      tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
+      thead th:first-child, tbody td:first-child{ text-align:left; }
+      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.95; cursor:copy; }
+
+      .sort-none::after{ content:""; }
+      .sort-desc::after{ content:" ↓"; font-weight:900; }
+      .sort-asc::after{ content:" ↑"; font-weight:900; }
+
+      .pct{ font-weight:800; }
+      .pct.red{ color:#ff8a80; } .pct.orange{ color:#ffcc80; } .pct.green{ color:#80e27e; }
+
+      #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
+
+      @media (max-width:1200px){ .filters{ grid-template-columns:repeat(3, minmax(170px,1fr)) } }
+      @media (max-width:960px){
+        main{ margin-left:0; padding:16px }
+        aside{ position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke) }
+        .filters{ grid-template-columns:repeat(2, minmax(140px,1fr)) }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Fondo cuadrícula -->
+    <div id="bg-grid" aria-hidden="true" style="
+      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+      background:
+        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
+    </div>
+
+    <!-- SIDEBAR (idéntica al ecosistema) -->
+    <aside class="reveal">
+      <div class="logo">🧭 Gestión Center</div>
+      <nav role="navigation" aria-label="Navegación principal">
+        <div class="nav-indicator" aria-hidden="true"></div>
+        <a href="index.html" class="nav-item">🏠 <span>Inicio</span></a>
+        <a href="plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
+        <a href="distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <a href="estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
+        <a href="cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
+        <a href="camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+        <a href="postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
+        <a href="opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
+        <a href="pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+        <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
+        <a href="newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
+        <a href="tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
+        <a href="login.html" class="nav-item">🧪 <span>Test</span></a>
+      </nav>
+      <div class="spacer"></div>
+      <button class="logout" onclick="gcLogout()">Salir</button>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main>
+      <!-- HERO -->
+      <section class="hero reveal">
+        <div class="blob" aria-hidden="true"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+          <div>
+            <h1>👥 Selector de Apoyo — Ver 2.0</h1>
+            <p>Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> con filtros, orden acumulativo y lista PEROP.</p>
+          </div>
+          <div class="chip" id="fechaHora">—</div>
+        </div>
+      </section>
+
+      <!-- CONTROLES -->
+      <section class="card reveal" style="--delay:.05s">
+        <div class="filters">
+          <div class="filter-group">
+            <label for="fltTL">Team Leader</label>
+            <select id="fltTL"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltCamp">Campaña</label>
+            <select id="fltCamp"><option value="">Todas</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltDesc">Descanso</label>
+            <select id="fltDesc"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltTurno">Turno</label>
+            <select id="fltTurno"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltSearch">Buscar</label>
+            <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
+          </div>
+
+          <div class="filter-group grid-span-3">
+            <label for="fltList">Lista PEROP1AM (uno por línea, o separados por , ;)</label>
+            <textarea id="fltList" rows="4" placeholder="Ejemplo:
 PEROP1AM-41058
 PEROP1AM-39726
 41058"></textarea>
-      </div>
-      <div class="filter-group">
-        <label>Modo lista PEROP</label>
-        <label class="toggle" title="X para alternar">
-          <input type="checkbox" id="toggleInclude" checked />
-          <span id="toggleLabel">Incluir lista</span>
-        </label>
-      </div>
+          </div>
 
-      <div class="counter" id="rowCounter">Mostrando 0 registros</div>
-    </div>
+          <div class="filter-group">
+            <label>Modo lista PEROP</label>
+            <label class="toggle" title="Presiona X para alternar">
+              <input type="checkbox" id="toggleInclude" checked/>
+              <span id="toggleLabel">Incluir lista</span>
+            </label>
+          </div>
 
-    <div class="rowstats">
-      <div class="chip" id="chipRows">0 filas</div>
-      <div class="chip" id="chipTLs">0 TLs únicos</div>
-      <div class="chip" id="chipCamps">0 campañas</div>
-    </div>
+          <div class="counter" id="rowCounter">Mostrando 0 registros</div>
+        </div>
 
-    <div class="toolbar">
-      <button id="btnReset">🧹 Restablecer filtros</button>
-      <button id="btnExport">⬇️ Exportar (CSV)</button>
-      <button id="btnCopyPerop" class="btn-alt">📋 Copiar PEROPs filtrados</button>
-      <button id="btnCopyNames" class="btn-alt">📋 Copiar Nombres filtrados</button>
-    </div>
+        <div class="rowstats">
+          <div class="chip" id="chipRows">0 filas</div>
+          <div class="chip" id="chipTLs">0 TLs únicos</div>
+          <div class="chip" id="chipCamps">0 campañas</div>
+        </div>
 
-    <table id="tblCampRev">
-      <thead>
-        <tr id="headRow">
-          <th data-col="teamLeader" class="sort-none">Team Leader</th>
-          <th data-col="nombre" class="sort-none">Operador</th>
-          <th data-col="perop" class="sort-none">PEROP1AM</th>
-          <th data-col="campania" class="sort-none">Campaña</th>
-          <th data-col="orders" class="sort-none">Total Orders</th>
-          <th data-col="approve" class="sort-none">%Approve</th>
-          <th data-col="reject" class="sort-none">%Reject</th>
-          <th data-col="trash" class="sort-none">%Trash</th>
-          <th data-col="avg" class="sort-none">Avg Check</th>
-          <th data-col="descanso" class="sort-none">Descanso</th>
-          <th data-col="turno" class="sort-none">Turno</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </main>
+        <div class="toolbar">
+          <button id="btnReset">🧹 Restablecer filtros</button>
+          <button id="btnExport">⬇️ Exportar (CSV)</button>
+          <button id="btnCopyPerop" class="btn-alt">📋 Copiar PEROPs filtrados</button>
+          <button id="btnCopyNames" class="btn-alt">📋 Copiar Nombres filtrados</button>
+        </div>
+      </section>
 
-  <div id="toast"></div>
+      <!-- TABLA -->
+      <section class="card reveal" style="--delay:.1s">
+        <div style="overflow:auto">
+          <table id="tblCampRev">
+            <thead>
+              <tr id="headRow">
+                <th data-col="teamLeader" class="sort-none">Team Leader</th>
+                <th data-col="nombre" class="sort-none">Operador</th>
+                <th data-col="perop" class="sort-none">PEROP1AM</th>
+                <th data-col="campania" class="sort-none">Campaña</th>
+                <th data-col="orders" class="sort-none">Total Orders</th>
+                <th data-col="approve" class="sort-none">%Approve</th>
+                <th data-col="reject" class="sort-none">%Reject</th>
+                <th data-col="trash" class="sort-none">%Trash</th>
+                <th data-col="avg" class="sort-none">Avg Check</th>
+                <th data-col="descanso" class="sort-none">Descanso</th>
+                <th data-col="turno" class="sort-none">Turno</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
 
-  <script>
-    // ===== Utilidades =====
-    const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
-    const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-    const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
+    <div id="toast"></div>
 
-    function actualizarFechaHora(){
-      const ahora=new Date();
-      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
-    }
-    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+    <script type="module">
+      // ========= Nave activo + indicador =========
+      const items=[...document.querySelectorAll('nav .nav-item')];
+      const indicator=document.querySelector('.nav-indicator');
+      const current=(location.pathname.split('/').pop()||'camprev.html').toLowerCase();
+      function setActive(){
+        let active=items[0];
+        items.forEach(a=>{
+          const href=(a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
+          if(href && href===current) active=a;
+          a.classList.toggle('active', a===active);
+          a.toggleAttribute('aria-current', a===active ? 'page' : false);
+        });
+        const rect=active.getBoundingClientRect();
+        const p=active.parentElement.getBoundingClientRect();
+        const y=rect.top - p.top + active.parentElement.scrollTop;
+        indicator.style.height=rect.height+'px';
+        indicator.style.transform=`translateY(${y}px)`;
+      }
+      setActive();
+      const nav=document.querySelector('nav');
+      nav.addEventListener('scroll', setActive);
+      window.addEventListener('resize', setActive);
 
-    // ===== Estado =====
-    let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[];
-    // Orden acumulativo: array de { col, mode } -> 1=desc, 2=asc
-    let sortState=[];
-    const STATE_KEY='selector_apoyo_v2_state';
+      // ========= Reveal =========
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(!reduced && 'IntersectionObserver' in window){
+        const io=new IntersectionObserver((entries)=>{
+          for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } }
+        },{threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        document.querySelectorAll('.reveal').forEach(el=>{ const d=el.style.getPropertyValue('--delay')||'0s'; el.style.transitionDelay=d; io.observe(el); });
+      }else{ document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-    // ===== Carga/ensamble de datos =====
-    async function loadJSON(url){
-      // cache-bust para evitar JSON viejo
-      const sep = url.includes('?') ? '&' : '?';
-      const r = await fetch(url+sep+'t='+(Date.now()));
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    }
+      // ========= Parallax sutil =========
+      const bg=document.getElementById('bg-grid'); let rafId=null;
+      function parallax(e){
+        const x=(e.clientX / window.innerWidth - .5)*6;
+        const y=(e.clientY / window.innerHeight - .5)*6;
+        if(rafId) cancelAnimationFrame(rafId);
+        rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
+      }
+      if(!reduced) window.addEventListener('mousemove', parallax);
 
-    async function loadData(){
-      try{
-        const [distrib, camp] = await Promise.all([
-          loadJSON('datadistribucion.json'),
-          loadJSON('camprev.json')
-        ]);
-        rawDistrib=distrib; rawCamp=camp;
-        // Join por PEROP (distrib.C === camp.A)
-        dataFinal = rawCamp.reduce((acc,row)=>{
-          const op = rawDistrib.find(o=>String(o.C)===String(row.A));
-          if(op){
-            acc.push({
-              teamLeader: op.A || '',
-              nombre: op.B || '',
-              perop: row.A || '',
-              campania: row.B || '',
-              orders: Number(row.C)||0,
-              approve: String(row.E||'').toString(),
-              reject: String(row.M||'').toString(),
-              trash: String(row.O||'').toString(),
-              avg: Number(row.P)||0,
-              descanso: op.E || '',
-              turno: op.F || ''
-            });
-          }
-          return acc;
-        },[]);
-        buildFilters(dataFinal);
-        restoreState(); // restaura filtros/orden si existe
-        applyFiltersAndRender();
-        toast('✅ Datos cargados');
-      }catch(e){ console.error(e); toast('❌ No se pudieron cargar los JSON'); }
-    }
+      // ========= Reloj =========
+      function actualizarFechaHora(){
+        const ahora=new Date();
+        const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+        const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
+      }
+      actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // ===== Filtros =====
-    function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
-    function fillSelect(sel, values){
-      sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
-        values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join('');
-    }
+      // ========= Utilidades Selector =========
+      const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+      const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
+      const STATE_KEY='selector_apoyo_v2_state';
 
-    function buildFilters(rows){
-      const tls = uniqSorted(rows.map(r=>r.teamLeader));
-      const camps = uniqSorted(rows.map(r=>r.campania));
-      const descs = uniqSorted(rows.map(r=>r.descanso));
-      const turns = uniqSorted(rows.map(r=>r.turno));
-      fillSelect(document.getElementById('fltTL'), tls);
-      fillSelect(document.getElementById('fltCamp'), camps);
-      fillSelect(document.getElementById('fltDesc'), descs);
-      fillSelect(document.getElementById('fltTurno'), turns);
-    }
+      // ========= Estado =========
+      let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
 
-    // Parseo robusto de lista PEROP (tolera espacios, comas, ;, líneas vacías, solo dígitos)
-    function parsePeropList(raw){
-      if(!raw) return { full:new Set(), digits:new Set() };
-      const tokens = raw
-        .split(/[\n,;]+/g)
-        .map(s=>s.replace(/\s+/g,'').toUpperCase())
-        .filter(Boolean);
-
-      const full = new Set(tokens);
-      const digits = new Set(tokens.map(t=>{
-        const m = t.match(/(\d{3,})$/);
-        return m ? m[1] : '';
-      }).filter(Boolean));
-
-      return { full, digits };
-    }
-
-    function peropPass(peropClean, peropNum, {full,digits}, includeMode){
-      const inList = full.has(peropClean) || (peropNum && digits.has(peropNum));
-      return includeMode ? inList : !inList;
-    }
-
-    function applyFiltersAndRender(){
-      const vTL = norm(document.getElementById('fltTL').value);
-      const vCa = norm(document.getElementById('fltCamp').value);
-      const vDe = norm(document.getElementById('fltDesc').value);
-      const vTu = norm(document.getElementById('fltTurno').value);
-      const vQ  = norm(document.getElementById('fltSearch').value);
-      const includeMode = document.getElementById('toggleInclude').checked; // true=Incluir, false=Excluir
-      const lists = parsePeropList(document.getElementById('fltList').value);
-
-      filtered = dataFinal.filter(r=>{
-        const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
-
-        // Filtro de lista PEROP (si hay lista, aplica)
-        const peropClean = String(r.perop).replace(/\s+/g,'').toUpperCase();
-        const peropNum   = (peropClean.match(/(\d{3,})$/)||[])[1] || '';
-        const hasList    = (lists.full.size>0 || lists.digits.size>0);
-        const passList   = !hasList ? true : peropPass(peropClean, peropNum, lists, includeMode);
-
-        const passOthers = (!vTL||a===vTL) && (!vCa||d===vCa) && (!vDe||e===vDe) && (!vTu||f===vTu) &&
-                           (!vQ || b.includes(vQ) || c.includes(vQ));
-
-        return passList && passOthers;
-      });
-
-      // Orden acumulativo
-      if(sortState.length){
-        filtered.sort((x,y)=>{
-          for(const {col,mode} of sortState){
-            let A=x[col], B=y[col];
-            if(['orders','avg'].includes(col)){
-              A=Number(A)||0; B=Number(B)||0;
-            }else if(['approve','reject','trash'].includes(col)){
-              A=parseFloat(String(A).replace('%',''))||0; 
-              B=parseFloat(String(B).replace('%',''))||0;
-            }else{
-              A=String(A); B=String(B);
+      // ========= Carga de datos con cache-bust =========
+      async function loadJSON(url){
+        const sep=url.includes('?')?'&':'?';
+        const r=await fetch(url+sep+'t='+(Date.now()));
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      }
+      async function loadData(){
+        try{
+          const [distrib,camp]=await Promise.all([
+            loadJSON('datadistribucion.json'),
+            loadJSON('camprev.json')
+          ]);
+          rawDistrib=distrib; rawCamp=camp;
+          dataFinal=rawCamp.reduce((acc,row)=>{
+            const op=rawDistrib.find(o=>String(o.C)===String(row.A));
+            if(op){
+              acc.push({
+                teamLeader: op.A||'', nombre: op.B||'', perop: row.A||'', campania: row.B||'',
+                orders: Number(row.C)||0, approve: String(row.E||'').toString(),
+                reject: String(row.M||'').toString(), trash: String(row.O||'').toString(),
+                avg: Number(row.P)||0, descanso: op.E||'', turno: op.F||''
+              });
             }
-            const cmp = (typeof A==='number'&&typeof B==='number') 
-              ? (A-B) 
-              : A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
-            if(cmp!==0) return mode===1 ? -cmp : cmp; // 1=desc, 2=asc
-          }
-          return 0;
-        });
+            return acc;
+          },[]);
+          buildFilters(dataFinal);
+          restoreState();
+          applyFiltersAndRender();
+          toast('✅ Datos cargados');
+        }catch(e){ console.error(e); toast('❌ No se pudieron cargar los JSON'); }
       }
-      renderTable(filtered);
-      updateChips(filtered);
-      saveState();
-    }
 
-    // ===== Render =====
-    function colorPct(val, type){
-      const n=parseFloat(String(val).replace('%',''))||0;
-      if(type==="approve"){
-        if(n<=24) return "red";
-        if(n<=29) return "orange";
-        return "green";
-      }else if(type==="reject" || type==="trash"){
-        if(n<=7) return "green";
-        if(n<=14) return "orange";
-        return "red";
+      // ========= Filtros =========
+      function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
+      function fillSelect(sel, values){
+        sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
+          values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join('');
       }
-      return "";
-    }
+      function buildFilters(rows){
+        fillSelect(document.getElementById('fltTL'),   uniqSorted(rows.map(r=>r.teamLeader)));
+        fillSelect(document.getElementById('fltCamp'), uniqSorted(rows.map(r=>r.campania)));
+        fillSelect(document.getElementById('fltDesc'), uniqSorted(rows.map(r=>r.descanso)));
+        fillSelect(document.getElementById('fltTurno'),uniqSorted(rows.map(r=>r.turno)));
+      }
 
-    function renderTable(rows){
-      const tbody=document.querySelector('#tblCampRev tbody');
-      tbody.innerHTML='';
-      const frag=document.createDocumentFragment();
-      rows.forEach(r=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${r.teamLeader}</td>
-          <td>${r.nombre}</td>
-          <td class="perop" data-copy="${r.perop}">${r.perop}</td>
-          <td>${r.campania}</td>
-          <td>${r.orders}</td>
-          <td class="pct ${colorPct(r.approve,'approve')}">${r.approve}</td>
-          <td class="pct ${colorPct(r.reject,'reject')}">${r.reject}</td>
-          <td class="pct ${colorPct(r.trash,'trash')}">${r.trash}</td>
-          <td>$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
-          <td>${r.descanso}</td>
-          <td>${r.turno}</td>
-        `;
-        frag.appendChild(tr);
-      });
-      tbody.appendChild(frag);
-      document.getElementById('rowCounter').textContent = `Mostrando ${rows.length} registro${rows.length===1?'':'s'}`;
+      function parsePeropList(raw){
+        if(!raw) return { full:new Set(), digits:new Set() };
+        const tokens=raw.split(/[\n,;]+/g).map(s=>s.replace(/\s+/g,'').toUpperCase()).filter(Boolean);
+        const full=new Set(tokens);
+        const digits=new Set(tokens.map(t=>{ const m=t.match(/(\d{3,})$/); return m?m[1]:''; }).filter(Boolean));
+        return { full, digits };
+      }
+      function peropPass(peropClean, peropNum, {full,digits}, includeMode){
+        const inList=full.has(peropClean)||(peropNum && digits.has(peropNum));
+        return includeMode ? inList : !inList;
+      }
 
-      // Click-to-copy PEROP
-      tbody.querySelectorAll('td.perop').forEach(td=>{
-        td.title='Click para copiar PEROP';
-        td.addEventListener('click', async ()=>{
-          const v = td.dataset.copy || td.textContent.trim();
-          try{ await navigator.clipboard.writeText(v); toast('📋 PEROP copiado'); }
-          catch{ toast('❌ No se pudo copiar'); }
+      function applyFiltersAndRender(){
+        const vTL=norm(document.getElementById('fltTL').value);
+        const vCa=norm(document.getElementById('fltCamp').value);
+        const vDe=norm(document.getElementById('fltDesc').value);
+        const vTu=norm(document.getElementById('fltTurno').value);
+        const vQ =norm(document.getElementById('fltSearch').value);
+        const includeMode=document.getElementById('toggleInclude').checked;
+        const lists=parsePeropList(document.getElementById('fltList').value);
+
+        filtered=dataFinal.filter(r=>{
+          const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
+          const peropClean=String(r.perop).replace(/\s+/g,'').toUpperCase();
+          const peropNum=(peropClean.match(/(\d{3,})$/)||[])[1]||'';
+          const hasList=(lists.full.size>0||lists.digits.size>0);
+          const passList=!hasList ? true : peropPass(peropClean, peropNum, lists, includeMode);
+          const passOthers=(!vTL||a===vTL)&&(!vCa||d===vCa)&&(!vDe||e===vDe)&&(!vTu||f===vTu)&&(!vQ||b.includes(vQ)||c.includes(vQ));
+          return passList && passOthers;
         });
-      });
-    }
 
-    function updateChips(rows){
-      const tlSet=new Set(rows.map(r=>r.teamLeader).filter(Boolean));
-      const campSet=new Set(rows.map(r=>r.campania).filter(Boolean));
-      document.getElementById('chipRows').textContent = `${rows.length} fila${rows.length===1?'':'s'}`;
-      document.getElementById('chipTLs').textContent = `${tlSet.size} TL${tlSet.size===1?'':'s'} únicos`;
-      document.getElementById('chipCamps').textContent = `${campSet.size} campaña${campSet.size===1?'':'s'}`;
-    }
-
-    // ===== Orden 3 estados acumulativo =====
-    function resetHeadSortClasses(){
-      document.querySelectorAll('#headRow th').forEach(th=>{
-        th.classList.remove('sort-asc','sort-desc');
-        th.classList.add('sort-none');
-      });
-    }
-    function refreshHeadSortClasses(){
-      resetHeadSortClasses();
-      sortState.forEach(({col,mode})=>{
-        const thEl=document.querySelector(`#headRow th[data-col="${col}"]`);
-        if(thEl && mode){
-          thEl.classList.remove('sort-none');
-          thEl.classList.add(mode===1?'sort-desc':'sort-asc');
+        if(sortState.length){
+          filtered.sort((x,y)=>{
+            for(const {col,mode} of sortState){
+              let A=x[col], B=y[col];
+              if(['orders','avg'].includes(col)){ A=Number(A)||0; B=Number(B)||0; }
+              else if(['approve','reject','trash'].includes(col)){ A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0; }
+              else { A=String(A); B=String(B); }
+              const cmp=(typeof A==='number'&&typeof B==='number')?(A-B):A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
+              if(cmp!==0) return mode===1 ? -cmp : cmp;
+            }
+            return 0;
+          });
         }
+        renderTable(filtered);
+        updateChips(filtered);
+        saveState();
+      }
+
+      function colorPct(val,type){
+        const n=parseFloat(String(val).replace('%',''))||0;
+        if(type==="approve"){ if(n<=24) return "red"; if(n<=29) return "orange"; return "green"; }
+        if(type==="reject"||type==="trash"){ if(n<=7) return "green"; if(n<=14) return "orange"; return "red"; }
+        return "";
+      }
+
+      function renderTable(rows){
+        const tbody=document.querySelector('#tblCampRev tbody'); tbody.innerHTML='';
+        const frag=document.createDocumentFragment();
+        rows.forEach(r=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML=`
+            <td>${r.teamLeader}</td>
+            <td>${r.nombre}</td>
+            <td class="perop" data-copy="${r.perop}">${r.perop}</td>
+            <td>${r.campania}</td>
+            <td>${r.orders}</td>
+            <td class="pct ${colorPct(r.approve,'approve')}">${r.approve}</td>
+            <td class="pct ${colorPct(r.reject,'reject')}">${r.reject}</td>
+            <td class="pct ${colorPct(r.trash,'trash')}">${r.trash}</td>
+            <td>$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
+            <td>${r.descanso}</td>
+            <td>${r.turno}</td>`;
+          frag.appendChild(tr);
+        });
+        tbody.appendChild(frag);
+        document.getElementById('rowCounter').textContent=`Mostrando ${rows.length} registro${rows.length===1?'':'s'}`;
+        tbody.querySelectorAll('td.perop').forEach(td=>{
+          td.title='Click para copiar PEROP';
+          td.addEventListener('click', async ()=>{
+            const v=td.dataset.copy||td.textContent.trim();
+            try{ await navigator.clipboard.writeText(v); toast('📋 PEROP copiado'); }catch{ toast('❌ No se pudo copiar'); }
+          });
+        });
+      }
+
+      function updateChips(rows){
+        const tlSet=new Set(rows.map(r=>r.teamLeader).filter(Boolean));
+        const campSet=new Set(rows.map(r=>r.campania).filter(Boolean));
+        document.getElementById('chipRows').textContent=`${rows.length} fila${rows.length===1?'':'s'}`;
+        document.getElementById('chipTLs').textContent=`${tlSet.size} TL${tlSet.size===1?'':'s'} únicos`;
+        document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
+      }
+
+      function resetHeadSortClasses(){
+        document.querySelectorAll('#headRow th').forEach(th=>{
+          th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
+        });
+      }
+      function refreshHeadSortClasses(){
+        resetHeadSortClasses();
+        sortState.forEach(({col,mode})=>{
+          const thEl=document.querySelector(`#headRow th[data-col="${col}"]`);
+          if(thEl && mode){ thEl.classList.remove('sort-none'); thEl.classList.add(mode===1?'sort-desc':'sort-asc'); }
+        });
+      }
+      function cycleSort(th){
+        const col=th.dataset.col; if(!col) return;
+        const wasDesc=th.classList.contains('sort-desc'); const wasAsc=th.classList.contains('sort-asc');
+        let existing=sortState.find(s=>s.col===col);
+        if(!wasDesc && !wasAsc){ if(existing) existing.mode=1; else sortState.push({col,mode:1}); }
+        else if(wasDesc){ if(existing) existing.mode=2; else sortState.push({col,mode:2}); }
+        else if(wasAsc){ sortState=sortState.filter(s=>s.col!==col); }
+        refreshHeadSortClasses(); applyFiltersAndRender();
+      }
+
+      function exportCSV(){
+        if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
+        const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
+        const rows=filtered.map(r=>[r.teamLeader,r.nombre,r.perop,r.campania,r.orders,r.approve,r.reject,r.trash,r.avg,r.descanso,r.turno]);
+        const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+        const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=url; a.download=`camprev_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+      }
+      async function copyList(getter,label){
+        const arr=filtered.map(getter).filter(Boolean); if(!arr.length){ toast('ℹ️ Nada para copiar'); return; }
+        const text=arr.join('\n'); try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }catch{ toast('❌ No se pudo copiar'); }
+      }
+
+      function saveState(){
+        const state={
+          fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value,
+          fltSearch:fltSearch.value, fltList:fltList.value, includeMode:toggleInclude.checked, sortState
+        };
+        try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch{}
+      }
+      function restoreState(){
+        try{
+          const raw=localStorage.getItem(STATE_KEY); if(!raw) return;
+          const s=JSON.parse(raw);
+          fltTL.value=s.fltTL??''; fltCamp.value=s.fltCamp??''; fltDesc.value=s.fltDesc??''; fltTurno.value=s.fltTurno??'';
+          fltSearch.value=s.fltSearch??''; fltList.value=s.fltList??'';
+          toggleInclude.checked=!!s.includeMode; toggleLabel.textContent=s.includeMode?'Incluir lista':'Excluir lista';
+          sortState=Array.isArray(s.sortState)?s.sortState:[]; refreshHeadSortClasses();
+        }catch{}
+      }
+
+      // ===== Eventos UI =====
+      const fltTL=document.getElementById('fltTL');
+      const fltCamp=document.getElementById('fltCamp');
+      const fltDesc=document.getElementById('fltDesc');
+      const fltTurno=document.getElementById('fltTurno');
+      const fltSearch=document.getElementById('fltSearch');
+      const fltList=document.getElementById('fltList');
+      const toggleInclude=document.getElementById('toggleInclude');
+      const toggleLabel=document.getElementById('toggleLabel');
+
+      document.getElementById('btnReset').addEventListener('click',()=>{
+        fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value='';
+        fltSearch.value=''; fltList.value=''; toggleInclude.checked=true; toggleLabel.textContent='Incluir lista';
+        sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos');
       });
-    }
-    function cycleSort(th){
-      const col=th.dataset.col;
-      if(!col) return;
-      const wasDesc = th.classList.contains('sort-desc');
-      const wasAsc  = th.classList.contains('sort-asc');
-      let existing  = sortState.find(s=>s.col===col);
+      document.getElementById('btnExport').addEventListener('click', exportCSV);
+      document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
+      document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
 
-      if(!wasDesc && !wasAsc){
-        // none -> desc
-        if(existing) existing.mode=1; else sortState.push({col,mode:1});
-      }else if(wasDesc){
-        // desc -> asc
-        if(existing) existing.mode=2; else sortState.push({col,mode:2});
-      }else if(wasAsc){
-        // asc -> none (remover de la pila)
-        sortState = sortState.filter(s=>s.col!==col);
-      }
-      refreshHeadSortClasses();
-      applyFiltersAndRender();
-    }
+      const onInput=debounce(applyFiltersAndRender,160);
+      [fltTL,fltCamp,fltDesc,fltTurno].forEach(el=>el.addEventListener('change',applyFiltersAndRender));
+      [fltSearch,fltList].forEach(el=>el.addEventListener('input',onInput));
+      toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
+      document.querySelectorAll('#headRow th').forEach(th=>th.addEventListener('click',()=>cycleSort(th)));
 
-    // ===== Export / Copiar =====
-    function exportCSV(){
-      if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
-      const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
-      const rows=filtered.map(r=>[r.teamLeader,r.nombre,r.perop,r.campania,r.orders,r.approve,r.reject,r.trash,r.avg,r.descanso,r.turno]);
-      const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); // BOM
-      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`camprev_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    }
+      // Atajos
+      document.addEventListener('keydown',(e)=>{
+        if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); fltSearch.focus(); }
+        else if(e.key.toLowerCase()==='x'){ toggleInclude.checked=!toggleInclude.checked; toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); }
+      });
 
-    async function copyList(getter, label){
-      const arr = filtered.map(getter).filter(Boolean);
-      if(!arr.length){ toast('ℹ️ Nada para copiar'); return; }
-      const text = arr.join('\n');
-      try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }
-      catch{ toast('❌ No se pudo copiar'); }
-    }
-
-    // ===== Estado persistente =====
-    function saveState(){
-      const state = {
-        fltTL: document.getElementById('fltTL').value,
-        fltCamp: document.getElementById('fltCamp').value,
-        fltDesc: document.getElementById('fltDesc').value,
-        fltTurno: document.getElementById('fltTurno').value,
-        fltSearch: document.getElementById('fltSearch').value,
-        fltList: document.getElementById('fltList').value,
-        includeMode: document.getElementById('toggleInclude').checked,
-        sortState
-      };
-      try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch{}
-    }
-
-    function restoreState(){
-      try{
-        const raw = localStorage.getItem(STATE_KEY);
-        if(!raw) return;
-        const s = JSON.parse(raw);
-        document.getElementById('fltTL').value = s.fltTL ?? '';
-        document.getElementById('fltCamp').value = s.fltCamp ?? '';
-        document.getElementById('fltDesc').value = s.fltDesc ?? '';
-        document.getElementById('fltTurno').value = s.fltTurno ?? '';
-        document.getElementById('fltSearch').value = s.fltSearch ?? '';
-        document.getElementById('fltList').value = s.fltList ?? '';
-        document.getElementById('toggleInclude').checked = !!s.includeMode;
-        document.getElementById('toggleLabel').textContent = s.includeMode ? 'Incluir lista' : 'Excluir lista';
-        sortState = Array.isArray(s.sortState) ? s.sortState : [];
-        refreshHeadSortClasses();
-      }catch{}
-    }
-
-    // ===== Eventos =====
-    document.getElementById('btnReset').addEventListener('click',()=>{
-      document.getElementById('fltTL').value='';
-      document.getElementById('fltCamp').value='';
-      document.getElementById('fltDesc').value='';
-      document.getElementById('fltTurno').value='';
-      document.getElementById('fltSearch').value='';
-      document.getElementById('fltList').value='';
-      document.getElementById('toggleInclude').checked=true;
-      document.getElementById('toggleLabel').textContent='Incluir lista';
-      sortState=[]; // limpiar orden acumulativo
-      resetHeadSortClasses();
-      applyFiltersAndRender();
-      toast('🔄 Filtros restablecidos');
-    });
-
-    document.getElementById('btnExport').addEventListener('click',exportCSV);
-    document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
-    document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
-
-    const onInput = debounce(applyFiltersAndRender, 160);
-    ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>{
-      document.getElementById(id).addEventListener('change',applyFiltersAndRender);
-    });
-    ['fltSearch','fltList'].forEach(id=>{
-      document.getElementById(id).addEventListener('input',onInput);
-    });
-
-    document.getElementById('toggleInclude').addEventListener('change',()=>{
-      document.getElementById('toggleLabel').textContent = document.getElementById('toggleInclude').checked ? 'Incluir lista' : 'Excluir lista';
-      applyFiltersAndRender();
-    });
-
-    document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
-
-    // Atajos: Ctrl/Cmd + K = focus búsqueda, X = alternar incluir/excluir
-    document.addEventListener('keydown',(e)=>{
-      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){
-        e.preventDefault();
-        document.getElementById('fltSearch').focus();
-      }else if(e.key.toLowerCase()==='x'){
-        const t=document.getElementById('toggleInclude');
-        t.checked=!t.checked;
-        document.getElementById('toggleLabel').textContent = t.checked ? 'Incluir lista' : 'Excluir lista';
-        applyFiltersAndRender();
-      }
-    });
-
-    // Init
-    (function init(){
+      // Init
       resetHeadSortClasses();
       loadData();
-    })();
-  </script>
-</body>
+
+      // Seguridad: gcLogout debe estar expuesto por guard.js
+      if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido en guard.js'); }
+      // guard.js hará: document.documentElement.style.visibility='visible' al validar sesión.
+    </script>
+  </body>
 </html>
