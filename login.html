@@ -10,50 +10,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- ⚠️ Página pública: permitir mostrar login sin sesión -->
+    <!-- ⚠️ Página pública: mostrar login sin sesión -->
     <script>window.GC_PUBLIC_PAGE = true;</script>
 
-    <!-- 🔒 Ocultar hasta que guard.js decida (aquí la mostrará por ser pública) -->
+    <!-- 🔒 Ocultar hasta que guard.js lo permita -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
     <style>
       /* =========================
-         DESIGN SYSTEM — v2.0
+         DESIGN SYSTEM — v2.0 (light core for login)
          ========================= */
       :root{
         --radius:16px;
         --radius-sm:12px;
         --radius-xs:10px;
 
-        /* Tipografía */
         --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 
-        /* Duraciones y curvas */
         --t-fast:.15s;
         --t-med:.25s;
         --t-slow:.6s;
         --curve:cubic-bezier(.2,.7,.2,1);
 
-        /* Elevación */
         --elev-1:0 6px 20px rgba(0,0,0,.25);
-        --elev-2:0 12px 34px rgba(0,0,0,.35);
       }
 
-      /* Tema oscuro (default) */
       [data-theme="dark"]{
         --bg-app:#070b1a;
-        --bg-aside:#0c1228;
         --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
         --txt:#e9f1ff;
         --txt-muted:#b8c6de;
         --stroke:rgba(255,255,255,.10);
-
         --primary:#5b8bff;
         --accent:#7ae3ff;
-
-        --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
       }
 
       *{box-sizing:border-box}
@@ -65,118 +56,19 @@
           radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
           var(--bg-app);
         overflow-x:hidden;
-      }
-
-      /* Accesibilidad: respetar reducción de movimiento */
-      @media (prefers-reduced-motion:no-preference){
-        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
-        .reveal.show{opacity:1; transform:none}
-      }
-
-      /* ====== Sidebar (idéntica) ====== */
-      aside{
-        position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
-        backdrop-filter:saturate(120%) blur(8px);
-        background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
-        border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; padding:18px 14px; gap:12px; overflow:auto;
-      }
-
-      .brand{
-        display:flex; align-items:center; gap:10px; padding:10px; border-radius:var(--radius);
-        border:1px solid var(--stroke);
-        background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        text-decoration:none; color:var(--txt);
-      }
-      .brand img{
-        width:28px; height:28px; object-fit:contain; border-radius:8px; background:#0000;
-        filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));
-      }
-      .brand span{
-        font-family:var(--font-title); font-size:18px; font-weight:700; letter-spacing:.2px;
-      }
-
-      nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
-      .nav-group{ border:1px solid var(--stroke); border-radius:14px; overflow:hidden; background:color-mix(in oklab, var(--bg-aside) 92%, transparent) }
-      .nav-head{
-        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
-        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
-      }
-      .nav-head .chev{ transition:transform var(--t-med) var(--curve); }
-      .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
-
-      .nav-body{ overflow:hidden; transition: grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
-      .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
-      .nav-body-inner{ min-height:0; padding:6px }
-
-      .nav-item{
-        display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:10px;
-        text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
-        transition:background var(--t-med) ease, transform var(--t-fast) ease;
-      }
-      .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      .nav-item.active{
-        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
-        border-color:var(--stroke);
-      }
-
-      .nav-indicator{
-        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
-        background:linear-gradient(180deg, var(--primary), var(--accent));
-        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
-        transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
-        pointer-events:none;
-      }
-
-      .spacer{flex:1}
-
-      .role-card{
-        display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px;
-        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
-      }
-      .role-dot{
-        width:14px; height:14px; border-radius:50%;
-        box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25);
-      }
-      .role-text small{ color:var(--txt-muted) }
-
-      .logout{
-        width:100%; border:1px solid var(--stroke);
-        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
-        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
-        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
-      }
-      .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
-      .logout[disabled]{opacity:.5; cursor:not-allowed}
-
-      /* ====== Main ====== */
-      main{ margin-left:280px; padding:24px 22px 40px; }
-
-      /* Hero */
-      .hero{
-        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
-        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        border:1px solid var(--stroke); overflow:hidden;
-      }
-      .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
-      .hero p{margin:0; color:var(--txt-muted); font-size:14px}
-      .pill{
-        display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
-        background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 50%, white));
-        color:#0b1022; font-weight:700; border:1px solid color-mix(in oklab, var(--accent) 65%, white);
-        box-shadow:0 8px 24px color-mix(in oklab, var(--accent) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.6);
-      }
-      .blob{
-        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
-        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
-        filter:blur(18px); pointer-events:none; transform:translateZ(0);
-      }
-
-      /* ====== LOGIN CARD dentro del ecosistema ====== */
-      .login-wrap{
         display:grid; place-items:center;
-        padding:18px; margin-top:16px;
       }
+
+      /* Fondo cuadriculado sutil */
+      #bg-grid{
+        position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+        background:
+          linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+          linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
+      }
+
+      /* ====== LOGIN CARD ====== */
+      .login-wrap{ width:100%; padding:24px; display:grid; place-items:center; }
       .login-card{
         width:100%; max-width:430px;
         background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius);
@@ -213,14 +105,10 @@
       .msg.err{color:#f87171}
       .msg.ok{color:#22c55e}
 
-      /* Grid general para otras tarjetas (no usamos aquí, pero deja consistente) */
-      .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(2, minmax(290px, 1fr))}
-
-      /* Responsive */
-      @media (max-width:1080px){
-        main{margin-left:0; padding:16px}
-        aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
-        .grid{grid-template-columns:1fr}
+      /* Accesibilidad animaciones */
+      @media (prefers-reduced-motion:no-preference){
+        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
+        .reveal.show{opacity:1; transform:none}
       }
 
       /* Spinner */
@@ -230,174 +118,43 @@
     </style>
   </head>
   <body>
-    <!-- Fondo en cuadrícula sutil -->
-    <div id="bg-grid" aria-hidden="true" style="
-      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
-      background:
-        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
-        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
-    </div>
+    <div id="bg-grid" aria-hidden="true"></div>
 
-    <!-- SIDEBAR (idéntica al ecosistema) -->
-    <aside class="reveal">
-      <a class="brand" href="./index.html" id="brandLink">
-        <img id="brandLogo" src="./images/logogestioncenter.webp" alt="Logo Gestión Center">
-        <span>Gestión Center</span>
-      </a>
+    <!-- SOLO LOGIN (sin barra superior, sin sidebar, sin contacto) -->
+    <main class="login-wrap">
+      <article class="login-card reveal">
+        <h2>Inicia sesión</h2>
+        <p>Usa tu cuenta corporativa o Google.</p>
 
-      <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
-        <div class="nav-indicator" aria-hidden="true"></div>
+        <form id="form" onsubmit="return false;">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="email" required/>
 
-        <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
+          <label for="pass">Contraseña</label>
+          <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required/>
 
-        <section class="nav-group" data-key="grp-reportes">
-          <button class="nav-head"><span class="chev">▾</span> 📊 Reportes</button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="./estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
-            <a href="./opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
-            <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
-          </div></div>
-        </section>
+          <button id="btnEmail" class="btn primary" onclick="loginEmail()">
+            <span>Entrar con Email</span>
+          </button>
 
-        <section class="nav-group" data-key="grp-operaciones">
-          <button class="nav-head"><span class="chev">▾</span> 🛠️ Operaciones</button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
-            <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
-            <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
-            <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
-          </div></div>
-        </section>
+          <div style="height:10px"></div>
 
-        <section class="nav-group" data-key="grp-cobertura">
-          <button class="nav-head"><span class="chev">▾</span> 🌎 Cobertura</button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="./cobertura.html" class="nav-item">🗺️ <span>Mapa de cobertura</span></a>
-            <a href="./newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
-          </div></div>
-        </section>
+          <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">
+            <span>Entrar con Google</span>
+          </button>
 
-        <section class="nav-group" data-key="grp-utils">
-          <button class="nav-head"><span class="chev">▾</span> 🧩 Utilidades</button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
-            <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
-            <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
-          </div></div>
-        </section>
-      </nav>
-
-      <div class="spacer"></div>
-
-      <!-- RANGO (en login mostramos Invitado) -->
-      <div class="role-card" id="roleCard" title="Rango del usuario">
-        <div class="role-dot" id="roleDot"></div>
-        <div class="role-text">
-          <strong id="roleName">Invitado</strong><br>
-          <small id="roleDesc">Acceso limitado</small>
-        </div>
-      </div>
-
-      <!-- En login, el botón Salir queda deshabilitado si no hay sesión -->
-      <button class="logout" id="btnLogout" onclick="gcLogout()" disabled>Salir</button>
-    </aside>
-
-    <!-- CONTENIDO -->
-    <main>
-      <!-- HERO -->
-      <section class="hero reveal">
-        <div class="blob" aria-hidden="true"></div>
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
-          <div>
-            <h1>Acceso a Gestión Center</h1>
-            <p>Inicia sesión para entrar al ecosistema ✨</p>
+          <div class="row" style="margin-top:8px">
+            <a class="link" style="flex:1" onclick="signUp()">Crear cuenta (prueba)</a>
+            <a class="link" style="flex:1" onclick="resetPass()">¿Olvidaste tu contraseña?</a>
           </div>
-          <div class="pill">Página pública • Login</div>
-        </div>
-      </section>
 
-      <!-- LOGIN CARD -->
-      <section class="login-wrap reveal" style="--delay:.08s">
-        <article class="login-card">
-          <h2>Inicia sesión</h2>
-          <p>Usa tu cuenta corporativa o Google.</p>
-
-          <form id="form" onsubmit="return false;">
-            <label for="email">Email</label>
-            <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="email" required/>
-
-            <label for="pass">Contraseña</label>
-            <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required/>
-
-            <button id="btnEmail" class="btn primary" onclick="loginEmail()">
-              <span>Entrar con Email</span>
-            </button>
-
-            <div style="height:10px"></div>
-
-            <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">
-              <span>Entrar con Google</span>
-            </button>
-
-            <div class="row" style="margin-top:8px">
-              <a class="link" style="flex:1" onclick="signUp()">Crear cuenta (prueba)</a>
-              <a class="link" style="flex:1" onclick="resetPass()">¿Olvidaste tu contraseña?</a>
-            </div>
-
-            <div id="msg" class="msg" role="alert" aria-live="polite"></div>
-          </form>
-        </article>
-      </section>
-
-      <!-- CONTACTO -->
-      <section id="contacto" class="reveal" style="--delay:.16s">
-        <article class="login-card">
-          <h2>Contacto</h2>
-          <p class="muted" style="margin:.4rem 0 0">
-            ¿Ideas para mejorar? Escríbeme y lo iteramos :3
-          </p>
-        </article>
-      </section>
+          <div id="msg" class="msg" role="alert" aria-live="polite"></div>
+        </form>
+      </article>
     </main>
 
     <script type="module">
-      // ========= Activo + indicador =========
-      const items = [...document.querySelectorAll('nav .nav-item')];
-      const indicator = document.querySelector('.nav-indicator');
-      function setActive(){
-        const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-        let active = items[0];
-        items.forEach(a=>{
-          const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
-          if(href && href === current) active = a;
-          a.classList.toggle('active', a===active);
-          a.toggleAttribute('aria-current', a===active ? 'page' : false);
-        });
-        const nav = document.getElementById('gc-nav');
-        const navRect = nav.getBoundingClientRect();
-        const rect = active.getBoundingClientRect();
-        const y = rect.top - navRect.top + nav.scrollTop;
-        indicator.style.height = rect.height + 'px';
-        indicator.style.transform = `translateY(${y}px)`;
-      }
-      setActive();
-      const navEl = document.getElementById('gc-nav');
-      navEl.addEventListener('scroll', setActive);
-      window.addEventListener('resize', setActive);
-
-      // ========= Grupos colapsables con memoria =========
-      document.querySelectorAll('.nav-group').forEach(g=>{
-        const key=g.dataset.key, head=g.querySelector('.nav-head');
-        const saved=localStorage.getItem(key);
-        if(saved==='0') g.classList.add('is-collapsed');
-        head.addEventListener('click', ()=>{
-          g.classList.toggle('is-collapsed');
-          localStorage.setItem(key, g.classList.contains('is-collapsed')?'0':'1');
-          setActive();
-        });
-      });
-
-      // ========= Reveal al scroll =========
+      // ===== Reveal simple =====
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
         const io = new IntersectionObserver((entries)=>{
@@ -405,15 +162,12 @@
             if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); }
           }
         }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
-        document.querySelectorAll('.reveal').forEach(el=>{
-          const delay = el.style.getPropertyValue('--delay') || '0s';
-          el.style.transitionDelay = delay; io.observe(el);
-        });
+        document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
       } else {
         document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
       }
 
-      // ========= Parallax sutil del fondo =========
+      // Parallax sutil del fondo (opcional)
       const bg=document.getElementById('bg-grid');
       let rafId=null;
       function parallax(e){
@@ -423,37 +177,6 @@
         rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
       }
       if(!reduced) window.addEventListener('mousemove', parallax);
-
-      // ========= RANGO (en login mostramos Invitado por default) =========
-      const ROLE_STYLE = {
-        'owner':   { name:'Owner',       desc:'Control total',      color:'#f59e0b', gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)' },
-        'admin':   { name:'Admin',       desc:'Administración',     color:'#f59e0b', gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)' },
-        'supervisor':{name:'Supervisor', desc:'Lidera TLs',         color:'#5b8bff', gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)' },
-        'team leader':{name:'Team Leader',desc:'Lidera equipo',     color:'#a78bfa', gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)' },
-        'analista': { name:'Analista',    desc:'Calidad / Datos',    color:'#22d3ee', gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)' },
-        'calidad':  { name:'Calidad',     desc:'Auditoría',          color:'#22d3ee', gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)' },
-        'operador': { name:'Operador',    desc:'Ventas / Gestión',   color:'#22c55e', gradient:'linear-gradient(135deg,#22c55e,#16a34a)' },
-        'invitado': { name:'Invitado',    desc:'Acceso limitado',    color:'#94a3b8', gradient:'linear-gradient(135deg,#94a3b8,#64748b)' },
-      };
-      function applyRoleUI(roleRaw='Invitado'){
-        const r = roleRaw.toLowerCase();
-        const key = Object.keys(ROLE_STYLE).find(k=>r.includes(k)) || 'invitado';
-        const cfg = ROLE_STYLE[key];
-        const dot = document.getElementById('roleDot');
-        const name= document.getElementById('roleName');
-        const desc= document.getElementById('roleDesc');
-        dot.style.background = cfg.gradient;
-        dot.style.boxShadow = `0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
-        name.textContent = cfg.name;
-        desc.textContent = cfg.desc;
-        localStorage.setItem('gc-role', cfg.name);
-      }
-      applyRoleUI('Invitado');
-
-      // Deshabilitar "Salir" si no hay sesión (guard.js define gcLogout si hay auth)
-      if (typeof window.gcLogout !== 'function') {
-        document.getElementById('btnLogout')?.setAttribute('disabled','true');
-      }
     </script>
 
     <!-- ====== AUTH (Firebase) ====== -->
@@ -468,7 +191,7 @@
         getFirestore, doc, getDoc, setDoc, serverTimestamp
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      // ===== CONFIG REAL =====
+      // ===== CONFIG =====
       const firebaseConfig = {
         apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
         authDomain: "gestioncenterdata.firebaseapp.com",
@@ -486,14 +209,14 @@
 
       try { await setPersistence(auth, browserLocalPersistence); } catch(e) {}
 
-      // ===== Helpers DOM =====
+      // DOM helpers
       const $     = (id)=>document.getElementById(id);
       const msgEl = $("msg");
       const btnEmail  = $("btnEmail");
       const btnGoogle = $("btnGoogle");
       const form = $("form");
 
-      // ===== UX helpers =====
+      // UX helpers
       function setLoading(el, loading=true){
         if(!el) return;
         if(loading){
@@ -514,7 +237,7 @@
         msgEl.className = "msg " + (type === "ok" ? "ok" : "err");
       }
 
-      // ===== Base path & redirección segura =====
+      // Base path & redirección segura
       function getBase(){
         const parts = location.pathname.split("/").filter(Boolean);
         if(parts.length >= 2 && location.hostname.endsWith(".github.io")){
@@ -541,7 +264,7 @@
         location.replace(dest);
       }
 
-      // ===== Firestore bootstrap =====
+      // Firestore bootstrap
       async function ensureUserDoc(user){
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
@@ -555,7 +278,7 @@
         }
       }
 
-      // ===== Mapeo de errores Firebase -> ES =====
+      // Errores a ES
       const ERR_MAP = {
         "auth/invalid-email": "El email no es válido.",
         "auth/missing-password": "Ingresa tu contraseña.",
@@ -573,7 +296,7 @@
         return ERR_MAP[code] || (e && e.message) || "Ocurrió un error. Intenta de nuevo.";
       }
 
-      // ===== Actions =====
+      // Actions
       window.loginEmail = async ()=>{
         showMsg("");
         const email = $("email").value.trim();
@@ -632,46 +355,13 @@
         if(ev.key==="Enter"){ ev.preventDefault(); loginEmail(); }
       });
 
-      // ===== Estado de auth: si YA estás logueado, no te quedes en login =====
+      // Estado de auth
       onAuthStateChanged(auth, (user)=>{
-        if(user){ 
-          // Habilitar botón salir y exponer gcLogout si guard.js lo tiene
-          document.getElementById('btnLogout')?.removeAttribute('disabled');
-          goHome();
-        } else {
-          document.getElementById('btnLogout')?.setAttribute('disabled','true');
-        }
+        if(user){ goHome(); }
       });
 
-      // (Opcional) Exponer logout por consola
+      // (Opcional) logout por consola
       window._logout = ()=>signOut(auth);
-    </script>
-
-    <!-- 🔧 Normalizador de rutas (GitHub Pages de proyecto / dominio propio) -->
-    <script>
-    (() => {
-      const isGhProject = location.hostname.endsWith('github.io');
-      const PROJECT_SLUG = 'Gestion-Center'; // ¡respeta mayúsculas!
-      const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
-
-      // Normalizar HREF de enlaces del nav
-      document.querySelectorAll('nav a.nav-item[href], .brand[href]').forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
-        const clean = href.replace(/^\.?\//, '');
-        a.setAttribute('href', base + clean);
-      });
-
-      // Normalizar SRC del logo para GH Pages
-      const logo = document.getElementById('brandLogo');
-      if (logo) {
-        let src = logo.getAttribute('src') || './images/logogestioncenter.webp';
-        if (!/^https?:\/\//i.test(src)) {
-          src = src.replace(/^\.?\//, '');
-          logo.setAttribute('src', base + src);
-        }
-      }
-    })();
     </script>
   </body>
 </html>
