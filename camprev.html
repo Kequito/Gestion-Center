@@ -38,13 +38,35 @@
 
       *{box-sizing:border-box}
       html,body{height:100%}
+
+      /* ===== Fondo continuo + luces + ruido anti-banding ===== */
       body{
-        margin:0; font-family:var(--font-body); color:var(--txt);
+        margin:0;
+        font-family:var(--font-body);
+        color:var(--txt);
         background:
-          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
-          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
-          var(--bg-app);
+          linear-gradient(180deg, #070b1a 0%, #0a1022 40%, #0b1329 100%);
         overflow-x:hidden;
+      }
+      body::before{
+        content:"";
+        position:fixed; inset:-20% -10% -20% -10%;
+        z-index:-2; pointer-events:none;
+        background:
+          radial-gradient(1200px 1200px at 12% -10%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 65%),
+          radial-gradient(1000px 1000px at 92% 0%,  color-mix(in oklab, var(--accent) 28%,  transparent), transparent 60%);
+        filter:blur(18px) saturate(110%);
+      }
+      body::after{
+        content:"";
+        position:fixed; inset:0;
+        z-index:-1; pointer-events:none; opacity:.05; mix-blend-mode:soft-light;
+        background-image: url('data:image/svg+xml;utf8,\
+        <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140">\
+          <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>\
+          <rect width="100%" height="100%" filter="url(%23n)" opacity="0.35"/>\
+        </svg>');
+        background-size: 180px 180px;
       }
 
       @media (prefers-reduced-motion:no-preference){
@@ -52,7 +74,7 @@
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ====== Sidebar (idéntica) ====== */
+      /* ====== Sidebar ====== */
       aside{
         position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
@@ -114,14 +136,12 @@
         filter:blur(18px); pointer-events:none; transform:translateZ(0);
       }
 
-      /* ====== Cards/Contenedores ====== */
+      /* ====== Controles ====== */
       .card{
         position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
         background:var(--bg-card); border:1px solid var(--stroke);
         box-shadow:var(--elev-1); transform:translateZ(0);
       }
-
-      /* ====== CONTROLES SELECTOR 2.0 ====== */
       .filters{
         display:grid; grid-template-columns:repeat(5, minmax(180px,1fr)); gap:12px; align-items:end;
         background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius); padding:12px; margin:10px 0 12px;
@@ -180,15 +200,15 @@
     </style>
   </head>
   <body>
-    <!-- Fondo cuadrícula -->
+    <!-- Patrón de cuadrícula sutil (parallax): opcional, se mantiene -->
     <div id="bg-grid" aria-hidden="true" style="
-      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+      position:fixed; inset:0; z-index:-3; opacity:.07; pointer-events:none;
       background:
         linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
         linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
     </div>
 
-    <!-- SIDEBAR (idéntica al ecosistema) -->
+    <!-- SIDEBAR -->
     <aside class="reveal">
       <div class="logo">🧭 Gestión Center</div>
       <nav role="navigation" aria-label="Navegación principal">
@@ -198,7 +218,7 @@
         <a href="distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
         <a href="estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
         <a href="cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
-        <a href="camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+        <a href="camprev.html" class="nav-item active" aria-current="page">👥 <span>Selector de Apoyo Ver 2.0</span></a>
         <a href="postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
         <a href="opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
         <a href="pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
@@ -219,7 +239,7 @@
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
           <div>
             <h1>👥 Selector de Apoyo — Ver 2.0</h1>
-            <p>Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> con filtros, orden acumulativo y lista PEROP.</p>
+            <p>Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> con filtros combinables, orden acumulativo y lista PEROP.</p>
           </div>
           <div class="chip" id="fechaHora">—</div>
         </div>
@@ -342,7 +362,7 @@ PEROP1AM-39726
         document.querySelectorAll('.reveal').forEach(el=>{ const d=el.style.getPropertyValue('--delay')||'0s'; el.style.transitionDelay=d; io.observe(el); });
       }else{ document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // ========= Parallax sutil =========
+      // ========= Parallax sutil (grid) =========
       const bg=document.getElementById('bg-grid'); let rafId=null;
       function parallax(e){
         const x=(e.clientX / window.innerWidth - .5)*6;
@@ -363,7 +383,10 @@ PEROP1AM-39726
 
       // ========= Utilidades Selector =========
       const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
-      const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      const norm = s => String(s||'')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // sin tildes
+        .replace(/\s+/g,' ')                             // colapsar espacios
+        .trim().toLowerCase();
       const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
       const STATE_KEY='selector_apoyo_v2_state';
 
@@ -415,7 +438,6 @@ PEROP1AM-39726
         fillSelect(document.getElementById('fltDesc'), uniqSorted(rows.map(r=>r.descanso)));
         fillSelect(document.getElementById('fltTurno'),uniqSorted(rows.map(r=>r.turno)));
       }
-
       function parsePeropList(raw){
         if(!raw) return { full:new Set(), digits:new Set() };
         const tokens=raw.split(/[\n,;]+/g).map(s=>s.replace(/\s+/g,'').toUpperCase()).filter(Boolean);
@@ -428,38 +450,66 @@ PEROP1AM-39726
         return includeMode ? inList : !inList;
       }
 
+      // ======= FIX: filtros combinables + búsqueda multi-palabra =======
       function applyFiltersAndRender(){
-        const vTL=norm(document.getElementById('fltTL').value);
-        const vCa=norm(document.getElementById('fltCamp').value);
-        const vDe=norm(document.getElementById('fltDesc').value);
-        const vTu=norm(document.getElementById('fltTurno').value);
-        const vQ =norm(document.getElementById('fltSearch').value);
-        const includeMode=document.getElementById('toggleInclude').checked;
-        const lists=parsePeropList(document.getElementById('fltList').value);
+        const vTL = norm(document.getElementById('fltTL').value.trim());
+        const vCa = norm(document.getElementById('fltCamp').value.trim());
+        const vDe = norm(document.getElementById('fltDesc').value.trim());
+        const vTu = norm(document.getElementById('fltTurno').value.trim());
 
-        filtered=dataFinal.filter(r=>{
-          const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
-          const peropClean=String(r.perop).replace(/\s+/g,'').toUpperCase();
-          const peropNum=(peropClean.match(/(\d{3,})$/)||[])[1]||'';
-          const hasList=(lists.full.size>0||lists.digits.size>0);
-          const passList=!hasList ? true : peropPass(peropClean, peropNum, lists, includeMode);
-          const passOthers=(!vTL||a===vTL)&&(!vCa||d===vCa)&&(!vDe||e===vDe)&&(!vTu||f===vTu)&&(!vQ||b.includes(vQ)||c.includes(vQ));
-          return passList && passOthers;
+        const qRaw = norm(document.getElementById('fltSearch').value);
+        const qTokens = qRaw.split(/\s+/).filter(Boolean); // TODAS deben coincidir
+
+        const includeMode = document.getElementById('toggleInclude').checked;
+        const lists = parsePeropList(document.getElementById('fltList').value);
+
+        filtered = dataFinal.filter(r=>{
+          const a = norm(r.teamLeader);
+          const b = norm(r.nombre);
+          const c = norm(r.perop);
+          const d = norm(r.campania);
+          const e = norm(r.descanso);
+          const f = norm(r.turno);
+
+          // 1) Filtros exactos obligatorios
+          if (vTL && a !== vTL) return false;
+          if (vCa && d !== vCa) return false;
+          if (vDe && e !== vDe) return false;
+          if (vTu && f !== vTu) return false;
+
+          // 2) Lista PEROP (incluye/excluye)
+          const peropClean = String(r.perop).replace(/\s+/g,'').toUpperCase();
+          const peropNum   = (peropClean.match(/(\d{3,})$/)||[])[1] || '';
+          const hasList    = (lists.full.size>0 || lists.digits.size>0);
+          if (hasList){
+            const inList = lists.full.has(peropClean) || (peropNum && lists.digits.has(peropNum));
+            if (includeMode && !inList) return false;
+            if (!includeMode &&  inList) return false;
+          }
+
+          // 3) Búsqueda: todas las palabras deben estar en NOMBRE o PEROP
+          if (qTokens.length){
+            const ok = qTokens.every(tok => b.includes(tok) || c.includes(tok));
+            if (!ok) return false;
+          }
+          return true;
         });
 
-        if(sortState.length){
+        // Orden acumulativo (igual)
+        if (sortState.length){
           filtered.sort((x,y)=>{
-            for(const {col,mode} of sortState){
+            for (const {col,mode} of sortState){
               let A=x[col], B=y[col];
-              if(['orders','avg'].includes(col)){ A=Number(A)||0; B=Number(B)||0; }
-              else if(['approve','reject','trash'].includes(col)){ A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0; }
+              if (['orders','avg'].includes(col)){ A=Number(A)||0; B=Number(B)||0; }
+              else if (['approve','reject','trash'].includes(col)){ A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0; }
               else { A=String(A); B=String(B); }
               const cmp=(typeof A==='number'&&typeof B==='number')?(A-B):A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
-              if(cmp!==0) return mode===1 ? -cmp : cmp;
+              if (cmp!==0) return mode===1 ? -cmp : cmp;
             }
             return 0;
           });
         }
+
         renderTable(filtered);
         updateChips(filtered);
         saveState();
@@ -471,7 +521,6 @@ PEROP1AM-39726
         if(type==="reject"||type==="trash"){ if(n<=7) return "green"; if(n<=14) return "orange"; return "red"; }
         return "";
       }
-
       function renderTable(rows){
         const tbody=document.querySelector('#tblCampRev tbody'); tbody.innerHTML='';
         const frag=document.createDocumentFragment();
@@ -501,7 +550,6 @@ PEROP1AM-39726
           });
         });
       }
-
       function updateChips(rows){
         const tlSet=new Set(rows.map(r=>r.teamLeader).filter(Boolean));
         const campSet=new Set(rows.map(r=>r.campania).filter(Boolean));
@@ -510,6 +558,7 @@ PEROP1AM-39726
         document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
       }
 
+      // ===== Orden 3 estados =====
       function resetHeadSortClasses(){
         document.querySelectorAll('#headRow th').forEach(th=>{
           th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
@@ -532,6 +581,7 @@ PEROP1AM-39726
         refreshHeadSortClasses(); applyFiltersAndRender();
       }
 
+      // ===== Exportar / Copiar =====
       function exportCSV(){
         if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
         const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
@@ -546,6 +596,7 @@ PEROP1AM-39726
         const text=arr.join('\n'); try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }catch{ toast('❌ No se pudo copiar'); }
       }
 
+      // ===== Persistencia =====
       function saveState(){
         const state={
           fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value,
