@@ -76,7 +76,7 @@
     getFirestore, doc, getDoc, setDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // ===== TU CONFIG (la que me pasaste) =====
+  // ===== CONFIG =====
   const firebaseConfig = {
     apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
     authDomain: "gestioncenterdata.firebaseapp.com",
@@ -91,45 +91,28 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db   = getFirestore(app);
-  auth.languageCode = 'es';
-  // Mantener sesión al recargar
-  await setPersistence(auth, browserLocalPersistence).catch(()=>{ /* ignore */ });
+  await setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
   const $ = (id)=>document.getElementById(id);
   const loginView = $("loginView");
-  const appView   = $("appView");
+  const appView   = $("appView"); // <- si decides eliminar la sección APP, quita estas dos líneas y cualquier 'show("app")'
   const msg = $("msg");
 
-  // ==== Auth actions ====
-  window.loginEmail = async ()=>{
-    msg.textContent="";
-    try{
-      const email = $("email").value.trim();
-      const pass  = $("pass").value.trim();
-      await signInWithEmailAndPassword(auth, email, pass);
-    }catch(e){ msg.textContent = e.message; }
-  };
+  // ===== Helpers de navegación (detecta base del repo en GitHub Pages) =====
+  function getBase(){
+    const parts = location.pathname.split('/').filter(Boolean);
+    return parts.length ? `/${parts[0]}/` : '/';
+  }
+  function defaultHome(){ return getBase() + "index.html"; }
+  function goHome(){
+    const to = localStorage.getItem("redirectAfterLogin")
+           || new URLSearchParams(location.search).get("to")
+           || defaultHome();
+    try { localStorage.removeItem("redirectAfterLogin"); } catch {}
+    location.replace(to);
+  }
 
-  window.loginGoogle = async ()=>{
-    msg.textContent="";
-    try{
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    }catch(e){ msg.textContent = e.message; }
-  };
-
-  window.signUp = async ()=>{
-    msg.textContent="";
-    try{
-      const email = $("email").value.trim();
-      const pass  = $("pass").value.trim();
-      await createUserWithEmailAndPassword(auth, email, pass);
-    }catch(e){ msg.textContent = e.message; }
-  };
-
-  window.logout = ()=> signOut(auth);
-
-  // ==== Firestore: crear doc /users/{uid} si no existe ====
+  // ===== Crear doc /users/{uid} si no existe (opcional mantener) =====
   async function ensureUserDoc(user){
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
@@ -138,46 +121,52 @@
         email: user.email || null,
         displayName: user.displayName || "",
         createdAt: serverTimestamp(),
-        perop: "",
-        teamId: ""
-        // OJO: el rango NO se guarda aquí; lo pondremos como custom claim en la Fase 2.
+        perop: "", teamId: ""
       });
     }
   }
 
-  // ==== UI helpers ====
-  function show(view){
-    if(view==="login"){ loginView.classList.remove("hidden"); appView.classList.add("hidden"); }
-    else { loginView.classList.add("hidden"); appView.classList.remove("hidden"); }
-  }
+  // ===== Auth actions (con redirección al final) =====
+  window.loginEmail = async ()=>{
+    msg.textContent="";
+    const email = $("email").value.trim();
+    const pass  = $("pass").value.trim();
+    try{
+      const { user } = await signInWithEmailAndPassword(auth, email, pass);
+      await ensureUserDoc(user);
+      goHome();
+    }catch(e){ msg.textContent = e.message; }
+  };
 
-  function applyRoleGuards(rank){
-    const can = (required)=>{
-      // admin y supervisor ven casi todo; el resto solo su rol
-      if(rank==="admin" || rank==="supervisor") return true;
-      return rank===required;
-    };
-    document.querySelectorAll("[data-role]").forEach(el=>{
-      const need = el.getAttribute("data-role");
-      el.style.display = can(need) ? "" : "none";
-    });
-  }
+  window.loginGoogle = async ()=>{
+    msg.textContent="";
+    try{
+      const provider = new GoogleAuthProvider();
+      const { user } = await signInWithPopup(auth, provider);
+      await ensureUserDoc(user);
+      goHome();
+    }catch(e){ msg.textContent = e.message; }
+  };
 
-  async function paintHeader(user){
-    // En Fase 1 no hay claims todavía; si existen, los mostramos.
-    const token = await user.getIdTokenResult(true);
-    const rank = token.claims?.rank || "viewer"; // placeholder
-    $("userEmail").textContent = user.email ?? user.uid;
-    $("userRank").textContent  = rank.toUpperCase();
-    applyRoleGuards(rank);
-  }
+  window.signUp = async ()=>{
+    msg.textContent="";
+    const email = $("email").value.trim();
+    const pass  = $("pass").value.trim();
+    try{
+      const { user } = await createUserWithEmailAndPassword(auth, email, pass);
+      await ensureUserDoc(user);
+      goHome();
+    }catch(e){ msg.textContent = e.message; }
+  };
 
-  // ==== Auth state ====
+  window.logout = ()=> signOut(auth);
+
+  // ===== Estado de auth: si ya estás logueado y entraste al login, te envío al home =====
   onAuthStateChanged(auth, async (user)=>{
-    if(!user){ show("login"); $("userEmail").textContent="Sin sesión"; $("userRank").textContent="SIN RANGO"; return; }
-    await ensureUserDoc(user);
-    await paintHeader(user);
-    show("app");
+    if (user) { goHome(); return; }
+    // si quieres mantener la UI de "login/app" en esta página, deja esto:
+    loginView.classList.remove("hidden");
+    if(appView) appView.classList.add("hidden");
   });
 </script>
 </body>
