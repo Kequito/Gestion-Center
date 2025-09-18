@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — v2.0</title>
 
-    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
@@ -42,7 +40,7 @@
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ====== Sidebar ====== */
+      /* Sidebar */
       aside{
         position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
@@ -50,99 +48,54 @@
         border-right:1px solid var(--stroke);
         display:flex; flex-direction:column; padding:18px 14px; gap:12px; overflow:auto;
       }
-      /* header con SOLO logo grande */
       .brand{
         display:flex; align-items:center; justify-content:center;
         padding:12px; border-radius:var(--radius);
         border:1px solid var(--stroke);
         background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
       }
-      .brand img{
-        width:160px; height:auto; object-fit:contain;
-        filter:drop-shadow(0 6px 14px rgba(0,0,0,.35));
-      }
+      .brand img{ width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
 
-      /* NAV agrupado */
       nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
       .nav-group{ border:1px solid var(--stroke); border-radius:14px; overflow:hidden; background:color-mix(in oklab, var(--bg-aside) 92%, transparent) }
-      .nav-head{
-        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
-        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
-      }
-      .nav-head .chev{ transition:transform var(--t-med) var(--curve); }
+      .nav-head{ width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
+        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+      .nav-head .chev{ transition:transform var(--t-med) var(--curve) }
       .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
       .nav-body{ overflow:hidden; transition:grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
       .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
       .nav-body-inner{ min-height:0; padding:6px }
-      .nav-item{
-        display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:10px;
-        text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
-        transition:background var(--t-med) ease, transform var(--t-fast) ease;
-      }
+      .nav-item{ display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent; transition:background var(--t-med) ease, transform var(--t-fast) ease }
       .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      .nav-item.active{
-        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
-        border-color:var(--stroke);
-      }
-      .nav-indicator{
-        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
-        background:linear-gradient(180deg, var(--primary), var(--accent));
-        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
-        transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
-        pointer-events:none;
-      }
+      .nav-item.active{ background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent)); border-color:var(--stroke) }
+      .nav-indicator{ position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0; background:linear-gradient(180deg, var(--primary), var(--accent)); box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent); transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height; pointer-events:none; }
+
       .spacer{flex:1}
-      .role-card{
-        display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px;
-        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
-      }
+      .role-card{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 92%, transparent) }
       .role-dot{ width:14px; height:14px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25) }
       .role-text small{ color:var(--txt-muted) }
-      .logout{
-        width:100%; border:1px solid var(--stroke);
-        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
-        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
-        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
-      }
+      .logout{ width:100%; border:1px solid var(--stroke); background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff; padding:12px; border-radius:12px; cursor:pointer; font-weight:700; transition:transform var(--t-fast) ease, filter var(--t-med) ease }
       .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
-      /* ====== Main ====== */
+      /* Main */
       main{ margin-left:280px; padding:24px 22px 40px; }
-
-      /* Hero (sin la píldora de estado) */
-      .hero{
-        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
-        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        border:1px solid var(--stroke); overflow:hidden;
-      }
+      .hero{ position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px; background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent)); border:1px solid var(--stroke); overflow:hidden; }
       .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
       .hero p{margin:0; color:var(--txt-muted); font-size:14px}
-      .blob{
-        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
-        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
-        filter:blur(18px); pointer-events:none; transform:translateZ(0);
-      }
+      .blob{ position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%); filter:blur(18px); pointer-events:none; transform:translateZ(0); }
 
-      /* Grid tarjetas */
       .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(2, minmax(290px, 1fr))}
-      .card{
-        position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
-        background:var(--bg-card); border:1px solid var(--stroke);
-        box-shadow:var(--elev-1); transition:transform var(--t-med) var(--curve), box-shadow var(--t-med) ease, border-color var(--t-med) ease;
-        transform:translateZ(0);
-      }
+      .card{ position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate; background:var(--bg-card); border:1px solid var(--stroke); box-shadow:var(--elev-1); transition:transform var(--t-med) var(--curve), box-shadow var(--t-med) ease, border-color var(--t-med) ease; transform:translateZ(0) }
       .card:hover{ transform:translateY(-2px); box-shadow:var(--elev-2); border-color:color-mix(in oklab, var(--primary) 25%, var(--stroke)) }
       .card h3{ margin:0 0 10px; color:var(--txt); font:600 15px/1.1 var(--font-title) }
       .card a{ display:flex; align-items:center; gap:8px; color:var(--txt); text-decoration:none; padding:8px 0; border-radius:10px }
       .card a span{ opacity:.85; transition:opacity var(--t-fast) ease, transform var(--t-fast) ease }
       .card a:hover span{ opacity:1; transform:translateX(2px) }
 
-      /* Sombras de scroll en aside */
       aside::before, aside::after{ content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5; }
       aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
       aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
 
-      /* Responsive */
       @media (max-width:1080px){
         main{margin-left:0; padding:16px}
         aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
@@ -151,40 +104,36 @@
     </style>
   </head>
   <body>
-    <!-- Fondo en cuadrícula sutil -->
-    <div id="bg-grid" aria-hidden="true" style="
-      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
-      background:
-        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
-        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
-    </div>
+    <div id="bg-grid" aria-hidden="true" style="position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none; background:
+      linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;"></div>
 
     <!-- SIDEBAR -->
     <aside class="reveal">
-      <!-- SOLO logo (clic → inicio) -->
       <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio">
         <img id="brandLogo" src="./images/logogestioncenter.webp" alt="Gestión Center">
       </a>
 
-      <!-- NAV agrupado -->
       <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
         <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
 
+        <!-- REPORTES (solo 2) -->
         <section class="nav-group" data-key="grp-reportes">
           <button class="nav-head"><span class="chev">▾</span> 📊 Reportes</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="./estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
-            <a href="./opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
-            <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
+            <a href="/reports/newreport.html" class="nav-item">🧰 <span>New Report</span></a>
+            <a href="/reports/psreport.html" class="nav-item">🚚 <span>Post-Sale Report</span></a>
           </div></div>
         </section>
 
+        <!-- OPERACIONES (ahora incluye Estadísticas) -->
         <section class="nav-group" data-key="grp-operaciones">
           <button class="nav-head"><span class="chev">▾</span> 🛠️ Operaciones</button>
           <div class="nav-body"><div class="nav-body-inner">
             <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+            <a href="./estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
             <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
             <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
             <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
@@ -210,7 +159,6 @@
 
       <div class="spacer"></div>
 
-      <!-- RANGO -->
       <div class="role-card" id="roleCard" title="Rango del usuario">
         <div class="role-dot" id="roleDot"></div>
         <div class="role-text">
@@ -224,7 +172,6 @@
 
     <!-- CONTENIDO -->
     <main>
-      <!-- HERO (sin la píldora “Online • Operaciones”) -->
       <section class="hero reveal">
         <div class="blob" aria-hidden="true"></div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
@@ -235,17 +182,17 @@
         </div>
       </section>
 
-      <!-- CARDS -->
+      <!-- CARDS (ajustadas a los nuevos paths) -->
       <section class="grid">
         <article class="card reveal" style="--delay:.05s">
-          <h3>Reportes diarios</h3>
-          <a href="./estadisticas.html">📈 <span>Ir a Estadísticas</span></a>
-          <a href="./opo11.html">🧰 <span>New Report CC Perú</span></a>
-          <a href="./postsale.html">🚚 <span>Post-Sale New Report</span></a>
+          <h3>Reportes</h3>
+          <a href="/reports/newreport.html">🧰 <span>New Report</span></a>
+          <a href="/reports/psreport.html">🚚 <span>Post-Sale Report</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.1s">
           <h3>Operaciones</h3>
+          <a href="./estadisticas.html">📈 <span>Estadísticas</span></a>
           <a href="./distribucion.html">📋 <span>Distribución</span></a>
           <a href="./camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
           <a href="./pintado.html">🧮 <span>Queues Heatmap</span></a>
@@ -266,7 +213,7 @@
     </main>
 
     <script type="module">
-      // ========= Activo + indicador =========
+      // Activo + indicador
       const items=[...document.querySelectorAll('nav .nav-item')];
       const indicator=document.querySelector('.nav-indicator');
       function setActive(){
@@ -290,7 +237,7 @@
       navEl.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
 
-      // ========= Grupos colapsables con memoria =========
+      // Grupos colapsables con memoria
       document.querySelectorAll('.nav-group').forEach(g=>{
         const key=g.dataset.key, head=g.querySelector('.nav-head');
         const saved=localStorage.getItem(key);
@@ -302,7 +249,7 @@
         });
       });
 
-      // ========= Reveal al scroll =========
+      // Reveal al scroll
       const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
         const io=new IntersectionObserver((entries)=>{
@@ -314,7 +261,7 @@
         });
       } else { document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // ========= Parallax sutil del fondo =========
+      // Parallax fondo
       const bg=document.getElementById('bg-grid'); let rafId=null;
       function parallax(e){
         const x=(e.clientX/window.innerWidth - .5)*6;
@@ -324,36 +271,17 @@
       }
       if(!reduced) window.addEventListener('mousemove', parallax);
 
-      // ========= RANGO (mock) =========
-      const ROLE_STYLE={
-        'owner':{name:'Owner',desc:'Control total',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'admin':{name:'Admin',desc:'Administración',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'supervisor':{name:'Supervisor',desc:'Lidera TLs',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},
-        'team leader':{name:'Team Leader',desc:'Lidera equipo',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},
-        'analista':{name:'Analista',desc:'Calidad / Datos',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'calidad':{name:'Calidad',desc:'Auditoría',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'operador':{name:'Operador',desc:'Ventas / Gestión',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},
-        'invitado':{name:'Invitado',desc:'Acceso limitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'},
-      };
-      function getRole(){
-        const qp=new URLSearchParams(location.search).get('role');
-        const w=(window.gcRole||'').toString().trim();
-        const ls=(localStorage.getItem('gc-role')||'').trim();
-        return (qp||w||ls||'Invitado');
-      }
+      // Role UI (mock)
+      const ROLE_STYLE={'owner':{name:'Owner',desc:'Control total',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},'admin':{name:'Admin',desc:'Administración',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},'supervisor':{name:'Supervisor',desc:'Lidera TLs',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},'team leader':{name:'Team Leader',desc:'Lidera equipo',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},'analista':{name:'Analista',desc:'Calidad / Datos',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},'calidad':{name:'Calidad',desc:'Auditoría',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},'operador':{name:'Operador',desc:'Ventas / Gestión',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},'invitado':{name:'Invitado',desc:'Acceso limitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}};
+      function getRole(){ const qp=new URLSearchParams(location.search).get('role'); const w=(window.gcRole||'').toString().trim(); const ls=(localStorage.getItem('gc-role')||'').trim(); return (qp||w||ls||'Invitado'); }
       function applyRoleUI(roleRaw){
-        const r=roleRaw.toLowerCase();
-        const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado';
-        const cfg=ROLE_STYLE[key];
-        roleDot.style.background=cfg.gradient;
-        roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
-        roleName.textContent=cfg.name; roleDesc.textContent=cfg.desc;
-        localStorage.setItem('gc-role', cfg.name);
+        const r=roleRaw.toLowerCase(); const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado'; const cfg=ROLE_STYLE[key];
+        roleDot.style.background=cfg.gradient; roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
+        roleName.textContent=cfg.name; roleDesc.textContent=cfg.desc; localStorage.setItem('gc-role', cfg.name);
       }
       const roleDot=document.getElementById('roleDot'), roleName=document.getElementById('roleName'), roleDesc=document.getElementById('roleDesc');
       applyRoleUI(getRole());
 
-      // ========= Seguridad: logout expuesto por guard.js =========
       if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido. Expón: window.gcLogout = async () => { /* signOut + redirect */ }'); }
     </script>
 
@@ -364,7 +292,7 @@
       const PROJECT_SLUG = 'Gestion-Center';
       const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
 
-      document.querySelectorAll('nav a.nav-item[href], .brand[href]').forEach(a => {
+      document.querySelectorAll('nav a.nav-item[href], .brand[href], .card a[href]').forEach(a => {
         const href = a.getAttribute('href');
         if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
         const clean = href.replace(/^\.?\//, '');
