@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Gestión</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+
+    <!-- 🔒 Guard de autenticación: oculta hasta validar sesión -->
+    <style>html{visibility:hidden}</style>
+    <!-- ⬇️ Ajusta la ruta si tu guard.js vive en otra carpeta -->
+    <script type="module" src="assets/js/guard.js"></script>
+
     <style>
       /* ===== Tema base (traído de Estadísticas para que la barra sea idéntica) ===== */
       :root{
@@ -114,6 +120,18 @@
         border: none;
         border-radius: 10px;
       }
+
+      /* Botoncito salir */
+      .logout{
+        margin-top:12px;
+        width:100%;
+        background:#ef4444;
+        color:#fff;
+        border:0;
+        padding:10px 12px;
+        border-radius:10px;
+        cursor:pointer;
+      }
     </style>
   </head>
   <body>
@@ -121,7 +139,7 @@
     <aside>
       <div class="logo">🧭 Gestión Center</div>
       <nav>
-        <a href="index.html">🏠 Inicio</a>
+        <a href="index.html" class="active">🏠 Inicio</a>
         <a href="plandetrabajo.html">✅ Plan de trabajo</a>
         <a href="distribucion.html">📋 Distribución</a>
         <a href="estadisticas.html">📈 Estadísticas</a>
@@ -136,14 +154,11 @@
         <a href="login.html">Test</a>
       </nav>
       <div class="spacer"></div>
+
+      <!-- Botón para cerrar sesión (usa window.gcLogout del guard) -->
+      <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
     <!-- (tu index original no traía contenido principal; lo dejo vacío para mantenerlo tal cual) -->
   </body>
 </html>
-
-
-
-
-
-
