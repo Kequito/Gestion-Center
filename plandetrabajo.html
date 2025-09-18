@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gestión Center — Plan de trabajo</title>
+    <title>Gestión Center — v2.0 · Plan de trabajo</title>
 
     <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,171 +15,309 @@
     <script type="module" src="./assets/guard.js"></script>
 
     <style>
+      /* =========================
+         DESIGN SYSTEM — v2.0  (idéntico al ecosistema)
+         ========================= */
       :root{
-        --bg-app:#0f172a; --bg-aside:#0b1224; --txt:#e6f0ff; --txt-muted:#bcd2f0; --hover:#131c33;
-        --primary-color:#2563eb; --accent-color:#60a5fa; --surface:#0f1b36; --border:#1c2b52; --header-bg:#0b63c7;
-        --green:#22c55e; --red:#ef4444; --orange:#f59e0b; --yellow:#eab308; --chip:#0b1733;
+        --radius:16px;
+        --radius-sm:12px;
+        --radius-xs:10px;
+
+        /* Tipografía */
+        --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+        /* Duraciones y curvas */
+        --t-fast:.15s;
+        --t-med:.25s;
+        --t-slow:.6s;
+        --curve:cubic-bezier(.2,.7,.2,1);
+
+        /* Elevación */
+        --elev-1:0 6px 20px rgba(0,0,0,.25);
+        --elev-2:0 12px 34px rgba(0,0,0,.35);
       }
+
+      /* Tema oscuro (default) */
+      [data-theme="dark"]{
+        --bg-app:#070b1a;
+        --bg-aside:#0c1228;
+        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
+        --txt:#e9f1ff;
+        --txt-muted:#b8c6de;
+        --stroke:rgba(255,255,255,.10);
+
+        --primary:#5b8bff;
+        --accent:#7ae3ff;
+
+        --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
+      }
+
       *{box-sizing:border-box}
-      body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
-      a{ color:inherit }
+      html,body{height:100%}
+      body{
+        margin:0; font-family:var(--font-body); color:var(--txt);
+        background:
+          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
+          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
+          var(--bg-app);
+        overflow-x:hidden;
+      }
 
-      /* ===== Sidebar ===== */
-      .sidebar-toggle{ display:none; position:fixed; top:14px; left:14px; z-index:1200; background:var(--surface); border:1px solid var(--border); color:#fff; border-radius:10px; padding:10px 12px; }
-      aside{ background:var(--bg-aside); width:240px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; transition:transform .25s ease; }
-      aside.hidden{ transform:translateX(-260px); }
-      .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-      nav a{ color:var(--txt); margin:10px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.25; overflow-wrap:anywhere; }
-      nav a:hover{ background:var(--hover); }
-      nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
-      .spacer{ flex:1; }
+      /* Accesibilidad: respetar reducción de movimiento */
+      @media (prefers-reduced-motion:no-preference){
+        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
+        .reveal.show{opacity:1; transform:none}
+      }
 
-      /* ===== Main ===== */
-      main{ margin-left:240px; padding:24px; width:calc(100% - 240px); }
-      .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 6px; }
-      .subtitle{ margin:0 0 12px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
-      .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.95; }
+      /* ====== Sidebar (idéntico) ====== */
+      aside{
+        position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
+        backdrop-filter:saturate(120%) blur(8px);
+        background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
+        border-right:1px solid var(--stroke);
+        display:flex; flex-direction:column; padding:22px 14px; gap:12px; overflow:auto;
+      }
+      .logo{
+        display:flex; align-items:center; justify-content:center; gap:10px;
+        font-family:var(--font-title); font-size:20px; font-weight:700; letter-spacing:.2px;
+        padding:12px; border-radius:var(--radius); border:1px solid var(--stroke);
+        background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
+        position:relative; isolation:isolate;
+      }
+      .logo::after{
+        content:""; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none;
+        box-shadow:0 0 28px color-mix(in oklab, var(--primary) 35%, transparent),
+                   0 0 42px color-mix(in oklab, var(--accent) 22%, transparent);
+        opacity:.18;
+      }
+      nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
+      nav a{
+        display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px;
+        text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
+        transition:background var(--t-med) ease, transform var(--t-fast) ease;
+      }
+      nav a:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
+      nav a.active{
+        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
+        border-color:var(--stroke);
+      }
+      .nav-indicator{
+        position:absolute; left:0; width:4px; height:40px; border-radius:0 3px 3px 0;
+        background:linear-gradient(180deg, var(--primary), var(--accent));
+        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
+        transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
+      }
+      .spacer{flex:1}
+      .logout{
+        width:100%; border:1px solid var(--stroke);
+        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
+        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
+        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
+      }
+      .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
-      /* ===== KPIs ===== */
-      .kpis{ display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:12px; margin:12px 0 10px; }
-      .kpi{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:12px; padding:12px; }
+      /* ====== Main ====== */
+      main{ margin-left:280px; padding:24px 22px 40px; }
+
+      /* ====== Cabecera Plan ====== */
+      .hero-plan{
+        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
+        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
+        border:1px solid var(--stroke); overflow:hidden; margin-bottom:16px;
+      }
+      .hero-plan h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
+      .hero-plan p{margin:0; color:var(--txt-muted); font-size:14px}
+      .pill{
+        display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+        background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 50%, white));
+        color:#0b1022; font-weight:700; border:1px solid color-mix(in oklab, var(--accent) 65%, white);
+        box-shadow:0 8px 24px color-mix(in oklab, var(--accent) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.6);
+      }
+      .blob{
+        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
+        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
+        filter:blur(18px); pointer-events:none; transform:translateZ(0);
+      }
+
+      /* ====== Widgets Plan (portado y adaptado al DS v2.0) ====== */
+      .kpis{ display:grid; grid-template-columns:repeat(4,minmax(220px,1fr)); gap:12px; margin:12px 0 10px; }
+      .kpi{ background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius-sm); padding:12px; box-shadow:var(--elev-1); }
       .kpi .label{ font-size:12px; color:var(--txt-muted); }
       .kpi .value{ font-size:18px; font-weight:800; margin-top:4px; }
 
-      /* ===== Topbar ===== */
-      .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:8px 0 16px; }
-      .pill{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:14px; }
-      .select{ background:var(--surface); color:var(--txt); border:1px solid var(--primary-color); border-radius:10px; padding:8px 12px; height:38px; }
-      button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
-      button:hover{ background:var(--accent-color); }
-      button:active{ transform:translateY(1px); }
+      .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:10px 0 16px; }
+      .select{
+        background:color-mix(in oklab, var(--bg-aside) 85%, transparent);
+        color:var(--txt); border:1px solid var(--stroke); border-radius:var(--radius-xs);
+        padding:10px 12px; height:40px;
+      }
+      .btn{
+        padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:var(--radius-xs);
+        background:linear-gradient(180deg, color-mix(in oklab, var(--primary) 85%, #2b59ff), var(--primary));
+        color:#fff; box-shadow:0 6px 16px rgba(0,0,0,.25); transition:transform var(--t-fast) ease, filter var(--t-med) ease;
+      }
+      .btn:hover{ filter:brightness(1.05) } .btn:active{ transform:translateY(1px) }
 
-      /* ===== Progreso ===== */
-      .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; height:12px; overflow:hidden; position:relative; }
-      .progress>span{ display:block; height:100%; width:0%; transition:width .35s ease, background .25s; }
+      .progress{ flex:1; min-width:240px; background:rgba(255,255,255,.08); border:1px solid var(--stroke); border-radius:999px; height:12px; overflow:hidden; position:relative; }
+      .progress>span{ display:block; height:100%; width:0%; transition:width .35s var(--curve), background .25s; }
       .progress-label{ font-size:12px; color:var(--txt-muted); min-width:140px; text-align:right; }
 
-      /* ===== Secciones ===== */
-      .section{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin:14px 0; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+      .section{ background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius); padding:16px; margin:14px 0; box-shadow:var(--elev-1); }
       .section-header{ display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
-      .section-header h2{ font-size:18px; margin:0; }
+      .section-header h2{ font-size:18px; margin:0; font-family:var(--font-title); }
       .section-header .time{ color:var(--txt-muted); font-size:13px; margin-left:auto; }
       .section.collapsed .section-body{ display:none; }
 
-      /* ===== Tareas ===== */
-      .task{ display:grid; grid-template-columns:28px 1fr 240px; gap:12px; align-items:start; padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
+      .task{ display:grid; grid-template-columns:28px 1fr 240px; gap:12px; align-items:start; padding:12px; border:1px solid var(--stroke); border-radius:12px; background:rgba(0,0,0,.12); margin:10px 0; }
       .task:hover{ background:rgba(0,0,0,.16); }
       .task.done{ background:rgba(34,197,94,.16); border-color:#22c55e66; }
       .task .chk{ width:18px; height:18px; margin-top:2px; }
-      .task .title{ font-weight:700; display:flex; align-items:center; gap:8px; }
+      .task .title{ font-weight:700; display:flex; align-items:center; gap:8px; font-family:var(--font-title); }
       .status-dot{ width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow:0 0 0 2px rgba(0,0,0,.2) inset; }
-      .status-pending{ background:#facc15; }
+      .status-pending{ background:#eab308; }
       .status-done{ background:#22c55e; }
       .task .desc{ color:var(--txt-muted); font-size:13px; margin-top:3px; }
       .task .meta{ font-size:12px; color:#cfe3ff; }
       .task .tools{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
-      .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); background:var(--chip); white-space:nowrap; }
+      .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 85%, transparent); white-space:nowrap; }
 
-      /* ===== Tooltip ===== */
-      .tip-btn{ background:transparent; border:1px solid var(--border); color:#fff; border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer; }
-      .tip{ display:none; margin-top:8px; background:rgba(0,0,0,.25); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:#e4f1ff; }
+      .tip-btn{ background:transparent; border:1px solid var(--stroke); color:#fff; border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer; }
+      .tip{ display:none; margin-top:8px; background:rgba(0,0,0,.25); border:1px solid var(--stroke); border-radius:10px; padding:8px 10px; font-size:12px; color:#e4f1ff; }
       .tip.visible{ display:block; }
 
-      /* ===== PDF Viewer ===== */
-      .pdf{ width:100%; height:560px; border:none; }
+      .pdf{ width:100%; height:560px; border:none; border-radius:var(--radius-sm); overflow:hidden; }
 
-      /* ===== Toast ===== */
-      #toast{ position:fixed; bottom:18px; right:20px; background:#111827; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; transition:opacity .2s ease; }
+      #toast{ position:fixed; bottom:18px; right:20px; background:#0b1022; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; transition:opacity .2s ease; border:1px solid var(--stroke); }
 
-      /* ===== Modal Histórico ===== */
       .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:1100; }
-      .modal{ background:#0f1b36; border:1px solid var(--border); width:min(720px,92vw); border-radius:14px; padding:16px; }
-      .modal h3{ margin:0 0 8px; }
+      .modal{ background:var(--bg-card); border:1px solid var(--stroke); width:min(760px,92vw); border-radius:var(--radius); padding:16px; box-shadow:var(--elev-2); }
+      .modal h3{ margin:0 0 8px; font-family:var(--font-title); }
       .log-list{ max-height:50vh; overflow:auto; display:grid; gap:8px; }
-      .log-item{ background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+      .log-item{ background:rgba(255,255,255,.05); border:1px solid var(--stroke); border-radius:10px; padding:8px 10px; }
 
-      /* ===== Responsive ===== */
-      @media (max-width: 980px){
-        .sidebar-toggle{ display:block; }
-        aside{ transform:translateX(-260px); }
-        aside.show{ transform:none; }
-        main{ margin-left:0; width:100%; padding-top:60px; }
+      /* Responsive */
+      @media (max-width:1080px){
+        main{margin-left:0; padding:16px}
+        aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
         .task{ grid-template-columns:24px 1fr; }
         .task .tools{ justify-content:flex-start; }
+        .kpis{ grid-template-columns:1fr 1fr; }
+      }
+      @media (max-width:680px){
+        .kpis{ grid-template-columns:1fr; }
       }
     </style>
   </head>
   <body>
-    <!-- Toggle sidebar (mobile) -->
-    <button id="btnSidebar" class="sidebar-toggle" aria-label="Abrir menú">☰</button>
+    <!-- Fondo cuadrícula sutil (parallax) -->
+    <div id="bg-grid" aria-hidden="true" style="
+      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+      background:
+        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
+    </div>
 
-    <!-- ===== Sidebar ===== -->
-    <aside id="sidebar">
+    <!-- ===== SIDEBAR (idéntico al ecosistema) ===== -->
+    <aside class="reveal">
       <div class="logo">🧭 Gestión Center</div>
-      <nav>
-        <a href="index.html">🏠 Inicio</a>
-        <a class="active" href="plandetrabajo.html">✅ Plan de trabajo</a>
-        <a href="distribucion.html">📋 Distribución</a>
-        <a href="estadisticas.html">📈 Estadísticas</a>
-        <a href="cobertura.html">🌎 Cobertura</a>
-        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-        <a href="postsale.html">🚚 Post-Sale New Report</a>
-        <a href="opo11.html">🧰 New Report CC Perú</a>
-        <a href="#contacto">📬 Contacto</a>
+      <nav role="navigation" aria-label="Navegación principal">
+        <div class="nav-indicator" aria-hidden="true"></div>
+
+        <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
+        <a href="./plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
+        <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <a href="./estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
+        <a href="./cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
+        <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+        <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
+        <a href="./opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
+        <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+        <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
+        <a href="./newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
+        <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
+        <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
       </nav>
       <div class="spacer"></div>
+      <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
-    <!-- ===== Main ===== -->
+    <!-- ===== CONTENIDO PLAN ===== -->
     <main>
-      <h1 class="page-title">✅ Plan de Trabajo – Team Leaders</h1>
-      <p class="subtitle">Versión vigente · Turno AM/PM equivalente · ayudas didácticas y progreso con recordatorios</p>
-      <div id="fechaHora" class="datetime" aria-live="polite"></div>
+      <section class="hero-plan reveal">
+        <div class="blob" aria-hidden="true"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+          <div>
+            <h1>✅ Plan de Trabajo – Team Leaders</h1>
+            <p id="fechaHora">Cargando fecha/hora…</p>
+          </div>
+          <div class="pill">Sesión verificada • Operaciones</div>
+        </div>
+      </section>
 
       <!-- KPIs -->
-      <div class="kpis" role="region" aria-label="Indicadores clave">
-        <div class="kpi"><div class="label">Tareas con horario</div><div class="value" id="kpiTimed">0 / 0</div></div>
-        <div class="kpi"><div class="label">% Avance</div><div class="value" id="kpiPct">0%</div></div>
-        <div class="kpi"><div class="label">Turno seleccionado</div><div class="value" id="kpiShift">AM</div></div>
-        <div class="kpi"><div class="label">Estado del turno</div><div class="value" id="kpiTimeLeft">--</div></div>
-      </div>
-
-      <div class="topbar">
-        <div class="pill">
-          <strong>Turno:</strong>
-          <select id="selTurno" class="select" aria-label="Seleccionar turno">
-            <option value="AM">AM (7:00–16:00)</option>
-            <option value="PM">PM (13:00–22:00)</option>
-          </select>
+      <section class="reveal" style="--delay:.05s">
+        <div class="kpis" role="region" aria-label="Indicadores clave del plan">
+          <div class="kpi"><div class="label">Tareas con horario</div><div class="value" id="kpiTimed">0 / 0</div></div>
+          <div class="kpi"><div class="label">% Avance</div><div class="value" id="kpiPct">0%</div></div>
+          <div class="kpi"><div class="label">Turno seleccionado</div><div class="value" id="kpiShift">AM</div></div>
+          <div class="kpi"><div class="label">Estado del turno</div><div class="value" id="kpiTimeLeft">--</div></div>
         </div>
-        <button id="btnResetDay" title="Marcar como pendientes las tareas con horario">🧹 Reset del día</button>
-        <button id="btnClearAll" title="Borrar guardado local (estado y colapsados)">🗑️ Borrar guardado</button>
-        <button id="btnLog" title="Ver historial de acciones del día">📜 Ver Histórico del Día</button>
-        <div class="progress" title="Avance de tareas con horario"><span id="progBar"></span></div>
-        <div class="progress-label" id="progLabel">0% completado</div>
-      </div>
+
+        <div class="topbar">
+          <div class="pill" style="background:transparent; border:1px solid var(--stroke); box-shadow:none; color:var(--txt)">
+            <strong>Turno:&nbsp;</strong>
+            <select id="selTurno" class="select" aria-label="Seleccionar turno">
+              <option value="AM">AM (7:00–16:00)</option>
+              <option value="PM">PM (13:00–22:00)</option>
+            </select>
+          </div>
+          <button id="btnResetDay" class="btn" title="Marcar como pendientes las tareas con horario">🧹 Reset del día</button>
+          <button id="btnClearAll" class="btn" title="Borrar guardado local (estado y colapsados)">🗑️ Borrar guardado</button>
+          <button id="btnLog" class="btn" title="Ver historial de acciones del día">📜 Ver Histórico del Día</button>
+          <div class="progress" title="Avance de tareas con horario"><span id="progBar"></span></div>
+          <div class="progress-label" id="progLabel">0% completado</div>
+        </div>
+      </section>
 
       <!-- Secciones renderizadas por JS -->
-      <div id="sections"></div>
+      <section id="sections" class="reveal" style="--delay:.1s"></section>
 
-      <h2 style="margin-top:24px; font-size:18px; color:#cfd8dc;">📄 Plan de trabajo completo (PDF)</h2>
-      <div style="border-radius:12px; overflow:hidden; box-shadow:0 6px 12px rgba(0,0,0,.25); border:1px solid var(--border);">
-        <object data="Plan_de_trabajo_TEAM_LEADER.pdf#view=FitH" type="application/pdf" class="pdf" aria-label="Visor PDF Plan de trabajo">
-          <div style="padding:16px">
-            <p>No se pudo cargar el PDF desde <code>Plan_de_trabajo_TEAM_LEADER.pdf</code>.</p>
-            <p>
-              ➜ Ver/descargar:
-              <a href="Plan_de_trabajo_TEAM_LEADER.pdf" target="_blank" style="color:#80d6ff; text-decoration:underline;">
-                abrir en nueva pestaña
-              </a>
-            </p>
-            <small style="color:#cfd8dc">
-              Asegúrate de que el archivo esté en la misma carpeta que <code>plandetrabajo.html</code>
-              y que el nombre coincida exactamente (mayúsculas y guiones bajos).
-            </small>
+      <!-- PDF -->
+      <section class="reveal" style="--delay:.15s">
+        <h2 style="margin:18px 0 10px; font:700 18px var(--font-title);">📄 Plan de trabajo completo (PDF)</h2>
+        <div style="border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--elev-1); border:1px solid var(--stroke);">
+          <object data="Plan_de_trabajo_TEAM_LEADER.pdf#view=FitH" type="application/pdf" class="pdf" aria-label="Visor PDF Plan de trabajo">
+            <div style="padding:16px">
+              <p>No se pudo cargar el PDF desde <code>Plan_de_trabajo_TEAM_LEADER.pdf</code>.</p>
+              <p>
+                ➜ Ver/descargar:
+                <a href="Plan_de_trabajo_TEAM_LEADER.pdf" target="_blank" style="color:#80d6ff; text-decoration:underline;">
+                  abrir en nueva pestaña
+                </a>
+              </p>
+              <small style="color:var(--txt-muted)">
+                Asegúrate de que el archivo esté en la misma carpeta que <code>plandetrabajo.html</code>
+                y que el nombre coincida exactamente (mayúsculas y guiones bajos).
+              </small>
+            </div>
+          </object>
+        </div>
+      </section>
+
+      <!-- Contacto -->
+      <section id="contacto" class="reveal" style="--delay:.2s">
+        <article class="section">
+          <div class="section-header" style="cursor:default">
+            <h2>📬 Contacto</h2>
           </div>
-        </object>
-      </div>
+          <div class="section-body">
+            <p class="muted" style="margin:.4rem 0 0; color:var(--txt-muted)">
+              ¿Ideas para mejorar el plan? Escríbeme y lo iteramos :3
+            </p>
+          </div>
+        </article>
+      </section>
     </main>
 
     <div id="toast" role="status" aria-live="polite"></div>
@@ -195,14 +333,73 @@
             <button id="btnCloseModal" class="tip-btn" title="Cerrar">✖️ Cerrar</button>
           </div>
         </div>
-        <p class="subtitle" id="logDate"></p>
+        <p class="subtitle" id="logDate" style="color:var(--txt-muted); margin:6px 0 10px"></p>
         <div id="logList" class="log-list"></div>
       </div>
     </div>
 
+    <script type="module">
+      // ========= Nave activo + indicador (idéntico al ecosistema) =========
+      const items = [...document.querySelectorAll('nav .nav-item')];
+      const indicator = document.querySelector('.nav-indicator');
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      function setActive(){
+        let active = items[0];
+        items.forEach(a=>{
+          const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
+          if(href && href === current) active = a;
+          a.classList.toggle('active', a===active);
+          a.toggleAttribute('aria-current', a===active ? 'page' : false);
+        });
+        const rect = active.getBoundingClientRect();
+        const p = active.parentElement.getBoundingClientRect();
+        const y = rect.top - p.top + active.parentElement.scrollTop;
+        indicator.style.height = rect.height + 'px';
+        indicator.style.transform = `translateY(${y}px)`;
+      }
+      setActive();
+      const nav = document.querySelector('nav');
+      nav.addEventListener('scroll', setActive);
+      window.addEventListener('resize', setActive);
+
+      // ========= Reveal al scroll =========
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(!reduced && 'IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries)=>{
+          for(const e of entries){
+            if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); }
+          }
+        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        document.querySelectorAll('.reveal').forEach(el=>{
+          const delay = el.style.getPropertyValue('--delay') || '0s';
+          el.style.transitionDelay = delay; io.observe(el);
+        });
+      } else {
+        document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
+      }
+
+      // ========= Parallax sutil del fondo =========
+      const bg=document.getElementById('bg-grid');
+      let rafId=null;
+      function parallax(e){
+        const x=(e.clientX / window.innerWidth - .5)*6;
+        const y=(e.clientY / window.innerHeight - .5)*6;
+        if(rafId) cancelAnimationFrame(rafId);
+        rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
+      }
+      if(!reduced) window.addEventListener('mousemove', parallax);
+
+      // ========= Seguridad: logout expuesto por guard.js =========
+      if (typeof window.gcLogout !== 'function') {
+        console.warn('gcLogout no está definido. En guard.js expón la función global: window.gcLogout = async () => { /* signOut + redirect */ }');
+      }
+      // Nota: guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
+    </script>
+
+    <!-- ====== LÓGICA DEL PLAN (portada desde tu versión mejorada) ====== -->
     <script>
       /* ===== Utilidades ===== */
-      const STORAGE_KEY='plan_vigente_v4';           // Compatibilidad con tu key actual
+      const STORAGE_KEY='plan_vigente_v4';
       const LOG_KEY_PREFIX='plan_log_';
       const toastQueue = [];
       let toastLock = false;
@@ -225,13 +422,13 @@
       };
 
       const pad=n=>String(n).padStart(2,'0');
-      const todayStr=()=>{const d=new Date();return \`\${d.getFullYear()}-\${pad(d.getMonth()+1)}-\${pad(d.getDate())}\`};
+      const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
 
       function actualizarFechaHora(){
         const ahora=new Date();
         const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
         const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        document.getElementById('fechaHora').textContent=\`📅 \${fecha} – 🕒 \${hora}\`;
+        document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
       }
       actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
@@ -239,18 +436,18 @@
       const PLAN = {
         blocks:[
           { id:'primera', title:'📌 Primera hora de gestión', time:{AM:'7:00–8:00',PM:'13:00–14:00'}, tasks:[
-            {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:\`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM.\`},
+            {id:'1.1', title:'Good Day (Registro de Asistencia)', desc:'Registrar asistencia oficial de todos los operadores.', tip:`Status permitidos: A, B, VA, OFF, Fa, FJ, Fe, NL, DLT, DM, S, LF, LM.`},
           ]},
           { id:'segunda', title:'📌 Segunda hora de gestión', time:{AM:'8:00–9:00',PM:'14:00–15:00'}, tasks:[
-            {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:\`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break.\`},
-            {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para quienes no completaron su jornada.', tip:\`Verificar PEROP1AMs, identificar operadores, motivo del tiempo incompleto.\`},
+            {id:'1.2', title:'Planilla (Registro de Horas del Día Anterior)', desc:'Completar planilla con base en BI-844.', tip:`Reglas de redondeo: >45 min → 1h; desde 4:45h sumar 1h por break.`},
+            {id:'1.3', title:'Control de Asistencia Diaria (Tiempo Incompleto)', desc:'Documento diario para quienes no completaron su jornada.', tip:`Verificar PEROP1AMs, identificar operadores, motivo del tiempo incompleto.`},
           ]},
           { id:'tercera', title:'📌 Tercera hora de gestión', time:{AM:'9:00–10:00',PM:'15:00–16:00'}, tasks:[
-            {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:\`Se realiza con información del día anterior.\`},
-            {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:\`1) Nadie gestionando sin programar. 2) Ausentes se desprograman. 3) Coherencia horario oficial/real.\`},
+            {id:'1.4', title:'Horas Rusia', desc:'Carga de conexión, llamadas y SAVE con base en BI-844 (día anterior).', tip:`Se realiza con información del día anterior.`},
+            {id:'1.5', title:'Programación (BI-247)', desc:'Asegurar programación correcta y coherencia de horarios.', tip:`1) Nadie gestionando sin programar. 2) Ausentes se desprograman. 3) Coherencia horario oficial/real.`},
           ]},
           { id:'ultima', title:'📌 Última hora de gestión', time:{AM:'15:00–16:00',PM:'21:00–22:00'}, tasks:[
-            {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día.', tip:\`Objetivo: cierre limpio de jornada.\`},
+            {id:'1.6', title:'Verificación de Recalls (BI-82 y BI-91)', desc:'Todo recall con información se gestiona el mismo día.', tip:`Objetivo: cierre limpio de jornada.`},
           ]},
         ],
         continuous:[
@@ -266,20 +463,15 @@
       /* ===== Persistencia ===== */
       function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch{ return {} } }
       function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      function autoShift(){ return (new Date().getHours()>=12? 'PM':'AM'); }
       function defaultState(){
         const st={ shift:autoShift(), tasks:{}, collapsed:{}, lastReminder:'' };
         PLAN.blocks.forEach(b=>b.tasks.forEach(t=>{ st.tasks[t.id]=false; }));
         PLAN.continuous.forEach(t=>{ st.tasks[t.id]=false; });
         return st;
       }
-      function autoShift(){
-        const h=new Date().getHours();
-        return (h>=12? 'PM':'AM');
-      }
       let state = Object.assign(defaultState(), loadState());
-      if (!('shift' in loadState())) { // primera carga: respeta autoShift
-        saveState(state);
-      }
+      if (!('shift' in loadState())) { saveState(state); }
 
       /* ===== Histórico ===== */
       function getLog(dateStr=todayStr()){
@@ -303,11 +495,11 @@
 
         // Bloques con horario
         PLAN.blocks.forEach(block=>{
-          const sec=document.createElement('section'); sec.className='section';
+          const sec=document.createElement('article'); sec.className='section';
           if(state.collapsed[block.id]) sec.classList.add('collapsed');
 
           const head=document.createElement('div'); head.className='section-header';
-          head.innerHTML=\`<h2>\${block.title}</h2><div class="time">\${state.shift} · \${block.time[state.shift]}</div>\`;
+          head.innerHTML=`<h2>${block.title}</h2><div class="time">${state.shift} · ${block.time[state.shift]}</div>`;
           head.addEventListener('click',()=>{ state.collapsed[block.id]=!state.collapsed[block.id]; saveState(state); render(); });
 
           const body=document.createElement('div'); body.className='section-body';
@@ -316,22 +508,22 @@
             const done=!!state.tasks[task.id];
             const el=document.createElement('div'); el.className='task'+(done?' done':'');
 
-            el.innerHTML=\`
-              <input class="chk" id="chk-\${task.id}" type="checkbox" \${done?'checked':''} aria-label="Marcar \${task.title}">
+            el.innerHTML=`
+              <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''} aria-label="Marcar ${task.title}">
               <div>
                 <div class="title">
-                  <span class="status-dot \${done?'status-done':'status-pending'}"></span>
-                  \${task.id} · \${task.title}
-                  <button class="tip-btn" data-tip="tip-\${task.id}" title="Ver tip" aria-expanded="false">ℹ️</button>
+                  <span class="status-dot ${done?'status-done':'status-pending'}"></span>
+                  ${task.id} · ${task.title}
+                  <button class="tip-btn" data-tip="tip-${task.id}" title="Ver tip" aria-expanded="false">ℹ️</button>
                 </div>
-                <div class="desc">\${task.desc||''}</div>
-                <div class="meta">\${state.shift} · \${block.time[state.shift]}</div>
-                <div id="tip-\${task.id}" class="tip" role="note">\${task.tip?task.tip:''}</div>
+                <div class="desc">${task.desc||''}</div>
+                <div class="meta">${state.shift} · ${block.time[state.shift]}</div>
+                <div id="tip-${task.id}" class="tip" role="note">${task.tip?task.tip:''}</div>
               </div>
               <div class="tools">
                 <span class="chip">⏱️ Bloque</span>
                 <span class="chip">💾 Auto-guardado</span>
-              </div>\`;
+              </div>`;
 
             el.querySelector('.chk').addEventListener('change',ev=>{
               const checked=ev.target.checked;
@@ -362,10 +554,10 @@
         });
 
         // Tareas continuas
-        const secC=document.createElement('section'); secC.className='section';
+        const secC=document.createElement('article'); secC.className='section';
         if(state.collapsed['continuas']) secC.classList.add('collapsed');
         const headC=document.createElement('div'); headC.className='section-header';
-        headC.innerHTML=\`<h2>🔁 Tareas de actualización continua</h2><div class="time">Todo el día</div>\`;
+        headC.innerHTML=`<h2>🔁 Tareas de actualización continua</h2><div class="time">Todo el día</div>`;
         headC.addEventListener('click',()=>{ state.collapsed['continuas']=!state.collapsed['continuas']; saveState(state); render(); });
 
         const bodyC=document.createElement('div'); bodyC.className='section-body';
@@ -373,20 +565,20 @@
           const done=!!state.tasks[task.id];
           const el=document.createElement('div'); el.className='task'+(done?' done':'');
 
-          el.innerHTML=\`
-            <input class="chk" id="chk-\${task.id}" type="checkbox" \${done?'checked':''} aria-label="Marcar \${task.title}">
+          el.innerHTML=`
+            <input class="chk" id="chk-${task.id}" type="checkbox" ${done?'checked':''} aria-label="Marcar ${task.title}">
             <div>
               <div class="title">
-                <span class="status-dot \${done?'status-done':'status-pending'}"></span>
-                \${task.title}
+                <span class="status-dot ${done?'status-done':'status-pending'}"></span>
+                ${task.title}
               </div>
-              <div class="desc">\${task.desc||''}</div>
+              <div class="desc">${task.desc||''}</div>
               <div class="meta">⏳ Sin horario fijo</div>
             </div>
             <div class="tools">
               <span class="chip">🗂️ Seguimiento</span>
               <span class="chip">💾 Auto-guardado</span>
-            </div>\`;
+            </div>`;
 
           el.querySelector('.chk').addEventListener('change',ev=>{
             const checked=ev.target.checked;
@@ -403,9 +595,9 @@
         secC.appendChild(headC); secC.appendChild(bodyC); sectionsEl.appendChild(secC);
 
         // Política
-        const secP=document.createElement('section'); secP.className='section';
+        const secP=document.createElement('article'); secP.className='section';
         const headP=document.createElement('div'); headP.className='section-header';
-        headP.innerHTML=\`<h2>⚠️ Política de incumplimiento</h2><div class="time">Aplicación gradual</div>\`;
+        headP.innerHTML=`<h2>⚠️ Política de incumplimiento</h2><div class="time">Aplicación gradual</div>`;
         const bodyP=document.createElement('div'); bodyP.className='section-body';
         const ul=document.createElement('ul'); ul.style.margin='6px 0 0 16px'; ul.style.padding='0';
         PLAN.policy.forEach(p=>{ const li=document.createElement('li'); li.style.margin='8px 0'; li.textContent=p; ul.appendChild(li); });
@@ -427,12 +619,11 @@
                           : pct<80 ? 'linear-gradient(90deg,#eab308,#fde047)'
                                    : 'linear-gradient(90deg,#60a5fa,#93c5fd)';
         document.getElementById('progLabel').textContent=pct+"% completado";
-        document.getElementById('kpiTimed').textContent = \`\${done} / \${total}\`;
-        document.getElementById('kpiPct').textContent = \`\${pct}%\`;
+        document.getElementById('kpiTimed').textContent = `${done} / ${total}`;
+        document.getElementById('kpiPct').textContent = `${pct}%`;
       }
 
       function shiftBounds(shift){
-        // Retorna inicio y fin como objetos Date de HOY
         const dStart = new Date(), dEnd = new Date();
         if(shift==='AM'){ dStart.setHours(7,0,0,0); dEnd.setHours(16,0,0,0); }
         else { dStart.setHours(13,0,0,0); dEnd.setHours(22,0,0,0); }
@@ -448,12 +639,12 @@
           const diffMs = start-now;
           const hh = Math.floor(diffMs/3600000);
           const mm = Math.floor((diffMs%3600000)/60000);
-          label = \`Por iniciar en \${pad(hh)}:\${pad(mm)}\`;
+          label = `Por iniciar en ${pad(hh)}:${pad(mm)}`;
         } else if (now>=start && now<=end){
           const diffMs = end-now;
           const hh = Math.floor(diffMs/3600000);
           const mm = Math.floor((diffMs%3600000)/60000);
-          label = \`En curso · Restante \${pad(hh)}:\${pad(mm)}\`;
+          label = `En curso · Restante ${pad(hh)}:${pad(mm)}`;
         } else {
           label = 'Fuera de turno';
         }
@@ -470,10 +661,10 @@
           const [from] = parseBlockRange(b.time[state.shift]);
           const start = asTodayTime(from);
           const remindAt = new Date(start - REMIND_MIN*60000);
-          const key = \`\${todayStr()}_\${state.shift}_\${b.id}\`;
+          const key = `${todayStr()}_${state.shift}_${b.id}`;
           if(now>=remindAt && now - remindAt < 25000 && state.lastReminder!==key){
             state.lastReminder=key; saveState(state);
-            toast(\`⏰ En \${REMIND_MIN} min: \${b.title} (\${b.time[state.shift]})\`);
+            toast(`⏰ En ${REMIND_MIN} min: ${b.title} (${b.time[state.shift]})`);
           }
         });
       }
@@ -492,22 +683,12 @@
         state=defaultState(); render(); toast('🗑️ Guardado eliminado');
       });
 
-      /* ===== Sidebar responsive ===== */
-      const sidebar = document.getElementById('sidebar');
-      const btnSidebar = document.getElementById('btnSidebar');
-      btnSidebar.addEventListener('click',()=>{ sidebar.classList.toggle('show'); });
-      // Cerrar al hacer click fuera en móviles
-      document.addEventListener('click',(e)=>{
-        if (window.innerWidth>980) return;
-        if (!sidebar.contains(e.target) && e.target!==btnSidebar) sidebar.classList.remove('show');
-      });
-
       /* ===== Modal Histórico ===== */
       const backdrop=document.getElementById('modalBackdrop');
       const logList=document.getElementById('logList');
       document.getElementById('btnLog').addEventListener('click',()=>{
         backdrop.style.display='flex';
-        document.getElementById('logDate').textContent = \`Fecha: \${todayStr()} · Turno actual: \${state.shift}\`;
+        document.getElementById('logDate').textContent = `Fecha: ${todayStr()} · Turno actual: ${state.shift}`;
         renderLog();
       });
       document.getElementById('btnCloseModal').addEventListener('click',()=>{ backdrop.style.display='none'; });
@@ -517,12 +698,12 @@
         logList.innerHTML = rows.length? '' : '<div class="log-item">Sin registros todavía.</div>';
         rows.slice().reverse().forEach(r=>{
           const d=new Date(r.ts);
-          const hhmmss = \`\${pad(d.getHours())}:\${pad(d.getMinutes())}:\${pad(d.getSeconds())}\`;
+          const hhmmss = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
           const el=document.createElement('div'); el.className='log-item';
-          el.innerHTML = \`
-            <div><strong>\${r.action}</strong> — \${r.task}\${r.title?(\` · \${r.title}\`):''}</div>
-            <div class="log-meta">Bloque: \${r.block} · Horario: \${r.time} · Turno: \${r.shift} · \${hhmmss}</div>
-          \`;
+          el.innerHTML = `
+            <div><strong>${r.action}</strong> — ${r.task}${r.title?(` · ${r.title}`):''}</div>
+            <div class="log-meta">Bloque: ${r.block} · Horario: ${r.time} · Turno: ${r.shift} · ${hhmmss}</div>
+          `;
           logList.appendChild(el);
         });
       }
@@ -530,18 +711,18 @@
       document.getElementById('btnExportLog').addEventListener('click',()=>{
         const rows = getLog(todayStr());
         const lines = [
-          \`Histórico del día \${todayStr()} (Turno: \${state.shift})\`,
+          `Histórico del día ${todayStr()} (Turno: ${state.shift})`,
           '---------------------------------------------',
           ...rows.map(r=>{
             const d=new Date(r.ts);
-            const hhmmss = \`\${pad(d.getHours())}:\${pad(d.getMinutes())}:\${pad(d.getSeconds())}\`;
-            return \`[\${hhmmss}] \${r.action} - \${r.task} \${r.title?('· '+r.title):''} | Bloque:\${r.block} | Horario:\${r.time} | Turno:\${r.shift}\`;
+            const hhmmss = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            return `[${hhmmss}] ${r.action} - ${r.task} ${r.title?('· '+r.title):''} | Bloque:${r.block} | Horario:${r.time} | Turno:${r.shift}`;
           })
         ];
-        const blob=new Blob([lines.join('\\n')],{type:'text/plain;charset=utf-8'});
+        const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
         const a=document.createElement('a');
         a.href=URL.createObjectURL(blob);
-        a.download=\`historico_\${todayStr()}_\${state.shift}.txt\`;
+        a.download=`historico_${todayStr()}_${state.shift}.txt`;
         a.click();
         URL.revokeObjectURL(a.href);
       });
@@ -555,6 +736,24 @@
       /* ===== Init ===== */
       function init(){ render(); updateKPIs(); }
       init();
+    </script>
+
+    <!-- 🔒 Normalizador de enlaces del sidebar (GH Pages de proyecto / dominio propio) -->
+    <script>
+    (() => {
+      const isGhProject = location.hostname.endsWith('github.io');
+      const PROJECT_SLUG = 'Gestion-Center'; // ¡respeta mayúsculas!
+      const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
+
+      document.querySelectorAll('nav a.nav-item[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        if (href.startsWith('#')) return;                 // Anclas internas
+        if (/^https?:\/\//i.test(href)) return;          // Absolutos
+        const clean = href.replace(/^\.?\//, '');        // Relativo normalizado
+        a.setAttribute('href', base + clean);
+      });
+    })();
     </script>
   </body>
 </html>
