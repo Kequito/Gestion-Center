@@ -5,153 +5,313 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Gestión</title>
 
-    <!-- Mejora de fuentes -->
+    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <!-- 🔒 Guard de autenticación: oculta hasta validar sesión -->
+    <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
-    <!-- ✅ Ruta correcta para GitHub Pages del repo Gestion-Center -->
     <script type="module" src="./assets/guard.js"></script>
 
     <style>
+      /* =================== THEME =================== */
       :root{
-        --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
-        --primary-color:#0D47A1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+        --bg-app:#0b1022; 
+        --bg-aside:#0f1731; 
+        --txt:#e9f1ff; 
+        --txt-muted:#b9c6dc;
+        --hover:#1a2449;
+        --primary:#4f7bfd; 
+        --accent:#7ae3ff;
+        --card:#121a3b;
+        --stroke:rgba(255,255,255,.08);
+        --glow-1: #4f7bfd;
+        --glow-2: #7ae3ff;
+        --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
       }
-      *{ box-sizing:border-box; }
+      *{ box-sizing:border-box }
       body{
-        margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt);
+        margin:0; font-family:'Lexend',sans-serif; color:var(--txt);
+        background: radial-gradient(1200px 1200px at 10% -10%, rgba(79,123,253,.18), transparent 50%),
+                    radial-gradient(800px 800px at 90% 10%, rgba(122,227,255,.15), transparent 55%),
+                    var(--bg-app);
         min-height:100vh;
       }
-      /* Lateral */
+
+      /* ====== Animación global (opcional según sistema) ====== */
+      @media (prefers-reduced-motion:no-preference){
+        .fade-in{ opacity:0; transform:translateY(6px); will-change:transform,opacity; transition:opacity .6s ease, transform .6s ease }
+        .fade-in.show{ opacity:1; transform:none }
+      }
+
+      /* ====== Sidebar moderno ====== */
       aside{
-        background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px;
-        display:flex; flex-direction:column; position:fixed; left:0; top:0; overflow:auto;
-        border-right:1px solid rgba(255,255,255,.06);
+        position:fixed; inset:0 auto 0 0; width:260px; backdrop-filter:saturate(120%) blur(8px);
+        background: linear-gradient(180deg, rgba(15,23,49,.95), rgba(15,23,49,.88));
+        border-right:1px solid var(--stroke);
+        display:flex; flex-direction:column; gap:12px; padding:28px 16px; z-index:10; overflow:auto;
       }
-      .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
-      nav{ display:flex; flex-direction:column; }
+      .logo{
+        display:flex; align-items:center; justify-content:center; gap:10px; 
+        font-size:20px; font-weight:700; letter-spacing:.2px; padding:12px 10px;
+        border-radius:14px; background:linear-gradient(132deg, rgba(79,123,253,.18), rgba(122,227,255,.10));
+        border:1px solid var(--stroke); position:relative; isolation:isolate;
+      }
+      .logo::after{
+        content:""; position:absolute; inset:0; border-radius:14px; pointer-events:none;
+        box-shadow:0 0 24px 2px rgba(79,123,253,.35), 0 0 48px 6px rgba(122,227,255,.18);
+        opacity:.25;
+      }
+      nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
       nav a{
-        color:var(--txt); margin:12px 0; text-decoration:none; font-size:15px; padding:10px 12px;
-        border-radius:8px; transition:background-color .25s, transform .05s; display:flex; gap:10px;
-        overflow-wrap:anywhere; outline:none;
+        --pad:12px;
+        display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--txt);
+        font-size:15px; padding:10px var(--pad); border-radius:10px; position:relative; 
+        transition:transform .12s ease, background-color .25s ease, color .25s ease;
+        border:1px solid transparent;
       }
-      nav a:hover{ background:var(--hover); }
+      nav a:hover{ background:var(--hover); transform:translateX(2px); }
       nav a.active{
-        background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+        background:linear-gradient(90deg, rgba(79,123,253,.25), rgba(122,227,255,.15));
+        border-color:var(--stroke);
       }
-      nav a:focus-visible{
-        outline:2px solid var(--accent-color); outline-offset:2px;
+      /* Indicador deslizante */
+      .nav-indicator{
+        position:absolute; left:0; width:4px; height:40px; border-radius:0 3px 3px 0;
+        background:linear-gradient(180deg, var(--glow-1), var(--glow-2));
+        box-shadow:0 0 12px rgba(122,227,255,.6), 0 0 28px rgba(79,123,253,.35);
+        transition:transform .25s cubic-bezier(.2,.7,.2,1), height .25s ease; 
+        transform:translateY(0); will-change:transform,height;
       }
-      .spacer{ flex:1; }
+      .spacer{ flex:1 }
       .logout{
-        margin-top:12px; width:100%; background:#ef4444; color:#fff; border:0; padding:10px 12px;
-        border-radius:10px; cursor:pointer; font-weight:600;
+        width:100%; background:linear-gradient(180deg, #ef4444, #d62c2c);
+        color:#fff; border:0; padding:12px 14px; border-radius:12px; cursor:pointer; font-weight:700;
+        transition:transform .08s ease, filter .2s ease; border:1px solid rgba(255,255,255,.12);
       }
-      .logout:hover{ filter:brightness(1.05); }
+      .logout:hover{ filter:brightness(1.05) }
+      .logout:active{ transform:translateY(1px) }
 
-      /* Main */
-      main{
-        margin-left:220px; padding:24px; min-height:100vh;
-      }
+      /* ====== Main ====== */
+      main{ margin-left:260px; padding:24px 24px 40px; }
+
+      /* Hero con glow */
       .hero{
-        background:linear-gradient(135deg, rgba(66,165,245,.12), rgba(13,71,161,.12));
-        border:1px solid rgba(255,255,255,.08);
-        padding:18px 20px; border-radius:14px; margin-bottom:18px;
+        position:relative; background:linear-gradient(135deg, rgba(79,123,253,.14), rgba(122,227,255,.10));
+        border:1px solid var(--stroke); border-radius:16px; padding:18px 18px 18px 20px; overflow:hidden;
       }
-      .hero h1{ margin:0 0 6px; font-size:22px; }
-      .hero p{ margin:0; color:var(--txt-muted); font-size:14px; }
+      .hero h1{ margin:0 0 6px; font-size:24px; letter-spacing:.2px }
+      .hero p{ margin:0; color:var(--txt-muted); font-size:14px }
+      .hero .glow{
+        position:absolute; right:-80px; top:-80px; width:220px; height:220px; border-radius:50%;
+        background:radial-gradient(circle at 50% 50%, rgba(122,227,255,.35), transparent 60%);
+        filter:blur(18px); pointer-events:none;
+        animation:float 8s ease-in-out infinite alternate;
+      }
+      @keyframes float{
+        from{ transform:translate3d(0,0,0) }
+        to{ transform:translate3d(-10px,8px,0) }
+      }
 
-      .quick-grid{
-        display:grid; grid-template-columns:repeat(2, minmax(220px, 1fr)); gap:12px;
+      /* Tarjetas */
+      .grid{
+        display:grid; gap:14px; margin-top:16px;
+        grid-template-columns:repeat(2, minmax(280px, 1fr));
       }
       .card{
-        background:#1e2e4b; border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:14px 16px;
+        background:linear-gradient(160deg, rgba(18,26,59,.82), rgba(18,26,59,.64));
+        border:1px solid var(--stroke); border-radius:16px; padding:14px 16px; position:relative;
+        overflow:hidden; isolation:isolate; transform:translateZ(0);
+        transition:transform .18s ease, box-shadow .25s ease, border-color .25s ease;
+        will-change:transform, box-shadow;
       }
-      .card a{ color:#fff; text-decoration:none; display:block; padding:8px 0; }
-      .card a:hover{ text-decoration:underline; }
+      .card::after{
+        content:""; position:absolute; inset:-20% -20% auto auto; width:180px; height:180px; border-radius:50%;
+        background:radial-gradient(circle at 30% 30%, rgba(79,123,253,.25), transparent 60%);
+        filter:blur(24px); opacity:.35; pointer-events:none; transform:translateZ(0);
+      }
+      .card:hover{
+        transform:translateY(-2px);
+        box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 28px rgba(79,123,253,.20);
+        border-color:rgba(255,255,255,.14);
+      }
+      .card h3{ margin:0 0 8px; font-size:15px; color:#dfe8ff; letter-spacing:.3px }
+      .card a{ display:flex; gap:8px; align-items:center; color:#fff; text-decoration:none; padding:8px 0; border-radius:8px; }
+      .card a span{ opacity:.8; transition:opacity .15s ease, transform .15s ease }
+      .card a:hover span{ opacity:1; transform:translateX(2px) }
+      .pill{
+        display:inline-flex; align-items:center; gap:8px; font-size:12px; color:#0b1022;
+        background:linear-gradient(180deg, var(--accent), #b7f3ff); padding:6px 10px; border-radius:999px;
+        border:1px solid rgba(255,255,255,.25);
+        box-shadow:0 8px 24px rgba(122,227,255,.35), inset 0 1px 0 rgba(255,255,255,.55);
+        font-weight:700;
+      }
 
-      @media (max-width: 900px){
-        aside{ position:sticky; width:auto; height:auto; }
-        main{ margin-left:0; padding:16px; }
-        .quick-grid{ grid-template-columns:1fr; }
+      /* Sección contacto */
+      .contact{ margin-top:16px }
+      .muted{ color:var(--txt-muted) }
+
+      /* Grid decorativo sutil */
+      .background-grid{
+        position:fixed; inset:0; z-index:-1; opacity:.08; pointer-events:none;
+        background:
+          linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 28px 28px,
+          linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 28px 28px;
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px){
+        aside{ width:230px }
+        main{ margin-left:230px }
+      }
+      @media (max-width: 860px){
+        aside{ position:sticky; top:0; width:auto; border-right:none; border-bottom:1px solid var(--stroke) }
+        main{ margin-left:0; padding:16px }
+        .grid{ grid-template-columns:1fr }
       }
     </style>
   </head>
   <body>
-    <aside>
-      <div class="logo">🧭 Gestión Center</div>
+    <div class="background-grid" aria-hidden="true"></div>
+
+    <aside class="fade-in">
+      <div class="logo">🧭 <span>Gestión Center</span></div>
+
       <nav role="navigation" aria-label="Navegación principal">
-        <a href="index.html" class="active">🏠 Inicio</a>
-        <a href="plandetrabajo.html">✅ Plan de trabajo</a>
-        <a href="distribucion.html">📋 Distribución</a>
-        <a href="estadisticas.html">📈 Estadísticas</a>
-        <a href="cobertura.html">🌎 Cobertura</a>
-        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-        <a href="postsale.html">🚚 Post-Sale New Report</a>
-        <a href="opo11.html">🧰 New Report CC Perú</a>
-        <a href="pintado.html">🧮 Queues Heatmap</a>
-        <a href="#contacto">📬 Contacto</a>
-        <a href="newcobertura.html">New Cobertura 1.1</a>
-        <a href="tablita.html">Tablita :3</a>
-        <a href="login.html">Test</a>
+        <div class="nav-indicator" aria-hidden="true" style="transform:translateY(0);height:40px;"></div>
+
+        <a href="index.html" class="nav-item">🏠 <span>Inicio</span></a>
+        <a href="plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
+        <a href="distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <a href="estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
+        <a href="cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
+        <a href="camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+        <a href="postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
+        <a href="opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
+        <a href="pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+        <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
+        <a href="newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
+        <a href="tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
+        <a href="login.html" class="nav-item">🧪 <span>Test</span></a>
       </nav>
+
       <div class="spacer"></div>
       <button class="logout" onclick="gcLogout()" aria-label="Cerrar sesión">Salir</button>
     </aside>
 
     <main>
-      <section class="hero" aria-live="polite">
-        <h1>¡Bienvenido al Panel de Gestión!</h1>
-        <p>Sesión verificada ✅ | Accesos rápidos y estado general.</p>
-      </section>
-
-      <section class="quick-grid">
-        <div class="card">
-          <strong>Reportes diarios</strong>
-          <a href="estadisticas.html">📈 Ir a Estadísticas</a>
-          <a href="opo11.html">🧰 New Report CC Perú</a>
-          <a href="postsale.html">🚚 Post-Sale New Report</a>
-        </div>
-        <div class="card">
-          <strong>Operaciones</strong>
-          <a href="distribucion.html">📋 Distribución</a>
-          <a href="camprev.html">👥 Selector de Apoyo 2.0</a>
-          <a href="pintado.html">🧮 Queues Heatmap</a>
+      <!-- HERO -->
+      <section class="hero fade-in" style="--delay:0s">
+        <div class="glow" aria-hidden="true"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+          <div>
+            <h1>Bienvenido, Team Leader Kevin 🚀</h1>
+            <p class="muted">Sesión verificada ✅ | Accesos rápidos y estado general.</p>
+          </div>
+          <div class="pill">Online • Operaciones</div>
         </div>
       </section>
 
-      <section id="contacto" style="margin-top:22px;">
-        <div class="card">
-          <strong>Contacto</strong>
-          <p style="color:var(--txt-muted); margin:.5rem 0 0;">
+      <!-- CARDS -->
+      <section class="grid">
+        <article class="card fade-in" style="--delay:.05s">
+          <h3>Reportes diarios</h3>
+          <a href="estadisticas.html">📈 <span>Ir a Estadísticas</span></a>
+          <a href="opo11.html">🧰 <span>New Report CC Perú</span></a>
+          <a href="postsale.html">🚚 <span>Post-Sale New Report</span></a>
+        </article>
+
+        <article class="card fade-in" style="--delay:.1s">
+          <h3>Operaciones</h3>
+          <a href="distribucion.html">📋 <span>Distribución</span></a>
+          <a href="camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
+          <a href="pintado.html">🧮 <span>Queues Heatmap</span></a>
+        </article>
+
+        <article class="card fade-in" style="--delay:.15s">
+          <h3>Cobertura</h3>
+          <a href="cobertura.html">🌎 <span>Mapa de cobertura</span></a>
+          <a href="newcobertura.html">🧭 <span>New Cobertura 1.1</span></a>
+        </article>
+
+        <article class="card fade-in" style="--delay:.2s">
+          <h3>Utilidades</h3>
+          <a href="tablita.html">📄 <span>Tablita :3</span></a>
+          <a href="login.html">🧪 <span>Test</span></a>
+        </article>
+      </section>
+
+      <!-- CONTACTO -->
+      <section id="contacto" class="contact fade-in" style="--delay:.25s">
+        <article class="card">
+          <h3>Contacto</h3>
+          <p class="muted" style="margin:.4rem 0 0">
             ¿Sugerencias para la página? Escríbeme y lo iteramos :3
           </p>
-        </div>
+        </article>
       </section>
     </main>
 
-    <!-- Utilidades: activo dinámico + verificación de gcLogout -->
     <script type="module">
-      // Marcar activo según la ruta
+      // ====== Activo dinámico + indicador deslizante ======
+      const items = [...document.querySelectorAll('nav .nav-item')];
+      const indicator = document.querySelector('.nav-indicator');
       const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-      document.querySelectorAll('nav a').forEach(a=>{
-        const href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
-        if(href && href === path){
-          a.classList.add('active');
-          a.setAttribute('aria-current','page');
-        } else {
-          a.classList.remove('active');
-          a.removeAttribute('aria-current');
-        }
-      });
 
-      // Aviso si gcLogout no está expuesto por guard.js
+      function setActive(){
+        let active = items[0];
+        items.forEach(a=>{
+          const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
+          if (href && href === path) active = a;
+          a.classList.toggle('active', a === active);
+          a.toggleAttribute('aria-current', a===active ? 'page' : false);
+        });
+        // Posicionar indicador
+        const rect = active.getBoundingClientRect();
+        const parent = active.parentElement.getBoundingClientRect();
+        const h = rect.height;
+        const y = rect.top - parent.top + active.parentElement.scrollTop;
+        indicator.style.height = `${h}px`;
+        indicator.style.transform = `translateY(${y}px)`;
+      }
+      setActive();
+      // Recalcular en resize/scroll del nav
+      const nav = document.querySelector('nav');
+      nav.addEventListener('scroll', setActive);
+      window.addEventListener('resize', setActive);
+
+      // ====== Revelado suave con IntersectionObserver ======
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReduced && 'IntersectionObserver' in window){
+        const obs = new IntersectionObserver((entries)=>{
+          entries.forEach(e=>{
+            if(e.isIntersecting){ e.target.classList.add('show'); obs.unobserve(e.target); }
+          });
+        }, { root:null, rootMargin:'0px 0px -10% 0px', threshold:0.1 });
+        document.querySelectorAll('.fade-in').forEach(el=>{
+          // pequeña demora escalonada si tiene --delay
+          const delay = el.style.getPropertyValue('--delay') || '0s';
+          el.style.transitionDelay = delay;
+          obs.observe(el);
+        });
+      } else {
+        document.querySelectorAll('.fade-in').forEach(el=>el.classList.add('show'));
+      }
+
+      // ====== Seguridad: avisar si gcLogout no está expuesto ======
       if (typeof window.gcLogout !== 'function') {
         console.warn('gcLogout no está definido. En guard.js expón la función: window.gcLogout = async () => { /* signOut + redirect */ }');
       }
+
+      // ====== Mostrar la página cuando el guard confirme ======
+      // (Tu guard.js debe llamar a: document.documentElement.style.visibility = 'visible' cuando la sesión es válida)
+      // Aquí solo añadimos un fallback por si ya estuviera visible post-auth:
+      setTimeout(()=>{
+        if (document.documentElement.style.visibility !== 'visible'){
+          // No forzamos, dejamos que guard.js lo haga; esto es solo defensa suave.
+        }
+      }, 150);
     </script>
   </body>
 </html>
