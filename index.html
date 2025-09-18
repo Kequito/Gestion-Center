@@ -216,28 +216,28 @@
       <section class="grid">
         <article class="card reveal" style="--delay:.05s">
           <h3>Reportes diarios</h3>
-          <a href="estadisticas.html">📈 <span>Ir a Estadísticas</span></a>
-          <a href="opo11.html">🧰 <span>New Report CC Perú</span></a>
-          <a href="postsale.html">🚚 <span>Post-Sale New Report</span></a>
+          <a href="./estadisticas.html">📈 <span>Ir a Estadísticas</span></a>
+          <a href="./opo11.html">🧰 <span>New Report CC Perú</span></a>
+          <a href="./postsale.html">🚚 <span>Post-Sale New Report</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.1s">
           <h3>Operaciones</h3>
-          <a href="distribucion.html">📋 <span>Distribución</span></a>
-          <a href="camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
-          <a href="pintado.html">🧮 <span>Queues Heatmap</span></a>
+          <a href="./distribucion.html">📋 <span>Distribución</span></a>
+          <a href="./camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
+          <a href="./pintado.html">🧮 <span>Queues Heatmap</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.15s">
           <h3>Cobertura</h3>
-          <a href="cobertura.html">🌎 <span>Mapa de cobertura</span></a>
-          <a href="newcobertura.html">🧭 <span>New Cobertura 1.1</span></a>
+          <a href="./cobertura.html">🌎 <span>Mapa de cobertura</span></a>
+          <a href="./newcobertura.html">🧭 <span>New Cobertura 1.1</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.2s">
           <h3>Utilidades</h3>
-          <a href="tablita.html">📄 <span>Tablita :3</span></a>
-          <a href="login.html">🧪 <span>Test</span></a>
+          <a href="./tablita.html">📄 <span>Tablita :3</span></a>
+          <a href="./login.html">🧪 <span>Test</span></a>
         </article>
       </section>
 
@@ -309,6 +309,26 @@
       }
       // Nota: guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
     </script>
+
+    <!-- 🔒 Normalizador de enlaces del sidebar (GH Pages de proyecto / dominio propio) -->
+    <script>
+    (() => {
+      const isGhProject = location.hostname.endsWith('github.io');
+      const PROJECT_SLUG = 'Gestion-Center'; // ¡respeta mayúsculas!
+      const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
+
+      document.querySelectorAll('nav a.nav-item[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        // Deja anclas internas tal cual
+        if (href.startsWith('#')) return;
+        // Ya absoluta: no tocar
+        if (/^https?:\/\//i.test(href)) return;
+        // Normaliza relativo
+        const clean = href.replace(/^\.?\//, '');
+        a.setAttribute('href', base + clean);
+      });
+    })();
+    </script>
   </body>
 </html>
-
