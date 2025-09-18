@@ -14,7 +14,7 @@
     *{box-sizing:border-box}
     body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
 
-    /* ===== Sidebar ===== */
+    /* Sidebar */
     aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
     .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
     nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
@@ -22,33 +22,50 @@
     nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
     .spacer{ flex:1; }
 
-    /* ===== Main ===== */
+    /* Main */
     main{ margin-left:220px; padding:28px; width:calc(100% - 220px); }
     .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
     .subtitle{ margin:0 0 10px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
     .datetime{ font-size:14px; font-weight:600; margin:6px 0 16px; opacity:.9; }
 
-    /* ===== Filtros / acciones ===== */
-    .filters{ display:grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap:12px; align-items:end; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 16px; }
+    /* Filtros */
+    .filters{ display:grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap:12px; align-items:end; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:12px; margin:8px 0 12px; }
     .filter-group{ display:flex; flex-direction:column; gap:6px; }
     .filter-group label{ font-size:12px; color:var(--txt-muted); }
     .filter-group select, .filter-group input[type="text"], .filter-group textarea{
       padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color);
       background:var(--table-bg); color:var(--txt); height:38px;
     }
-    .filter-group textarea{
-      height:auto; min-height:38px; resize:vertical; line-height:1.2; font-family:'Lexend',sans-serif;
-    }
+    .filter-group textarea{ height:auto; min-height:38px; resize:vertical; line-height:1.2; font-family:'Lexend',sans-serif; }
     .grid-span-2{ grid-column: span 2; }
     .grid-span-3{ grid-column: span 3; }
+
+    .rowstats{
+      display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px;
+    }
+    .chip{
+      background:#334766; border:1px solid #2a3d5e; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700;
+    }
     .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; align-self:center; }
 
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
+    /* Toolbar */
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
     button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
     button:hover{ background:var(--accent-color); }
     button:active{ transform:translateY(1px); }
+    .btn-alt{ background:#2f446a; }
+    .toggle{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid #2a3d5e; background:#334766; border-radius:10px; cursor:pointer; user-select:none;
+    }
+    .toggle input{ appearance:none; width:32px; height:18px; border-radius:999px; background:#6b7fa3; position:relative; outline:none; transition:background .2s; }
+    .toggle input:checked{ background:#43a047; }
+    .toggle input::after{
+      content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; top:2px; left:2px; transition:left .2s;
+    }
+    .toggle input:checked::after{ left:16px; }
+    .toggle span{ font-size:12px; color:var(--txt-muted) }
 
-    /* ===== Tabla ===== */
+    /* Tabla */
     table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); position:relative; }
     thead th{ background:var(--header-bg); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
     tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
@@ -80,7 +97,7 @@
   </style>
 </head>
 <body>
-  <!-- ===== Sidebar ===== -->
+  <!-- Sidebar -->
   <aside>
     <div class="logo">🧭 Gestión Center</div>
     <nav>
@@ -89,15 +106,15 @@
       <a href="distribucion.html">📋 Distribución</a>
       <a href="estadisticas.html">📈 Estadísticas</a>
       <a href="cobertura.html">🌎 Cobertura</a>
-      <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
-      <a href="postsale.html">🚚 Post-Sale New Report </a>
+      <a class="active" href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+      <a href="postsale.html">🚚 Post-Sale New Report</a>
       <a href="opo11.html">🧰 New Report CC Perú</a>
       <a href="#contacto">📬 Contacto</a>
     </nav>
     <div class="spacer"></div>
   </aside>
 
-  <!-- ===== Contenido ===== -->
+  <!-- Contenido -->
   <main>
     <h1 class="page-title">👥 Selector de Apoyo – Ver 2.0</h1>
     <p class="subtitle">Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> · filtros, orden acumulativo y lista de PEROP</p>
@@ -125,7 +142,7 @@
         <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
       </div>
 
-      <!-- NUEVO: filtro de lista de PEROP -->
+      <!-- Lista PEROP + toggle incluir/excluir -->
       <div class="filter-group grid-span-3">
         <label for="fltList">Lista PEROP1AM (uno por línea o separados por , ;)</label>
         <textarea id="fltList" rows="4" placeholder="Ejemplo:
@@ -133,13 +150,28 @@ PEROP1AM-41058
 PEROP1AM-39726
 41058"></textarea>
       </div>
+      <div class="filter-group">
+        <label>Modo lista PEROP</label>
+        <label class="toggle" title="X para alternar">
+          <input type="checkbox" id="toggleInclude" checked />
+          <span id="toggleLabel">Incluir lista</span>
+        </label>
+      </div>
 
       <div class="counter" id="rowCounter">Mostrando 0 registros</div>
+    </div>
+
+    <div class="rowstats">
+      <div class="chip" id="chipRows">0 filas</div>
+      <div class="chip" id="chipTLs">0 TLs únicos</div>
+      <div class="chip" id="chipCamps">0 campañas</div>
     </div>
 
     <div class="toolbar">
       <button id="btnReset">🧹 Restablecer filtros</button>
       <button id="btnExport">⬇️ Exportar (CSV)</button>
+      <button id="btnCopyPerop" class="btn-alt">📋 Copiar PEROPs filtrados</button>
+      <button id="btnCopyNames" class="btn-alt">📋 Copiar Nombres filtrados</button>
     </div>
 
     <table id="tblCampRev">
@@ -168,6 +200,7 @@ PEROP1AM-39726
     // ===== Utilidades =====
     const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
     const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
 
     function actualizarFechaHora(){
       const ahora=new Date();
@@ -181,13 +214,22 @@ PEROP1AM-39726
     let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[];
     // Orden acumulativo: array de { col, mode } -> 1=desc, 2=asc
     let sortState=[];
+    const STATE_KEY='selector_apoyo_v2_state';
 
     // ===== Carga/ensamble de datos =====
+    async function loadJSON(url){
+      // cache-bust para evitar JSON viejo
+      const sep = url.includes('?') ? '&' : '?';
+      const r = await fetch(url+sep+'t='+(Date.now()));
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+
     async function loadData(){
       try{
         const [distrib, camp] = await Promise.all([
-          fetch('datadistribucion.json').then(r=>r.json()),
-          fetch('camprev.json').then(r=>r.json())
+          loadJSON('datadistribucion.json'),
+          loadJSON('camprev.json')
         ]);
         rawDistrib=distrib; rawCamp=camp;
         // Join por PEROP (distrib.C === camp.A)
@@ -211,6 +253,7 @@ PEROP1AM-39726
           return acc;
         },[]);
         buildFilters(dataFinal);
+        restoreState(); // restaura filtros/orden si existe
         applyFiltersAndRender();
         toast('✅ Datos cargados');
       }catch(e){ console.error(e); toast('❌ No se pudieron cargar los JSON'); }
@@ -239,16 +282,21 @@ PEROP1AM-39726
       if(!raw) return { full:new Set(), digits:new Set() };
       const tokens = raw
         .split(/[\n,;]+/g)
-        .map(s=>s.replace(/\s+/g,'').toUpperCase()) // quita espacios
+        .map(s=>s.replace(/\s+/g,'').toUpperCase())
         .filter(Boolean);
 
       const full = new Set(tokens);
       const digits = new Set(tokens.map(t=>{
-        const m = t.match(/(\d{3,})$/); // últimos dígitos (3+)
+        const m = t.match(/(\d{3,})$/);
         return m ? m[1] : '';
       }).filter(Boolean));
 
       return { full, digits };
+    }
+
+    function peropPass(peropClean, peropNum, {full,digits}, includeMode){
+      const inList = full.has(peropClean) || (peropNum && digits.has(peropNum));
+      return includeMode ? inList : !inList;
     }
 
     function applyFiltersAndRender(){
@@ -257,7 +305,8 @@ PEROP1AM-39726
       const vDe = norm(document.getElementById('fltDesc').value);
       const vTu = norm(document.getElementById('fltTurno').value);
       const vQ  = norm(document.getElementById('fltSearch').value);
-      const { full:peropFull, digits:peropDigits } = parsePeropList(document.getElementById('fltList').value);
+      const includeMode = document.getElementById('toggleInclude').checked; // true=Incluir, false=Excluir
+      const lists = parsePeropList(document.getElementById('fltList').value);
 
       filtered = dataFinal.filter(r=>{
         const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
@@ -265,9 +314,8 @@ PEROP1AM-39726
         // Filtro de lista PEROP (si hay lista, aplica)
         const peropClean = String(r.perop).replace(/\s+/g,'').toUpperCase();
         const peropNum   = (peropClean.match(/(\d{3,})$/)||[])[1] || '';
-        const passList   = (peropFull.size===0 && peropDigits.size===0) ||
-                           peropFull.has(peropClean) ||
-                           (peropNum && peropDigits.has(peropNum));
+        const hasList    = (lists.full.size>0 || lists.digits.size>0);
+        const passList   = !hasList ? true : peropPass(peropClean, peropNum, lists, includeMode);
 
         const passOthers = (!vTL||a===vTL) && (!vCa||d===vCa) && (!vDe||e===vDe) && (!vTu||f===vTu) &&
                            (!vQ || b.includes(vQ) || c.includes(vQ));
@@ -275,7 +323,7 @@ PEROP1AM-39726
         return passList && passOthers;
       });
 
-      // ===== Ordenamiento acumulativo =====
+      // Orden acumulativo
       if(sortState.length){
         filtered.sort((x,y)=>{
           for(const {col,mode} of sortState){
@@ -297,6 +345,8 @@ PEROP1AM-39726
         });
       }
       renderTable(filtered);
+      updateChips(filtered);
+      saveState();
     }
 
     // ===== Render =====
@@ -349,6 +399,14 @@ PEROP1AM-39726
       });
     }
 
+    function updateChips(rows){
+      const tlSet=new Set(rows.map(r=>r.teamLeader).filter(Boolean));
+      const campSet=new Set(rows.map(r=>r.campania).filter(Boolean));
+      document.getElementById('chipRows').textContent = `${rows.length} fila${rows.length===1?'':'s'}`;
+      document.getElementById('chipTLs').textContent = `${tlSet.size} TL${tlSet.size===1?'':'s'} únicos`;
+      document.getElementById('chipCamps').textContent = `${campSet.size} campaña${campSet.size===1?'':'s'}`;
+    }
+
     // ===== Orden 3 estados acumulativo =====
     function resetHeadSortClasses(){
       document.querySelectorAll('#headRow th').forEach(th=>{
@@ -387,7 +445,7 @@ PEROP1AM-39726
       applyFiltersAndRender();
     }
 
-    // ===== Export CSV =====
+    // ===== Export / Copiar =====
     function exportCSV(){
       if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
       const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
@@ -395,6 +453,47 @@ PEROP1AM-39726
       const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
       const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); // BOM
       const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`camprev_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    async function copyList(getter, label){
+      const arr = filtered.map(getter).filter(Boolean);
+      if(!arr.length){ toast('ℹ️ Nada para copiar'); return; }
+      const text = arr.join('\n');
+      try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }
+      catch{ toast('❌ No se pudo copiar'); }
+    }
+
+    // ===== Estado persistente =====
+    function saveState(){
+      const state = {
+        fltTL: document.getElementById('fltTL').value,
+        fltCamp: document.getElementById('fltCamp').value,
+        fltDesc: document.getElementById('fltDesc').value,
+        fltTurno: document.getElementById('fltTurno').value,
+        fltSearch: document.getElementById('fltSearch').value,
+        fltList: document.getElementById('fltList').value,
+        includeMode: document.getElementById('toggleInclude').checked,
+        sortState
+      };
+      try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch{}
+    }
+
+    function restoreState(){
+      try{
+        const raw = localStorage.getItem(STATE_KEY);
+        if(!raw) return;
+        const s = JSON.parse(raw);
+        document.getElementById('fltTL').value = s.fltTL ?? '';
+        document.getElementById('fltCamp').value = s.fltCamp ?? '';
+        document.getElementById('fltDesc').value = s.fltDesc ?? '';
+        document.getElementById('fltTurno').value = s.fltTurno ?? '';
+        document.getElementById('fltSearch').value = s.fltSearch ?? '';
+        document.getElementById('fltList').value = s.fltList ?? '';
+        document.getElementById('toggleInclude').checked = !!s.includeMode;
+        document.getElementById('toggleLabel').textContent = s.includeMode ? 'Incluir lista' : 'Excluir lista';
+        sortState = Array.isArray(s.sortState) ? s.sortState : [];
+        refreshHeadSortClasses();
+      }catch{}
     }
 
     // ===== Eventos =====
@@ -405,20 +504,51 @@ PEROP1AM-39726
       document.getElementById('fltTurno').value='';
       document.getElementById('fltSearch').value='';
       document.getElementById('fltList').value='';
+      document.getElementById('toggleInclude').checked=true;
+      document.getElementById('toggleLabel').textContent='Incluir lista';
       sortState=[]; // limpiar orden acumulativo
       resetHeadSortClasses();
       applyFiltersAndRender();
+      toast('🔄 Filtros restablecidos');
     });
+
     document.getElementById('btnExport').addEventListener('click',exportCSV);
-    ['fltTL','fltCamp','fltDesc','fltTurno','fltSearch','fltList'].forEach(id=>{
-      document.getElementById(id).addEventListener('input',applyFiltersAndRender);
+    document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
+    document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
+
+    const onInput = debounce(applyFiltersAndRender, 160);
+    ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>{
       document.getElementById(id).addEventListener('change',applyFiltersAndRender);
     });
+    ['fltSearch','fltList'].forEach(id=>{
+      document.getElementById(id).addEventListener('input',onInput);
+    });
+
+    document.getElementById('toggleInclude').addEventListener('change',()=>{
+      document.getElementById('toggleLabel').textContent = document.getElementById('toggleInclude').checked ? 'Incluir lista' : 'Excluir lista';
+      applyFiltersAndRender();
+    });
+
     document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
 
+    // Atajos: Ctrl/Cmd + K = focus búsqueda, X = alternar incluir/excluir
+    document.addEventListener('keydown',(e)=>{
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){
+        e.preventDefault();
+        document.getElementById('fltSearch').focus();
+      }else if(e.key.toLowerCase()==='x'){
+        const t=document.getElementById('toggleInclude');
+        t.checked=!t.checked;
+        document.getElementById('toggleLabel').textContent = t.checked ? 'Incluir lista' : 'Excluir lista';
+        applyFiltersAndRender();
+      }
+    });
+
     // Init
-    resetHeadSortClasses();
-    loadData();
+    (function init(){
+      resetHeadSortClasses();
+      loadData();
+    })();
   </script>
 </body>
 </html>
