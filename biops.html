@@ -168,9 +168,7 @@
         box-shadow:0 0 0 3px var(--input-focus);
       }
       /* Opciones del select: forzamos contraste */
-      select option{
-        background:#0b132a; color:#e9f1ff;
-      }
+      select option{ background:#0b132a; color:#e9f1ff; }
 
       .counter{ margin-left:auto; font-weight:800; font-size:13px; padding:8px 12px; border-radius:999px; background:#0f1a33; border:1px solid var(--input-stroke); }
 
@@ -221,7 +219,7 @@
     <!-- Fondo en cuadrícula sutil con parallax -->
     <div id="bg-grid" aria-hidden="true"></div>
 
-    <!-- SIDEBAR (idéntica al ecosistema) -->
+    <!-- SIDEBAR -->
     <aside class="reveal">
       <div class="logo">🧭 Gestión Center</div>
       <nav role="navigation" aria-label="Navegación principal">
@@ -230,7 +228,7 @@
         <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
         <a href="./plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
         <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
-        <a href="./biops.html" class="nav-item active">🔗 <span>BI de OPs + Links</span></a>
+        <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
         <a href="./cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
         <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
         <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
@@ -303,7 +301,7 @@
         </table>
       </div>
 
-      <!-- CONTACTO (opcional al final) -->
+      <!-- CONTACTO -->
       <section id="contacto" class="reveal" style="--delay:.1s; margin-top:16px">
         <article class="hero" style="background:var(--bg-card)">
           <h2 style="margin:0 0 6px; font:700 18px/1.2 var(--font-title)">Contacto</h2>
@@ -314,62 +312,57 @@
 
     <div id="toast" role="status" aria-live="polite"></div>
 
+    <!-- ========= Nave activo + indicador (robusto) ========= -->
     <script type="module">
-      // ========= Nave activo + indicador =========
       const items = [...document.querySelectorAll('nav .nav-item')];
       const indicator = document.querySelector('.nav-indicator');
-      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+
+      // Normaliza una URL a "archivo.html" (basename con .html)
+      const pathKey = (url) => {
+        const u = new URL(url, location.origin);
+        let file = u.pathname.split('/').pop() || 'index.html';
+        file = file.toLowerCase();
+        if (!file.endsWith('.html')) file += '.html';
+        return file;
+      };
+      const currentKey = pathKey(location.href);
+
       function setActive(){
-        let active = items[0];
-        items.forEach(a=>{
-          const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
-          if(href && href === current) active = a;
-          a.classList.toggle('active', a===active);
-          a.toggleAttribute('aria-current', a===active ? 'page' : false);
+        // 1) Coincidencia exacta
+        let active = items.find(a => pathKey(a.href) === currentKey);
+        // 2) Aliases (si migraste nombres)
+        if (!active) {
+          const aliases = {
+            'estadisticas.html': 'biops.html'
+          };
+          const aliasKey = aliases[currentKey] || Object.keys(aliases).find(k => aliases[k] === currentKey);
+          if (aliasKey) active = items.find(a => pathKey(a.href) === aliasKey);
+        }
+        // 3) Fallback
+        if (!active) active = items[0];
+
+        items.forEach(a => {
+          const on = a === active;
+          a.classList.toggle('active', on);
+          a.toggleAttribute('aria-current', on ? 'page' : false);
         });
+
+        // Mueve el indicador
         const rect = active.getBoundingClientRect();
         const p = active.parentElement.getBoundingClientRect();
         const y = rect.top - p.top + active.parentElement.scrollTop;
         indicator.style.height = rect.height + 'px';
         indicator.style.transform = `translateY(${y}px)`;
       }
-      setActive();
+
       const nav = document.querySelector('nav');
       nav.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
 
-      // ========= Reveal al scroll =========
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if(!reduced && 'IntersectionObserver' in window){
-        const io = new IntersectionObserver((entries)=>{
-          for(const e of entries){
-            if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); }
-          }
-        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
-        document.querySelectorAll('.reveal').forEach(el=>{
-          const delay = el.style.getPropertyValue('--delay') || '0s';
-          el.style.transitionDelay = delay; io.observe(el);
-        });
-      } else {
-        document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
-      }
-
-      // ========= Parallax sutil del fondo =========
-      const bg=document.getElementById('bg-grid');
-      let rafId=null;
-      function parallax(e){
-        const x=(e.clientX / window.innerWidth - .5)*6;
-        const y=(e.clientY / window.innerHeight - .5)*6;
-        if(rafId) cancelAnimationFrame(rafId);
-        rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
-      }
-      if(!reduced) window.addEventListener('mousemove', parallax);
-
-      // ========= Seguridad: logout expuesto por guard.js =========
-      if (typeof window.gcLogout !== 'function') {
-        console.warn('gcLogout no está definido. En guard.js expón la función global: window.gcLogout = async () => { /* signOut + redirect */ }');
-      }
-      // Nota: guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
+      // Llamadas iniciales (incluye microtask por si el normalizador cambia hrefs)
+      setActive();
+      queueMicrotask(setActive);
+      setTimeout(setActive, 0);
     </script>
 
     <!-- ===== LÓGICA DE LA PÁGINA (Filtros/Tabla/CSV) ===== -->
@@ -540,4 +533,3 @@
     </script>
   </body>
 </html>
-
