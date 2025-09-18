@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — v2.0</title>
 
-    <!-- Fuentes (titulares + texto) -->
+    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
@@ -53,21 +53,6 @@
         --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
       }
 
-      /* Tema claro */
-      [data-theme="light"]{
-        --bg-app:#f6f8ff;
-        --bg-aside:#ffffff;
-        --bg-card:linear-gradient(160deg, #ffffff, #f1f5ff);
-        --txt:#0f162e;
-        --txt-muted:#4b5878;
-        --stroke:rgba(15,22,46,.12);
-
-        --primary:#2d5bff;
-        --accent:#00bcd4;
-
-        --chip-ok:#16a34a; --chip-warn:#b7791f; --chip-bad:#dc2626;
-      }
-
       *{box-sizing:border-box}
       html,body{height:100%}
       body{
@@ -83,36 +68,6 @@
       @media (prefers-reduced-motion:no-preference){
         .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
-      }
-
-      /* ====== Topbar ====== */
-      .topbar{
-        position:sticky; top:0; z-index:20;
-        backdrop-filter:saturate(120%) blur(8px);
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
-        border-bottom:1px solid var(--stroke);
-        padding:10px 18px; margin-left:280px;
-        display:flex; align-items:center; gap:10px; justify-content:space-between;
-      }
-      .brand{display:flex; align-items:center; gap:10px; font-family:var(--font-title); font-weight:700}
-      .toolbar{display:flex; align-items:center; gap:8px}
-      .search{
-        display:flex; align-items:center; gap:8px; padding:10px 12px; min-width:260px;
-        background:color-mix(in oklab, var(--bg-aside) 94%, transparent); border:1px solid var(--stroke);
-        border-radius:999px; font-size:14px; color:var(--txt-muted)
-      }
-      .search input{
-        background:transparent; border:0; outline:none; color:var(--txt); width:180px; font-family:var(--font-body)
-      }
-      .icon-btn{
-        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 94%, transparent);
-        padding:10px 12px; border-radius:999px; cursor:pointer; color:var(--txt);
-        transition:transform var(--t-fast) ease, background var(--t-med) ease;
-      }
-      .icon-btn:hover{transform:translateY(-1px)}
-      .avatar{
-        width:34px; height:34px; border-radius:50%; border:1px solid var(--stroke);
-        background:linear-gradient(180deg, var(--primary), var(--accent));
       }
 
       /* ====== Sidebar ====== */
@@ -163,9 +118,9 @@
       .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
       /* ====== Main ====== */
-      main{ margin-left:280px; padding:20px 22px 40px; }
+      main{ margin-left:280px; padding:24px 22px 40px; }
 
-      /* Hero con parallax/glow */
+      /* Hero */
       .hero{
         position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
         background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
@@ -199,32 +154,15 @@
       .card a span{ opacity:.85; transition:opacity var(--t-fast) ease, transform var(--t-fast) ease }
       .card a:hover span{ opacity:1; transform:translateX(2px) }
 
-      /* Chips métricas */
-      .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-      .chip{
-        display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font:600 12px var(--font-body);
-        border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 90%, transparent);
-      }
-      .ok{ background:color-mix(in oklab, var(--chip-ok) 20%, transparent); color:#06250f; border-color:color-mix(in oklab, var(--chip-ok) 45%, transparent) }
-      .warn{ background:color-mix(in oklab, var(--chip-warn) 20%, transparent); color:#301c05; border-color:color-mix(in oklab, var(--chip-warn) 45%, transparent) }
-      .bad{ background:color-mix(in oklab, var(--chip-bad) 20%, transparent); color:#2b0606; border-color:color-mix(in oklab, var(--chip-bad) 45%, transparent) }
-
-      /* Skeletons */
-      .skeleton{
-        position:relative; overflow:hidden; border-radius:10px; background:color-mix(in oklab, var(--bg-aside) 86%, transparent);
-      }
-      .skeleton::after{
-        content:""; position:absolute; inset:0; translate: -100% 0;
-        background:linear-gradient(90deg, transparent, color-mix(in oklab, var(--txt) 8%, transparent), transparent);
-        animation:shimmer 1.4s infinite var(--curve);
-      }
-      @keyframes shimmer{to{translate:100% 0}}
-
       /* Footer contacto */
       .contact{ margin-top:16px }
 
       /* Responsive */
-      @media (max-width:1080px){ .topbar{margin-left:0} main{margin-left:0} aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)} .grid{grid-template-columns:1fr} }
+      @media (max-width:1080px){
+        main{margin-left:0; padding:16px}
+        aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
+        .grid{grid-template-columns:1fr}
+      }
     </style>
   </head>
   <body>
@@ -260,22 +198,10 @@
       <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
-    <!-- TOPBAR -->
-    <header class="topbar reveal">
-      <div class="brand">🌟 <span>Dashboard</span></div>
-      <div class="toolbar">
-        <div class="search">
-          🔎 <input type="search" placeholder="Buscar sección u operador…" aria-label="Buscar"/>
-        </div>
-        <button class="icon-btn" id="themeToggle" title="Cambiar tema" aria-label="Cambiar tema">🌓</button>
-        <div class="avatar" title="Kevin"></div>
-      </div>
-    </header>
-
     <!-- CONTENIDO -->
     <main>
-      <!-- HERO -->
-      <section class="hero reveal" style="--delay:0s">
+      <!-- HERO (sin mini KPIs) -->
+      <section class="hero reveal">
         <div class="blob" aria-hidden="true"></div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
           <div>
@@ -283,13 +209,6 @@
             <p>Sesión verificada ✅ | Accesos rápidos y estado general.</p>
           </div>
           <div class="pill">Online • Operaciones</div>
-        </div>
-
-        <!-- Chips métricas del día (inician como skeleton) -->
-        <div class="chips" id="kpis" style="margin-top:12px">
-          <div class="chip skeleton" style="width:140px; height:28px"></div>
-          <div class="chip skeleton" style="width:160px; height:28px"></div>
-          <div class="chip skeleton" style="width:120px; height:28px"></div>
         </div>
       </section>
 
@@ -373,18 +292,6 @@
         document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
       }
 
-      // ========= Toggle tema (persistente) =========
-      const KEY='gc-theme';
-      const root=document.documentElement;
-      const btn=document.getElementById('themeToggle');
-      const saved=localStorage.getItem(KEY);
-      if(saved) root.setAttribute('data-theme', saved);
-      btn.addEventListener('click', ()=>{
-        const now = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
-        root.setAttribute('data-theme', now);
-        localStorage.setItem(KEY, now);
-      });
-
       // ========= Parallax sutil del fondo de cuadrícula =========
       const bg=document.getElementById('bg-grid');
       let rafId=null;
@@ -396,21 +303,10 @@
       }
       if(!reduced) window.addEventListener('mousemove', parallax);
 
-      // ========= KPIs demo con skeleton -> contenido =========
-      const kpis=document.getElementById('kpis');
-      setTimeout(()=>{
-        kpis.innerHTML = `
-          <div class="chip ok">✅ Approve <strong style="margin-left:6px">34%</strong></div>
-          <div class="chip warn">⚠️ Reject <strong style="margin-left:6px">9%</strong></div>
-          <div class="chip bad">🗑️ Trash <strong style="margin-left:6px">12%</strong></div>
-        `;
-      }, 800);
-
       // ========= Seguridad: logout expuesto por guard.js =========
       if (typeof window.gcLogout !== 'function') {
         console.warn('gcLogout no está definido. En guard.js expón la función global: window.gcLogout = async () => { /* signOut + redirect */ }');
       }
-
       // Nota: guard.js debe hacer document.documentElement.style.visibility='visible' al validar sesión.
     </script>
   </body>
