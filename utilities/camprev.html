@@ -207,9 +207,12 @@
       <div class="logo">🧭 Gestión Center</div>
       <nav role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
+
         <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
         <a href="plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
-        <a href="distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <!-- 🔁 Ruta actualizada -->
+        <a href="./Gestion-Center/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+
         <a href="biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
         <a href="cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
         <a href="camprev.html" class="nav-item active" aria-current="page">👥 <span>Selector de Apoyo Ver 2.0</span></a>
@@ -233,7 +236,12 @@
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
           <div>
             <h1>👥 Selector de Apoyo — Ver 2.0</h1>
-            <p>Cruce dinámico de <code>datadistribucion.json</code> + <code>camprev.json</code> con filtros combinables, orden acumulativo y lista PEROP.</p>
+            <p>
+              Cruce dinámico de
+              <code>datadistribucion.json</code> +
+              <code>datacamprev.json</code>
+              con filtros combinables, orden acumulativo y lista PEROP.
+            </p>
           </div>
           <div class="chip" id="fechaHora">—</div>
         </div>
@@ -393,7 +401,11 @@ PEROP1AM-39726
       }
       async function loadData(){
         try{
-          const [distrib,camp]=await Promise.all([ loadJSON('datadistribucion.json'), loadJSON('camprev.json') ]);
+          const [distrib,camp]=await Promise.all([
+            loadJSON('datadistribucion.json'),
+            // 🔁 Archivo y ruta actualizados
+            loadJSON('Gestion-Center/utilities/datacamprev.json')
+          ]);
           rawDistrib=distrib; rawCamp=camp;
           dataFinal=rawCamp.reduce((acc,row)=>{
             const op=rawDistrib.find(o=>String(o.C)===String(row.A));
@@ -635,7 +647,7 @@ PEROP1AM-39726
       [fltSearch,fltList].forEach(el=>el.addEventListener('input',onInput));
       toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
 
-      // <<< cambio importante: pasar el evento para soportar Shift+Click >>>
+      // Soporte Shift+Click
       document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',(e)=>cycleSort(th, e)));
 
       // Atajos
