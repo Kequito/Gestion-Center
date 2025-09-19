@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — v2.0</title>
 
-    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- 🔒 Ocultar hasta validar sesión -->
+    <!-- Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
@@ -19,15 +18,11 @@
         --radius:16px; --radius-sm:12px; --radius-xs:10px;
         --font-title:'Outfit',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
         --font-body:'Lexend',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-        --t-fast:.15s; --t-med:.22s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
+        --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
         --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
-        --hover-delay:80ms;
-        --sidebar-w:280px;         /* ancho expandido */
-        --sidebar-w-compact:72px;  /* ancho compacto  */
       }
       [data-theme="dark"]{
-        --bg-app:#070b1a; --bg-aside:#0c1228;
-        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
+        --bg-app:#070b1a; --bg-aside:#0c1228; --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
         --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
         --primary:#5b8bff; --accent:#7ae3ff;
       }
@@ -41,255 +36,147 @@
           var(--bg-app);
         overflow-x:hidden;
       }
-
-      /* ===== Reveal ===== */
       @media (prefers-reduced-motion:no-preference){
         .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ===== Sidebar ===== */
+      /* Sidebar */
       aside{
-        position:fixed; inset:0 auto 0 0; width:var(--sidebar-w); z-index:25;
+        position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
         background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
         border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; padding:14px 12px; gap:12px; overflow:auto;
-        contain: content; /* rendimiento */
-        --pad-x: 10px;
+        display:flex; flex-direction:column; padding:18px 14px; gap:12px; overflow:auto;
       }
-      /* Scroll shadows (polish) */
-      aside::before, aside::after{
-        content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
-      }
-      aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
-      aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
 
-      /* Encabezado de marca mejorado */
+      /* —— Logo rectangular —— */
       .brand{
         display:flex; align-items:center; justify-content:center;
-        padding:12px; border-radius:var(--radius);
+        padding:8px 12px;
+        border-radius:var(--radius);
         border:1px solid var(--stroke);
-        background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        transition: transform var(--t-fast) var(--curve), box-shadow var(--t-fast) ease;
-        will-change: transform;
+        background:linear-gradient(132deg,
+          color-mix(in oklab, var(--primary) 18%, transparent),
+          color-mix(in oklab, var(--accent) 12%, transparent)
+        );
+        height:84px; min-height:84px;
         text-decoration:none;
+        transition:transform var(--t-fast) var(--curve), box-shadow var(--t-fast) ease;
       }
-      .brand:hover{ transform:scale(1.01) }
-      .brand picture{ display:block; }
-      .brand img{ width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
-
-      /* Botón compact/expand */
-      .sidebar-toggle{
-        display:flex; align-items:center; justify-content:center;
-        gap:8px; width:100%; border:1px solid var(--stroke);
-        padding:10px; border-radius:12px; background:rgba(255,255,255,.04);
-        color:var(--txt); cursor:pointer; font-weight:700;
-        transition:filter var(--t-med) ease, transform var(--t-fast) ease;
+      .brand img{
+        height:auto; max-height:56px; width:auto; max-width:100%;
+        object-fit:contain;
+        filter:drop-shadow(0 6px 14px rgba(0,0,0,.35));
       }
-      .sidebar-toggle:hover{ filter:brightness(1.05) }
-      .sidebar-toggle:active{ transform:translateY(1px) }
-      .sidebar-toggle .lbl{ font-size:13px }
-      .sidebar-toggle[aria-pressed="true"] .lbl::after{ content:" (compacto)"; opacity:.8; font-weight:600 }
+      body.sidebar-compact .brand{height:56px; min-height:56px; padding:6px 8px;}
+      body.sidebar-compact .brand img{max-height:32px; width:auto;}
 
       nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
-      .nav-group{
-        border:1px solid var(--stroke); border-radius:14px; overflow:hidden;
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent)
-      }
-      .nav-head{
-        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
-        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
-      }
+      .nav-group{ border:1px solid var(--stroke); border-radius:14px; overflow:hidden; background:color-mix(in oklab, var(--bg-aside) 92%, transparent) }
+      .nav-head{ width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
+        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px; }
       .nav-head .chev{ transition:transform var(--t-med) var(--curve) }
       .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
       .nav-body{ overflow:hidden; transition:grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
       .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
-      .nav-body-inner{ min-height:0; padding:6px; display:flex; flex-direction:column; gap:8px }
-
-      .nav-item{
-        display:flex; align-items:center; gap:10px; padding:12px var(--pad-x);
-        border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px;
-        border:1px solid transparent;
-        transition:
-          background var(--t-med) ease var(--hover-delay),
-          transform var(--t-fast) ease var(--hover-delay);
-        min-height:40px;
-      }
+      .nav-body-inner{ min-height:0; padding:6px }
+      .nav-item{ display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent; transition:background var(--t-med) ease, transform var(--t-fast) ease }
       .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      .nav-item .label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100% }
-      .nav-item.active{
-        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
-        border-color:var(--stroke)
-      }
-      /* Indicador activo elástico */
-      .nav-indicator{
-        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
-        background:linear-gradient(180deg, var(--primary), var(--accent));
-        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
-        transition:transform 220ms var(--curve), height 220ms ease;
-        will-change: transform, height;
-        pointer-events:none;
-      }
-
-      /* Foco accesible */
-      .nav-item:focus-visible, .nav-head:focus-visible, .sidebar-toggle:focus-visible, .logout:focus-visible, .brand:focus-visible{
-        outline:2px solid color-mix(in oklab, var(--accent) 65%, white);
-        outline-offset:2px; border-radius:12px;
-      }
+      .nav-item.active{ background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent)); border-color:var(--stroke) }
+      .nav-indicator{ position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0; background:linear-gradient(180deg, var(--primary), var(--accent)); box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent); transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height; pointer-events:none; }
 
       .spacer{flex:1}
-
-      /* Role card mejorado */
-      .role-card{
-        display:flex; align-items:center; gap:10px; padding:10px 12px;
-        border-radius:14px; border:1px solid var(--stroke);
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
-      }
+      .role-card{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 92%, transparent) }
       .role-dot{ width:14px; height:14px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25) }
       .role-text small{ color:var(--txt-muted) }
-      .role-badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--stroke); background:rgba(255,255,255,.06) }
-      .logout{
-        width:100%; border:1px solid var(--stroke);
-        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
-        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
-        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
-      }
+      .logout{ width:100%; border:1px solid var(--stroke); background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff; padding:12px; border-radius:12px; cursor:pointer; font-weight:700; transition:transform var(--t-fast) ease, filter var(--t-med) ease }
       .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
-      /* ===== Main ===== */
-      main{ margin-left:var(--sidebar-w); padding:24px 22px 40px; transition:margin-left var(--t-med) var(--curve) }
-      .hero{
-        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
-        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        border:1px solid var(--stroke); overflow:hidden;
-      }
+      /* Main */
+      main{ margin-left:280px; padding:24px 22px 40px; }
+      .hero{ position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px; background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent)); border:1px solid var(--stroke); overflow:hidden; }
       .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
       .hero p{margin:0; color:var(--txt-muted); font-size:14px}
-      .blob{
-        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
-        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
-        filter:blur(18px); pointer-events:none; transform:translateZ(0);
-      }
+      .blob{ position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%); filter:blur(18px); pointer-events:none; transform:translateZ(0); }
 
       .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(2, minmax(290px, 1fr))}
-      .card{
-        position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
-        background:var(--bg-card); border:1px solid var(--stroke); box-shadow:var(--elev-1);
-        transition:transform var(--t-med) var(--curve), box-shadow var(--t-med) ease, border-color var(--t-med) ease;
-        transform:translateZ(0)
-      }
+      .card{ position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate; background:var(--bg-card); border:1px solid var(--stroke); box-shadow:var(--elev-1); transition:transform var(--t-med) var(--curve), box-shadow var(--t-med) ease, border-color var(--t-med) ease; transform:translateZ(0) }
       .card:hover{ transform:translateY(-2px); box-shadow:var(--elev-2); border-color:color-mix(in oklab, var(--primary) 25%, var(--stroke)) }
       .card h3{ margin:0 0 10px; color:var(--txt); font:600 15px/1.1 var(--font-title) }
       .card a{ display:flex; align-items:center; gap:8px; color:var(--txt); text-decoration:none; padding:8px 0; border-radius:10px }
       .card a span{ opacity:.85; transition:opacity var(--t-fast) ease, transform var(--t-fast) ease }
       .card a:hover span{ opacity:1; transform:translateX(2px) }
 
-      /* ===== Sidebar compacto ===== */
-      body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
-      body.sidebar-compact main{ margin-left:var(--sidebar-w-compact) }
-      body.sidebar-compact .brand img{ width:42px }
-      body.sidebar-compact .nav-head .txt, body.sidebar-compact .nav-item .label, body.sidebar-compact .sidebar-toggle .lbl, body.sidebar-compact .role-text{ display:none }
-      body.sidebar-compact .nav-head{ justify-content:center }
-      body.sidebar-compact .nav-group{ gap:0 }
-      body.sidebar-compact .nav-item{ justify-content:center; padding-inline:0 }
-      body.sidebar-compact .role-card{ justify-content:center; padding:10px }
-      /* tooltips simples usando title por ahora */
-      .nav-item, .nav-head, .sidebar-toggle, .logout, .brand{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+      aside::before, aside::after{ content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5; }
+      aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
+      aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
 
-      /* ===== Responsive ===== */
       @media (max-width:1080px){
         main{margin-left:0; padding:16px}
         aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
-        body.sidebar-compact aside{ width:auto }
-        body.sidebar-compact main{ margin-left:0 }
         .grid{grid-template-columns:1fr}
       }
     </style>
   </head>
   <body>
-    <!-- Fondo en cuadrícula sutil con parallax -->
-    <div id="bg-grid" aria-hidden="true" style="
-      position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
-      background:
-        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
-        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
-    </div>
+    <div id="bg-grid" aria-hidden="true" style="position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none; background:
+      linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;"></div>
 
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="reveal" id="gc-aside">
-      <!-- Brand con webp + fallback png -->
-      <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio" title="Inicio">
-        <picture>
-          <source srcset="./images/logogestioncenter.webp" type="image/webp"/>
-          <img id="brandLogo" src="./images/logogestioncenter.png" alt="Gestión Center" loading="lazy" decoding="async"/>
-        </picture>
+    <!-- SIDEBAR -->
+    <aside class="reveal">
+      <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio">
+        <img id="brandLogo" src="./images/logogestioncenter.webp" alt="Gestión Center">
       </a>
-
-      <!-- Botón compact/expand -->
-      <button class="sidebar-toggle" id="btnSidebarToggle" aria-pressed="false" title="Compactar / Expandir">
-        <span class="icon">⇆</span><span class="lbl">Cambiar ancho</span>
-      </button>
 
       <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
-        <a href="./index.html" class="nav-item" title="Inicio">
-          🏠 <span class="label">Inicio</span>
-        </a>
+        <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
 
         <!-- REPORTES -->
         <section class="nav-group" data-key="grp-reportes">
-          <button class="nav-head" title="Reportes">
-            <span class="chev">▾</span> <span class="txt">📊 Reportes</span>
-          </button>
+          <button class="nav-head"><span class="chev">▾</span> 📊 Reportes</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="/reports/newreport.html" class="nav-item" title="New Report">🧰 <span class="label">New Report</span></a>
-            <a href="/reports/psreport.html" class="nav-item" title="Post-Sale Report">🚚 <span class="label">Post-Sale Report</span></a>
+            <a href="/reports/newreport.html" class="nav-item">🧰 <span>New Report</span></a>
+            <a href="/reports/psreport.html" class="nav-item">🚚 <span>Post-Sale Report</span></a>
           </div></div>
         </section>
 
         <!-- OPERACIONES -->
         <section class="nav-group" data-key="grp-operaciones">
-          <button class="nav-head" title="Operaciones">
-            <span class="chev">▾</span> <span class="txt">🛠️ Operaciones</span>
-          </button>
+          <button class="nav-head"><span class="chev">▾</span> 🛠️ Operaciones</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="/operations/distribucion.html" class="nav-item" title="Distribución">📋 <span class="label">Distribución</span></a>
-            <a href="/operations/biops.html" class="nav-item" title="BI de OPs + Links">🔗 <span class="label">BI de OPs + Links</span></a>
+            <a href="/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+            <a href="/operations/biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
           </div></div>
         </section>
 
         <!-- COBERTURA -->
         <section class="nav-group" data-key="grp-cobertura">
-          <button class="nav-head" title="Cobertura">
-            <span class="chev">▾</span> <span class="txt">🌎 Cobertura</span>
-          </button>
+          <button class="nav-head"><span class="chev">▾</span> 🌎 Cobertura</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="./cobertura.html" class="nav-item" title="Mapa de cobertura">🗺️ <span class="label">Mapa de cobertura</span></a>
-            <a href="./newcobertura.html" class="nav-item" title="New Cobertura 1.1">🧭 <span class="label">New Cobertura 1.1</span></a>
+            <a href="./cobertura.html" class="nav-item">🗺️ <span>Mapa de cobertura</span></a>
+            <a href="./newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
           </div></div>
         </section>
 
         <!-- UTILIDADES -->
         <section class="nav-group" data-key="grp-utils">
-          <button class="nav-head" title="Utilidades">
-            <span class="chev">▾</span> <span class="txt">🧩 Utilidades</span>
-          </button>
+          <button class="nav-head"><span class="chev">▾</span> 🧩 Utilidades</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="/utilities/camprev.html" class="nav-item" title="Selector de Apoyo 2.0">👥 <span class="label">Selector de Apoyo 2.0</span></a>
+            <a href="/utilities/camprev.html" class="nav-item">👥 <span>Selector de Apoyo 2.0</span></a>
           </div></div>
         </section>
       </nav>
 
       <div class="spacer"></div>
 
-      <!-- Role card con badge -->
       <div class="role-card" id="roleCard" title="Rango del usuario">
         <div class="role-dot" id="roleDot"></div>
         <div class="role-text">
-          <strong id="roleName">Invitado</strong>
-          <span class="role-badge" id="roleBadge" style="margin-left:6px">⭐ Invitado</span><br/>
+          <strong id="roleName">Invitado</strong><br>
           <small id="roleDesc">Acceso limitado</small>
         </div>
       </div>
@@ -297,7 +184,7 @@
       <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
-    <!-- ===== CONTENIDO ===== -->
+    <!-- CONTENIDO -->
     <main>
       <section class="hero reveal">
         <div class="blob" aria-hidden="true"></div>
@@ -337,11 +224,9 @@
     </main>
 
     <script type="module">
-      // ========= Indicador activo + auto-scroll =========
+      // Activo + indicador
       const items=[...document.querySelectorAll('nav .nav-item')];
       const indicator=document.querySelector('.nav-indicator');
-      const navEl=document.getElementById('gc-nav');
-
       function setActive(){
         const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
         let active=items[0];
@@ -351,25 +236,19 @@
           a.classList.toggle('active', a===active);
           a.toggleAttribute('aria-current', a===active ? 'page':false);
         });
-        // Indicador elástico + auto-scroll near viewport
-        if(active){
-          const pr=navEl.getBoundingClientRect();
-          const r=active.getBoundingClientRect();
-          const y=r.top - pr.top + navEl.scrollTop;
-          indicator.style.height=r.height+'px';
-          indicator.style.transform=`translateY(${y}px)`;
-          const margin=16;
-          const topNeeded = y - margin;
-          const bottomNeeded = y + r.height + margin - navEl.clientHeight;
-          if (topNeeded < navEl.scrollTop) navEl.scrollTo({top: topNeeded, behavior:'smooth'});
-          else if (bottomNeeded > navEl.scrollTop) navEl.scrollTo({top: bottomNeeded, behavior:'smooth'});
-        }
+        const nav=document.getElementById('gc-nav');
+        const navRect=nav.getBoundingClientRect();
+        const rect=active.getBoundingClientRect();
+        const y=rect.top - navRect.top + nav.scrollTop;
+        indicator.style.height=rect.height+'px';
+        indicator.style.transform=`translateY(${y}px)`;
       }
       setActive();
+      const navEl=document.getElementById('gc-nav');
       navEl.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
 
-      // ========= Grupos colapsables con memoria =========
+      // Grupos colapsables con memoria
       document.querySelectorAll('.nav-group').forEach(g=>{
         const key=g.dataset.key, head=g.querySelector('.nav-head');
         const saved=localStorage.getItem(key);
@@ -381,19 +260,17 @@
         });
       });
 
-      // ========= Reveal al scroll =========
+      // Reveal al scroll
       const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
-        const io=new IntersectionObserver((entries)=>{
-          for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } }
-        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        const io=new IntersectionObserver((entries)=>{ for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } } }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
         document.querySelectorAll('.reveal').forEach(el=>{
           const delay=el.style.getPropertyValue('--delay')||'0s';
           el.style.transitionDelay=delay; io.observe(el);
         });
       } else { document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // ========= Parallax fondo =========
+      // Parallax fondo
       const bg=document.getElementById('bg-grid'); let rafId=null;
       function parallax(e){
         const x=(e.clientX/window.innerWidth - .5)*6;
@@ -403,66 +280,21 @@
       }
       if(!reduced) window.addEventListener('mousemove', parallax);
 
-      // ========= Role UI (jerarquía + badge) =========
-      const ROLE_STYLE={
-        'owner':{name:'Owner',desc:'Control total',badge:'👑 Owner',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'admin':{name:'Admin',desc:'Administración',badge:'🛡️ Admin',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'supervisor':{name:'Supervisor',desc:'Lidera TLs',badge:'⭐ Supervisor',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},
-        'team leader':{name:'Team Leader',desc:'Lidera equipo',badge:'⭐ TL',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},
-        'analista':{name:'Analista',desc:'Calidad / Datos',badge:'📊 Analista',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'calidad':{name:'Calidad',desc:'Auditoría',badge:'🧪 Calidad',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'operador':{name:'Operador',desc:'Ventas / Gestión',badge:'⚙️ Operador',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},
-        'invitado':{name:'Invitado',desc:'Acceso limitado',badge:'⭐ Invitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}
-      };
-      function getRole(){
-        const qp=new URLSearchParams(location.search).get('role');
-        const w=(window.gcRole||'').toString().trim();
-        const ls=(localStorage.getItem('gc-role')||'').trim();
-        return (qp||w||ls||'Invitado');
-      }
+      // Role UI
+      const ROLE_STYLE={'owner':{name:'Owner',desc:'Control total',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},'admin':{name:'Admin',desc:'Administración',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},'supervisor':{name:'Supervisor',desc:'Lidera TLs',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},'team leader':{name:'Team Leader',desc:'Lidera equipo',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},'analista':{name:'Analista',desc:'Calidad / Datos',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},'calidad':{name:'Calidad',desc:'Auditoría',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},'operador':{name:'Operador',desc:'Ventas / Gestión',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},'invitado':{name:'Invitado',desc:'Acceso limitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}};
+      function getRole(){ const qp=new URLSearchParams(location.search).get('role'); const w=(window.gcRole||'').toString().trim(); const ls=(localStorage.getItem('gc-role')||'').trim(); return (qp||w||ls||'Invitado'); }
       function applyRoleUI(roleRaw){
-        const roleDot=document.getElementById('roleDot');
-        const roleName=document.getElementById('roleName');
-        const roleDesc=document.getElementById('roleDesc');
-        const roleBadge=document.getElementById('roleBadge');
-
-        const r=roleRaw.toLowerCase();
-        const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado';
-        const cfg=ROLE_STYLE[key];
-
-        roleDot.style.background=cfg.gradient;
-        roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
-        roleName.textContent=cfg.name;
-        roleDesc.textContent=cfg.desc;
-        roleBadge.textContent=cfg.badge;
-
-        // Invitado: baja el brillo del card
-        const card=document.getElementById('roleCard');
-        card.style.filter = (key==='invitado') ? 'saturate(0.8) brightness(0.95)' : 'none';
-
-        localStorage.setItem('gc-role', cfg.name);
+        const r=roleRaw.toLowerCase(); const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado'; const cfg=ROLE_STYLE[key];
+        roleDot.style.background=cfg.gradient; roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
+        roleName.textContent=cfg.name; roleDesc.textContent=cfg.desc; localStorage.setItem('gc-role', cfg.name);
       }
+      const roleDot=document.getElementById('roleDot'), roleName=document.getElementById('roleName'), roleDesc=document.getElementById('roleDesc');
       applyRoleUI(getRole());
 
-      // ========= Compact/Expand =========
-      const btnToggle=document.getElementById('btnSidebarToggle');
-      const compactKey='gc-sidebar-compact';
-      function setCompactState(on){
-        document.body.classList.toggle('sidebar-compact', !!on);
-        btnToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-        localStorage.setItem(compactKey, on ? '1' : '0');
-      }
-      btnToggle.addEventListener('click', ()=> setCompactState(!document.body.classList.contains('sidebar-compact')));
-      // Restaurar preferencia
-      setCompactState(localStorage.getItem(compactKey)==='1');
-
-      // ========= Seguridad: logout expuesto por guard.js =========
-      if(typeof window.gcLogout!=='function'){
-        console.warn('gcLogout no está definido. Expón: window.gcLogout = async () => { /* signOut + redirect */ }');
-      }
+      if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido. Expón: window.gcLogout = async () => { /* signOut + redirect */ }'); }
     </script>
 
-    <!-- 🔒 Normalizador de rutas (GitHub Pages / dominio propio) -->
+    <!-- Normalizador de rutas -->
     <script>
     (() => {
       const isGhProject = location.hostname.endsWith('github.io');
@@ -476,20 +308,12 @@
         a.setAttribute('href', base + clean);
       });
 
-      // Normaliza logo (soporta fallback png)
-      const logo = document.querySelector('#brandLink img');
+      const logo = document.getElementById('brandLogo');
       if (logo) {
-        let src = logo.getAttribute('src') || './images/logogestioncenter.png';
+        let src = logo.getAttribute('src') || './images/logogestioncenter.webp';
         if (!/^https?:\/\//i.test(src)) {
           src = src.replace(/^\.?\//, '');
           logo.setAttribute('src', base + src);
-        }
-        // También el source webp
-        const source = document.querySelector('#brandLink source');
-        if (source) {
-          let s = source.getAttribute('srcset') || './images/logogestioncenter.webp';
-          s = s.replace(/^\.?\//, '');
-          source.setAttribute('srcset', base + s);
         }
       }
     })();
