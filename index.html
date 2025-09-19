@@ -3,13 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gestión Center — v2.0/title>
+    <title>Gestión Center — v2.0</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
@@ -120,7 +119,7 @@
 
         <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
 
-        <!-- REPORTES -->
+        <!-- REPORTES (solo 2) -->
         <section class="nav-group" data-key="grp-reportes">
           <button class="nav-head"><span class="chev">▾</span> 📊 Reportes</button>
           <div class="nav-body"><div class="nav-body-inner">
@@ -129,12 +128,15 @@
           </div></div>
         </section>
 
-        <!-- OPERACIONES (solo 2, con nueva ruta /operations/...) -->
+        <!-- OPERACIONES (ahora incluye Estadísticas) -->
         <section class="nav-group" data-key="grp-operaciones">
           <button class="nav-head"><span class="chev">▾</span> 🛠️ Operaciones</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
-            <a href="/operations/biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
+            <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+            <a href="./estadisticas.html" class="nav-item">📈 <span>Estadísticas</span></a>
+            <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+            <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+            <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
           </div></div>
         </section>
 
@@ -146,12 +148,9 @@
           </div></div>
         </section>
 
-        <!-- UTILIDADES (agregamos las que salieron de Operaciones) -->
         <section class="nav-group" data-key="grp-utils">
           <button class="nav-head"><span class="chev">▾</span> 🧩 Utilidades</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo 2.0</span></a>
-            <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
             <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
             <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
           </div></div>
@@ -183,7 +182,7 @@
         </div>
       </section>
 
-      <!-- CARDS (sincronizadas con los cambios) -->
+      <!-- CARDS (ajustadas a los nuevos paths) -->
       <section class="grid">
         <article class="card reveal" style="--delay:.05s">
           <h3>Reportes</h3>
@@ -193,8 +192,10 @@
 
         <article class="card reveal" style="--delay:.1s">
           <h3>Operaciones</h3>
-          <a href="/operations/distribucion.html">📋 <span>Distribución</span></a>
-          <a href="/operations/biops.html">🔗 <span>BI de OPs + Links</span></a>
+          <a href="./estadisticas.html">📈 <span>Estadísticas</span></a>
+          <a href="./distribucion.html">📋 <span>Distribución</span></a>
+          <a href="./camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
+          <a href="./pintado.html">🧮 <span>Queues Heatmap</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.15s">
@@ -205,8 +206,6 @@
 
         <article class="card reveal" style="--delay:.2s">
           <h3>Utilidades</h3>
-          <a href="./camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
-          <a href="./pintado.html">🧮 <span>Queues Heatmap</span></a>
           <a href="./tablita.html">📄 <span>Tablita :3</span></a>
           <a href="./login.html">🧪 <span>Test</span></a>
         </article>
@@ -286,7 +285,7 @@
       if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido. Expón: window.gcLogout = async () => { /* signOut + redirect */ }'); }
     </script>
 
-    <!-- Normalizador de rutas (GitHub Pages / dominio propio) -->
+    <!-- Normalizador de rutas para GitHub Pages -->
     <script>
     (() => {
       const isGhProject = location.hostname.endsWith('github.io');
@@ -312,5 +311,3 @@
     </script>
   </body>
 </html>
-
-
