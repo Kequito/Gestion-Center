@@ -306,9 +306,10 @@
       let dataRaw=[]; let filtered=[];
       let sortState={ col:null, mode:0 }; // 0 none, 1 desc, 2 asc
 
+      // 🔄 Carga desde /operations/databiops.json
       async function loadData(){
         try{
-          const res=await fetch('datalast30days.json'); // ajusta si tu JSON vive en otra carpeta
+          const res=await fetch('databiops.json', {cache:'no-store'});
           const data=await res.json();
           dataRaw = data.map(op=>({
             teamLeader: op.A||'',
@@ -322,8 +323,8 @@
           }));
           buildFilters(dataRaw);
           applyFiltersAndRender();
-          toast('✅ Datos cargados');
-        }catch(e){ console.error(e); toast('❌ No se pudo cargar datalast30days.json'); }
+          toast('✅ Datos cargados (databiops.json)');
+        }catch(e){ console.error(e); toast('❌ No se pudo cargar databiops.json'); }
       }
 
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
