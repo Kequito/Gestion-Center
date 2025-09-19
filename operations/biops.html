@@ -12,49 +12,25 @@
 
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
-    <script type="module" src="./assets/guard.js"></script>
+    <!-- ⚠️ desde /operations/ subimos un nivel -->
+    <script type="module" src="../assets/guard.js"></script>
 
     <style>
-      /* =========================
-         DESIGN SYSTEM — v2.0
-         ========================= */
       :root{
-        --radius:16px;
-        --radius-sm:12px;
-        --radius-xs:10px;
-
+        --radius:16px; --radius-sm:12px; --radius-xs:10px;
         --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-
-        --t-fast:.15s;
-        --t-med:.25s;
-        --t-slow:.6s;
-        --curve:cubic-bezier(.2,.7,.2,1);
-
-        --elev-1:0 6px 20px rgba(0,0,0,.25);
-        --elev-2:0 12px 34px rgba(0,0,0,.35);
+        --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
+        --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
       }
       [data-theme="dark"]{
-        --bg-app:#070b1a;
-        --bg-aside:#0c1228;
+        --bg-app:#070b1a; --bg-aside:#0c1228;
         --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
-        --txt:#e9f1ff;
-        --txt-muted:#b8c6de;
-        --stroke:rgba(255,255,255,.10);
-        --primary:#5b8bff;
-        --accent:#7ae3ff;
-
+        --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
+        --primary:#5b8bff; --accent:#7ae3ff;
         --chip-ok:#22c55e; --chip-warn:#f59e0b; --chip-bad:#ef4444;
-
-        /* Tabla */
-        --table-bg: #131a35;
-        --table-head:#0f1730;
-        --table-border:#233055;
-
-        /* Inputs */
-        --input-bg:#0f1a33;
-        --input-stroke:#2a3a6a;
-        --input-focus:#5b8bff80;
+        --table-bg:#131a35; --table-head:#0f1730; --table-border:#233055;
+        --input-bg:#0f1a33; --input-stroke:#2a3a6a; --input-focus:#5b8bff80;
       }
 
       *{box-sizing:border-box}
@@ -68,13 +44,12 @@
         overflow-x:hidden;
       }
 
-      /* Reveal */
       @media (prefers-reduced-motion:no-preference){
         .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ====== Sidebar (idéntico) ====== */
+      /* ====== Sidebar ====== */
       aside{
         position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
@@ -82,19 +57,14 @@
         border-right:1px solid var(--stroke);
         display:flex; flex-direction:column; padding:22px 14px; gap:12px; overflow:auto;
       }
-      .logo{
-        display:flex; align-items:center; justify-content:center; gap:10px;
-        font-family:var(--font-title); font-size:20px; font-weight:700; letter-spacing:.2px;
+      .brand{
+        display:flex; align-items:center; justify-content:center;
         padding:12px; border-radius:var(--radius); border:1px solid var(--stroke);
         background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        position:relative; isolation:isolate;
+        text-decoration:none;
       }
-      .logo::after{
-        content:""; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none;
-        box-shadow:0 0 28px color-mix(in oklab, var(--primary) 35%, transparent),
-                   0 0 42px color-mix(in oklab, var(--accent) 22%, transparent);
-        opacity:.18;
-      }
+      .brand img{ width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+
       nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
       nav a{
         display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px;
@@ -132,7 +102,7 @@
           linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
       }
 
-      /* Hero compacto */
+      /* Hero */
       .hero{
         position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
         background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
@@ -146,7 +116,7 @@
         filter:blur(18px); pointer-events:none; transform:translateZ(0);
       }
 
-      /* Panel filtros */
+      /* Filtros */
       .filters{
         display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;
         background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius);
@@ -167,7 +137,6 @@
         border-color:var(--primary);
         box-shadow:0 0 0 3px var(--input-focus);
       }
-      /* Opciones del select: forzamos contraste */
       select option{ background:#0b132a; color:#e9f1ff; }
 
       .counter{ margin-left:auto; font-weight:800; font-size:13px; padding:8px 12px; border-radius:999px; background:#0f1a33; border:1px solid var(--input-stroke); }
@@ -196,18 +165,11 @@
       tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; color:#e6edff; }
       thead th:first-child, tbody td:first-child{ text-align:left; }
       tr:hover td{ background:rgba(255,255,255,.03) }
-
       .perop{ font-family:ui-monospace, Menlo, Consolas, monospace; font-size:13px; opacity:.95; cursor:copy; }
+      .sort-none::after{ content:""; } .sort-desc::after{ content:" ↓"; font-weight:900; } .sort-asc::after{ content:" ↑"; font-weight:900; }
 
-      /* Orden 3 estados */
-      .sort-none::after{ content:""; }
-      .sort-desc::after{ content:" ↓"; font-weight:900; }
-      .sort-asc::after{ content:" ↑"; font-weight:900; }
-
-      /* Toast */
       #toast{ position:fixed; bottom:18px; right:20px; background:#0b1022; color:#fff; padding:12px 18px; border-radius:12px; border:1px solid var(--stroke); box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
 
-      /* Responsive */
       @media (max-width:1080px){
         main{margin-left:0; padding:16px}
         aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
@@ -221,23 +183,33 @@
 
     <!-- SIDEBAR -->
     <aside class="reveal">
-      <div class="logo">🧭 Gestión Center</div>
+      <!-- Logo clicable (sube un nivel) -->
+      <a class="brand" href="../index.html" aria-label="Inicio">
+        <img id="brandLogo" src="../images/logogestioncenter.webp" alt="Gestión Center">
+      </a>
+
       <nav role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
-        <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
-        <a href="./plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
-        <a href="./distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
-        <a href="./biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
-        <a href="./cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
-        <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
-        <a href="./postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
-        <a href="./opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
-        <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
-        <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
-        <a href="./newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
-        <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
-        <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
+        <a href="../index.html" class="nav-item">🏠 <span>Inicio</span></a>
+
+        <!-- Reportes -->
+        <a href="/reports/newreport.html" class="nav-item">🧰 <span>New Report</span></a>
+        <a href="/reports/psreport.html" class="nav-item">🚚 <span>Post-Sale Report</span></a>
+
+        <!-- Operaciones -->
+        <a href="/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <a href="/operations/biops.html" class="nav-item active">🔗 <span>BI de OPs + Links</span></a>
+
+        <!-- Cobertura -->
+        <a href="/cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
+        <a href="/newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
+
+        <!-- Utilidades -->
+        <a href="/camprev.html" class="nav-item">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+        <a href="/pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+        <a href="/tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
+        <a href="/login.html" class="nav-item">🧪 <span>Test</span></a>
       </nav>
       <div class="spacer"></div>
       <button class="logout" onclick="gcLogout()">Salir</button>
@@ -253,12 +225,6 @@
             <h1>🔗 BI de OPs + Links</h1>
             <p>Accesos directos a BI (04/505/844/97) filtrados por Operador · orden 3 estados · export rápido.</p>
             <div id="fechaHora" style="margin-top:6px; font-weight:600;"></div>
-          </div>
-          <div class="pill" style="display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
-            background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 50%, white));
-            color:#0b1022; font-weight:700; border:1px solid color-mix(in oklab, var(--accent) 65%, white);
-            box-shadow:0 8px 24px color-mix(in oklab, var(--accent) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.6);">
-            Online • Operaciones
           </div>
         </div>
       </section>
@@ -300,76 +266,34 @@
           <tbody></tbody>
         </table>
       </div>
-
-      <!-- CONTACTO -->
-      <section id="contacto" class="reveal" style="--delay:.1s; margin-top:16px">
-        <article class="hero" style="background:var(--bg-card)">
-          <h2 style="margin:0 0 6px; font:700 18px/1.2 var(--font-title)">Contacto</h2>
-          <p style="margin:0; color:var(--txt-muted); font-size:14px">¿Ideas para mejorar? Escríbeme y lo iteramos :3</p>
-        </article>
-      </section>
     </main>
 
     <div id="toast" role="status" aria-live="polite"></div>
 
-    <!-- ========= Nave activo + indicador (robusto) ========= -->
+    <!-- ========= Nave activo + indicador ========= -->
     <script type="module">
       const items = [...document.querySelectorAll('nav .nav-item')];
       const indicator = document.querySelector('.nav-indicator');
 
-      // Normaliza una URL a "archivo.html" (basename con .html)
-      const pathKey = (url) => {
-        const u = new URL(url, location.origin);
-        let file = u.pathname.split('/').pop() || 'index.html';
-        file = file.toLowerCase();
-        if (!file.endsWith('.html')) file += '.html';
-        return file;
-      };
-      const currentKey = pathKey(location.href);
-
       function setActive(){
-        // 1) Coincidencia exacta
-        let active = items.find(a => pathKey(a.href) === currentKey);
-        // 2) Aliases (si migraste nombres)
-        if (!active) {
-          const aliases = {
-            'estadisticas.html': 'biops.html'
-          };
-          const aliasKey = aliases[currentKey] || Object.keys(aliases).find(k => aliases[k] === currentKey);
-          if (aliasKey) active = items.find(a => pathKey(a.href) === aliasKey);
-        }
-        // 3) Fallback
-        if (!active) active = items[0];
-
-        items.forEach(a => {
-          const on = a === active;
-          a.classList.toggle('active', on);
-          a.toggleAttribute('aria-current', on ? 'page' : false);
-        });
-
-        // Mueve el indicador
+        let active = document.querySelector('nav a.active') || items[0];
         const rect = active.getBoundingClientRect();
         const p = active.parentElement.getBoundingClientRect();
         const y = rect.top - p.top + active.parentElement.scrollTop;
         indicator.style.height = rect.height + 'px';
         indicator.style.transform = `translateY(${y}px)`;
       }
-
+      setActive();
       const nav = document.querySelector('nav');
       nav.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
-
-      // Llamadas iniciales (incluye microtask por si el normalizador cambia hrefs)
-      setActive();
-      queueMicrotask(setActive);
-      setTimeout(setActive, 0);
     </script>
 
-    <!-- ===== LÓGICA DE LA PÁGINA (Filtros/Tabla/CSV) ===== -->
+    <!-- ===== LÓGICA DE LA PÁGINA ===== -->
     <script>
-      // ===== Utilidades =====
       const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
       const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
       function actualizarFechaHora(){
         const ahora=new Date();
         const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -379,16 +303,13 @@
       }
       actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-      // ===== Estado =====
       let dataRaw=[]; let filtered=[];
       let sortState={ col:null, mode:0 }; // 0 none, 1 desc, 2 asc
 
-      // ===== Carga de datos =====
       async function loadData(){
         try{
-          const res=await fetch('datalast30days.json');
+          const res=await fetch('datalast30days.json'); // ajusta si tu JSON vive en otra carpeta
           const data=await res.json();
-          // Map A..H a claves legibles
           dataRaw = data.map(op=>({
             teamLeader: op.A||'',
             operador:   op.B||'',
@@ -405,44 +326,35 @@
         }catch(e){ console.error(e); toast('❌ No se pudo cargar datalast30days.json'); }
       }
 
-      // ===== Filtros =====
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
       function fillSelect(sel, values){ sel.innerHTML='<option value="">Todos</option>'+values.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join(''); }
-      function buildFilters(rows){
-        const tls=uniqSorted(rows.map(r=>r.teamLeader));
-        fillSelect(document.getElementById('fltTL'), tls);
-      }
+      function buildFilters(rows){ fillSelect(document.getElementById('fltTL'), uniqSorted(rows.map(r=>r.teamLeader))); }
 
       function applyFiltersAndRender(){
         const vTL = norm(document.getElementById('fltTL').value);
         const vQ  = norm(document.getElementById('fltSearch').value);
-
         filtered = dataRaw.filter(r=>{
           const a=norm(r.teamLeader), b=norm(r.operador), c=norm(r.perop);
           return (!vTL||a===vTL) && (!vQ || b.includes(vQ) || c.includes(vQ));
         });
-
         if(sortState.col){
           const col=sortState.col;
           filtered.sort((x,y)=>{
-            const A=String(x[col]??'');
-            const B=String(y[col]??'');
+            const A=String(x[col]??''), B=String(y[col]??'');
             const cmp=A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
             return sortState.mode===1 ? -cmp : sortState.mode===2 ? cmp : 0;
           });
         }
-
         renderTable(filtered);
       }
 
-      // ===== Render =====
       function renderTable(rows){
         const tbody=document.querySelector('#tblStats tbody');
         tbody.innerHTML='';
         const frag=document.createDocumentFragment();
         rows.forEach(r=>{
           const tr=document.createElement('tr');
-          const link = (href,text)=> href?`<a href="${href}" target="_blank" rel="noopener" style="color:#87cefa; text-decoration:underline; font-size:14px;">${text}</a>`:'—';
+          const link=(href,text)=> href?`<a href="${href}" target="_blank" rel="noopener" style="color:#87cefa;text-decoration:underline;font-size:14px;">${text}</a>`:'—';
           tr.innerHTML=`
             <td>${r.teamLeader}</td>
             <td>${r.operador}</td>
@@ -456,9 +368,8 @@
           frag.appendChild(tr);
         });
         tbody.appendChild(frag);
-        document.getElementById('rowCounter').textContent = `Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
+        document.getElementById('rowCounter').textContent=`Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
 
-        // Click-to-copy PEROP
         tbody.querySelectorAll('td.perop').forEach(td=>{
           td.title='Click para copiar PEROP';
           td.addEventListener('click', async ()=>{
@@ -469,41 +380,33 @@
         });
       }
 
-      // ===== Orden 3 estados =====
       function resetHeadSortClasses(){
         document.querySelectorAll('#headRow th').forEach(th=>{
-          th.classList.remove('sort-asc','sort-desc');
-          th.classList.add('sort-none');
+          th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
         });
       }
       function cycleSort(th){
         const col=th.dataset.col; if(!col) return;
         if(sortState.col!==col){ sortState={col,mode:1}; }
-        else { sortState.mode = (sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
+        else { sortState.mode=(sortState.mode+1)%3; if(sortState.mode===0) sortState.col=null; }
         resetHeadSortClasses();
         if(sortState.col){ th.classList.remove('sort-none'); th.classList.add(sortState.mode===1?'sort-desc':'sort-asc'); }
         applyFiltersAndRender();
       }
 
-      // ===== Export CSV =====
       function exportCSV(){
         if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
         const headers=['Team Leader','Operador','PEROP1AM','BI-04 Last 30 Days','BI-04 Current Month','BI-505 Current Month','BI-844 Current Month','BI-97 Current Month'];
         const rows=filtered.map(r=>[r.teamLeader,r.operador,r.perop,r.bi04_l30,r.bi04_cm,r.bi505_cm,r.bi844_cm,r.bi97_cm]);
         const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-        const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-        const url=URL.createObjectURL(blob); const a=document.createElement('a');
-        a.href=url; a.download=`BI_OPs_Links_${new Date().toISOString().slice(0,10)}.csv`;
+        const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=url; a.download=`BI_OPs_Links_${new Date().toISOString().slice(0,10)}.csv`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       }
 
-      // ===== Eventos =====
       document.getElementById('btnReset').addEventListener('click',()=>{
-        document.getElementById('fltTL').value='';
-        document.getElementById('fltSearch').value='';
-        sortState={col:null,mode:0};
-        resetHeadSortClasses();
-        applyFiltersAndRender();
+        document.getElementById('fltTL').value=''; document.getElementById('fltSearch').value='';
+        sortState={col:null,mode:0}; resetHeadSortClasses(); applyFiltersAndRender();
       });
       document.getElementById('btnExport').addEventListener('click',exportCSV);
       ['fltTL','fltSearch'].forEach(id=>{
@@ -512,24 +415,34 @@
       });
       document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',()=>cycleSort(th)));
 
-      // Init
       resetHeadSortClasses();
       loadData();
     </script>
 
-    <!-- 🔒 Normalizador de enlaces del sidebar (GH Pages de proyecto / dominio propio) -->
+    <!-- 🔒 Normalizador de enlaces del sidebar (GH Pages / dominio propio) -->
     <script>
-      (() => {
-        const isGhProject = location.hostname.endsWith('github.io');
-        const PROJECT_SLUG = 'Gestion-Center'; // ¡respeta mayúsculas!
-        const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
-        document.querySelectorAll('nav a.nav-item[href]').forEach(a => {
-          const href = a.getAttribute('href');
-          if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
-          const clean = href.replace(/^\.?\//, '');
-          a.setAttribute('href', base + clean);
-        });
-      })();
+    (() => {
+      const isGhProject = location.hostname.endsWith('github.io');
+      const PROJECT_SLUG = 'Gestion-Center';
+      const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
+
+      document.querySelectorAll('nav a.nav-item[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
+        const clean = href.replace(/^\.?\//, '');
+        a.setAttribute('href', base + clean);
+      });
+
+      // Normaliza logo desde subcarpeta
+      const logo = document.getElementById('brandLogo');
+      if (logo) {
+        let src = logo.getAttribute('src') || '../images/logogestioncenter.webp';
+        if (!/^https?:\/\//i.test(src)) {
+          src = src.replace(/^\.?\//, '');
+          logo.setAttribute('src', base + src);
+        }
+      }
+    })();
     </script>
   </body>
 </html>
