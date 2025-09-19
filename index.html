@@ -129,7 +129,7 @@
           </div></div>
         </section>
 
-        <!-- OPERACIONES (solo 2, con nueva ruta /operations/...) -->
+        <!-- OPERACIONES -->
         <section class="nav-group" data-key="grp-operaciones">
           <button class="nav-head"><span class="chev">▾</span> 🛠️ Operaciones</button>
           <div class="nav-body"><div class="nav-body-inner">
@@ -138,6 +138,7 @@
           </div></div>
         </section>
 
+        <!-- COBERTURA -->
         <section class="nav-group" data-key="grp-cobertura">
           <button class="nav-head"><span class="chev">▾</span> 🌎 Cobertura</button>
           <div class="nav-body"><div class="nav-body-inner">
@@ -146,14 +147,11 @@
           </div></div>
         </section>
 
-        <!-- UTILIDADES (agregamos las que salieron de Operaciones) -->
+        <!-- UTILIDADES (solo camprev, nueva ruta /utilities/...) -->
         <section class="nav-group" data-key="grp-utils">
           <button class="nav-head"><span class="chev">▾</span> 🧩 Utilidades</button>
           <div class="nav-body"><div class="nav-body-inner">
-            <a href="./camprev.html" class="nav-item">👥 <span>Selector de Apoyo 2.0</span></a>
-            <a href="./pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
-            <a href="./tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
-            <a href="./login.html" class="nav-item">🧪 <span>Test</span></a>
+            <a href="/utilities/camprev.html" class="nav-item">👥 <span>Selector de Apoyo 2.0</span></a>
           </div></div>
         </section>
       </nav>
@@ -183,7 +181,7 @@
         </div>
       </section>
 
-      <!-- CARDS (sincronizadas con los cambios) -->
+      <!-- CARDS -->
       <section class="grid">
         <article class="card reveal" style="--delay:.05s">
           <h3>Reportes</h3>
@@ -205,10 +203,7 @@
 
         <article class="card reveal" style="--delay:.2s">
           <h3>Utilidades</h3>
-          <a href="./camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
-          <a href="./pintado.html">🧮 <span>Queues Heatmap</span></a>
-          <a href="./tablita.html">📄 <span>Tablita :3</span></a>
-          <a href="./login.html">🧪 <span>Test</span></a>
+          <a href="/utilities/camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
         </article>
       </section>
     </main>
@@ -273,7 +268,14 @@
       if(!reduced) window.addEventListener('mousemove', parallax);
 
       // Role UI (mock)
-      const ROLE_STYLE={'owner':{name:'Owner',desc:'Control total',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},'admin':{name:'Admin',desc:'Administración',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},'supervisor':{name:'Supervisor',desc:'Lidera TLs',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},'team leader':{name:'Team Leader',desc:'Lidera equipo',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},'analista':{name:'Analista',desc:'Calidad / Datos',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},'calidad':{name:'Calidad',desc:'Auditoría',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},'operador':{name:'Operador',desc:'Ventas / Gestión',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},'invitado':{name:'Invitado',desc:'Acceso limitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}};
+      const ROLE_STYLE={'owner':{name:'Owner',desc:'Control total',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
+        'admin':{name:'Admin',desc:'Administración',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
+        'supervisor':{name:'Supervisor',desc:'Lidera TLs',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},
+        'team leader':{name:'Team Leader',desc:'Lidera equipo',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},
+        'analista':{name:'Analista',desc:'Calidad / Datos',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
+        'calidad':{name:'Calidad',desc:'Auditoría',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
+        'operador':{name:'Operador',desc:'Ventas / Gestión',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},
+        'invitado':{name:'Invitado',desc:'Acceso limitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}};
       function getRole(){ const qp=new URLSearchParams(location.search).get('role'); const w=(window.gcRole||'').toString().trim(); const ls=(localStorage.getItem('gc-role')||'').trim(); return (qp||w||ls||'Invitado'); }
       function applyRoleUI(roleRaw){
         const r=roleRaw.toLowerCase(); const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado'; const cfg=ROLE_STYLE[key];
