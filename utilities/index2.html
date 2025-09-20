@@ -12,7 +12,22 @@
 
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
-    <script type="module" src="./assets/guard.js"></script>
+
+    <!-- ✅ Watchdog: evita pantalla blanca si guard.js no carga -->
+    <script>
+      window.__guardWatchdog = setTimeout(() => {
+        try { document.documentElement.style.visibility = 'visible'; } catch(e){}
+      }, 2500);
+    </script>
+
+    <!-- ✅ Ruta correcta al guard desde /utilities/ -->
+    <script
+      type="module"
+      src="../assets/guard.js"
+      onerror="document.documentElement.style.visibility='visible'">
+    </script>
+
+    <noscript><style>html{visibility:visible}</style></noscript>
 
     <style>
       /* =========================
