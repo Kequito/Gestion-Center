@@ -13,10 +13,8 @@
   const base  = isGh ? `/${repo}/` : '/';
   const abs   = (p) => new URL(p.replace(/^\//, ''), location.origin + base).href;
 
-  // 👇 Importa siempre desde la BASE (sin ../)
   import(abs('assets/bw/shell.js')).catch(e => {
     console.error('[newreport] No se pudo cargar shell.js:', e);
-    // Fallback mínimo para que al menos se lea algo si falla el shell
     document.head.insertAdjacentHTML('beforeend', `
       <style>:root{--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
       --gray-700:#3f3f3f;--gray-900:#111;--white:#fff;--black:#0a0a0a;
@@ -24,32 +22,47 @@
   });
   </script>
 
-  <!-- Chart.js (para el gráfico de avance) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Estilos específicos B/N de esta página (usan los tokens del ecosistema) -->
+  <!-- Estilos específicos de esta página -->
   <style>
-    /* ÁREA DE LA PÁGINA */
+    /* Área */
     #nr .page-title{ display:flex; align-items:center; gap:12px; font-weight:700; font-size:22px; margin:0 0 6px }
     #nr .subtitle{ margin:0 0 10px; color:var(--gray-700); font-size:14px; display:flex; align-items:center; gap:10px }
 
-    /* Badge de estado Firebase */
+    /* Badge Firebase */
     #nr .badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--gray-300); background:var(--gray-100); color:var(--gray-900) }
-    #nr .badge.ok{ background:var(--gray-200) }
-    #nr .badge.warn{ background:var(--gray-300) }
+    #nr .badge.ok{ background:var(--gray-200) }  #nr .badge.warn{ background:var(--gray-300) }
 
     /* Fecha/Hora */
     #nr .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; color:var(--gray-700) }
 
-    /* Toolbar */
+    /* Toolbar (estética base) */
     #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px }
-    #nr .toolbar button{
-      padding:10px 14px; font-size:14px; cursor:pointer; border:1px solid var(--gray-300);
-      border-radius:10px; background:var(--white); color:var(--gray-900);
+    #nr .toolbar button,
+    #nr .history-actions button{
+      padding:10px 14px; font-size:14px; cursor:pointer;
+      border:1px solid var(--gray-300); border-radius:10px;
+      background:var(--white); color:var(--gray-900);
+      transition:background .15s ease, transform .03s ease, filter .15s ease;
     }
-    #nr .toolbar button:hover{ background:var(--gray-100) }
-    #nr .toolbar .btn-danger{ background:var(--gray-200) !important; border-color:var(--gray-300) !important }
-    #nr .toolbar .btn-danger:hover{ background:var(--gray-300) !important }
+    #nr .toolbar button:hover,
+    #nr .history-actions button:hover{ background:var(--gray-100) }
+    #nr .toolbar button:active,
+    #nr .history-actions button:active{ transform:translateY(1px) }
+    #nr .toolbar button[disabled],
+    #nr .history-actions button[disabled]{ opacity:.55; cursor:not-allowed }
+
+    /* Botón peligro */
+    #nr .toolbar .btn-danger,
+    #nr .history-actions .btn-danger{
+      background:#fef2f2; border-color:#fecaca; color:#991b1b;
+    }
+    #nr .toolbar .btn-danger:hover,
+    #nr .history-actions .btn-danger:hover{
+      background:#fee2e2; filter:brightness(1.02);
+    }
 
     /* Entrada */
     #nr textarea{
@@ -61,15 +74,21 @@
     #nr table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%;
       background:var(--white); border:1px solid var(--gray-300); border-radius:12px; overflow:hidden }
     #nr th,#nr td{ border-bottom:1px solid var(--gray-200); padding:10px; text-align:center }
-    #nr thead th{ background:var(--gray-100); color:var(--gray-900); cursor:pointer; position:relative; font-weight:700 }
+    /* NO re-definimos colores de thead para respetar el estándar global negro/blanco del shell */
+    #nr thead th{ cursor:pointer; position:relative; font-weight:700 }
     #nr thead th:first-child, #nr tbody td:first-child{ text-align:left }
     #nr .bandera{ width:20px; height:14px; margin-right:6px; vertical-align:middle }
     #nr .bold{ font-weight:700 }
 
-    /* Semáforo B/N (sin color) */
-    #nr .green, #nr .orange, #nr .red{
-      background:var(--gray-100); color:var(--gray-900);
+    /* Semáforo (colores) */
+    :root{
+      --ok-bg:#eaf7ee; --ok-fg:#166534; --ok-br:#22c55e;
+      --mid-bg:#fffbeb; --mid-fg:#92400e; --mid-br:#f59e0b;
+      --bad-bg:#fef2f2; --bad-fg:#991b1b; --bad-br:#ef4444;
     }
+    #nr td.green{ background:var(--ok-bg); color:var(--ok-fg); font-weight:800; border-left:3px solid var(--ok-br) }
+    #nr td.orange{ background:var(--mid-bg); color:var(--mid-fg); font-weight:800; border-left:3px solid var(--mid-br) }
+    #nr td.red{ background:var(--bad-bg); color:var(--bad-fg); font-weight:800; border-left:3px solid var(--bad-br) }
 
     #nr tfoot td{ font-weight:800; background:var(--gray-100); border-top:2px solid var(--gray-300) }
 
@@ -90,12 +109,15 @@
     #nr .metric{ background:var(--white); border:1px solid var(--gray-300); padding:10px 12px; border-radius:10px; min-width:150px }
     #nr .metric .title{ font-size:12px; color:var(--gray-700); margin-bottom:4px }
     #nr .metric .value{ font-size:18px; font-weight:800 }
-    #nr .metric .delta.up{ color:var(--gray-900) }
-    #nr .metric .delta.down{ color:var(--gray-700) }
+    #nr .metric .delta.up{ color:#16a34a }   /* verde */
+    #nr .metric .delta.down{ color:#dc2626 } /* rojo */
 
-    /* Tabla histórico */
-    #tablaHistorico .btn-danger{ padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid var(--gray-300); background:var(--gray-100); cursor:pointer }
-    #tablaHistorico .btn-danger:hover{ background:var(--gray-200) }
+    /* Histórico */
+    #tablaHistorico .btn-danger{
+      padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid #fecaca;
+      background:#fef2f2; color:#991b1b; cursor:pointer;
+    }
+    #tablaHistorico .btn-danger:hover{ background:#fee2e2 }
 
     /* Toast */
     #toast{ position:fixed; bottom:18px; right:20px; background:var(--black); color:#fff;
@@ -103,13 +125,10 @@
   </style>
 </head>
 <body>
-  <!-- El shell pinta el sidebar/hero. Solo ponemos contenido específico. -->
   <gc-shell hero-title="Reportes" hero-subtitle="New Report CC Perú">
     <section id="nr">
       <div class="page-title">🧰 New Report CC Perú</div>
-      <p class="subtitle">
-        <span id="fbBadge" class="badge">Conectando…</span>
-      </p>
+      <p class="subtitle"><span id="fbBadge" class="badge">Conectando…</span></p>
 
       <div class="datetime" id="fechaHora"></div>
 
@@ -117,7 +136,7 @@
         <button onclick="procesar('numerico')">📦 Vista Numérica</button>
         <button onclick="procesar('porcentaje')">📈 Vista Porcentual</button>
         <button onclick="procesar('mixto')">🔁 Vista Mixta</button>
-        <button onclick="borrarTodo()">🧹 Borrar</button>
+        <button class="btn-danger" onclick="borrarTodo()">🧹 Borrar</button>
         <button onclick="restablecerOrden()">🧭 Restablecer Orden</button>
       </div>
 
@@ -187,9 +206,9 @@
     <div id="toast"></div>
   </gc-shell>
 
-  <!-- ===== LÓGICA ESPECÍFICA DE LA PÁGINA ===== -->
+  <!-- ===== Lógica específica de la página ===== -->
   <script type="module">
-    // Espera robusta a que el shell haya renderizado el contenido
+    // Espera robusta
     async function waitForEl(sel, timeout=8000){
       const t0=performance.now();
       while(performance.now()-t0 < timeout){
@@ -202,7 +221,7 @@
     await customElements.whenDefined('gc-shell');
     await waitForEl('#encabezadoTabla');
 
-    // ====== Firebase (Firestore) ======
+    // Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
@@ -224,7 +243,6 @@
     const fbBadge = document.getElementById('fbBadge');
     function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
 
-    // Watchdog por si auth demora
     let authSettled = false;
     const authWatchdog = setTimeout(()=>{
       if (!authSettled) {
@@ -307,6 +325,8 @@
     }
 
     function pctSafe(v,t){ if(!t) return "0.0%"; return ((v/t)*100).toFixed(1)+"%"; }
+    const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
+
     function renderTabla(){
       const enc=document.getElementById("encabezadoTabla"), cuerpo=document.querySelector("#tablaReporte tbody"), tfoot=document.getElementById("filaTotales");
       enc.innerHTML=""; cuerpo.innerHTML=""; tfoot.innerHTML="";
@@ -315,9 +335,15 @@
       }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
       }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
       cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
+
       let datos=[...dataOriginal];
-      if(columnaOrdenActual){ const e=estadoOrdenColumna[columnaOrdenActual]||0; datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual); return e===1?B-A:e===2?A-B:0; }); }
+      if(columnaOrdenActual){
+        const e=estadoOrdenColumna[columnaOrdenActual]||0;
+        datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual);
+          return e===1?B-A:e===2?A-B:0; });
+      }
       const flag=p=>codigos[p]?`<img class="bandera" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
+
       for(const [pais,d] of datos){
         const t=d.total||0;
         const tr=document.createElement("tr");
@@ -325,29 +351,33 @@
         if(vistaActual==="numerico"){
           html+=`<td>${d.news}</td><td>${d.recall}</td><td>${d.noAnswer}</td><td>${d.approved}</td><td>${d.reject}</td><td>${d.trash}</td>`;
         }else if(vistaActual==="porcentaje"){
-          html+=`<td>${pctSafe(d.news,t)}</td><td>${pctSafe(d.recall,t)}</td><td>${pctSafe(d.noAnswer,t)}</td><td class="${colorPct(t?d.approved/t*100:0)}">${pctSafe(d.approved,t)}</td><td>${pctSafe(d.reject,t)}</td><td>${pctSafe(d.trash,t)}</td>`;
+          const cls = colorPct(t?d.approved/t*100:0);
+          html+=`<td>${pctSafe(d.news,t)}</td><td>${pctSafe(d.recall,t)}</td><td>${pctSafe(d.noAnswer,t)}</td><td class="${cls}">${pctSafe(d.approved,t)}</td><td>${pctSafe(d.reject,t)}</td><td>${pctSafe(d.trash,t)}</td>`;
         }else{
-          html+=`<td>${d.news}</td><td>${pctSafe(d.news,t)}</td><td>${d.recall}</td><td>${pctSafe(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pctSafe(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${colorPct(t?d.approved/t*100:0)}">${pctSafe(d.approved,t)}</td><td>${d.reject}</td><td>${pctSafe(d.reject,t)}</td><td>${d.trash}</td><td>${pctSafe(d.trash,t)}</td>`;
+          const cls = colorPct(t?d.approved/t*100:0);
+          html+=`<td>${d.news}</td><td>${pctSafe(d.news,t)}</td><td>${d.recall}</td><td>${pctSafe(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pctSafe(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${cls}">${pctSafe(d.approved,t)}</td><td>${d.reject}</td><td>${pctSafe(d.reject,t)}</td><td>${d.trash}</td><td>${pctSafe(d.trash,t)}</td>`;
         }
         tr.innerHTML=html; cuerpo.appendChild(tr);
       }
+
       const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.trash+=d.trash; a.reject+=d.reject; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
       if(Object.keys(dataGlobal).length){
         let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||0;
+        const clsTot = colorPct(t?tot.approved/t*100:0);
         if(vistaActual==="numerico"){
           foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
         }else if(vistaActual==="porcentaje"){
-          foot+=`<td>${pctSafe(tot.news,t)}</td><td>${pctSafe(tot.recall,t)}</td><td>${pctSafe(tot.noAnswer,t)}</td><td class="${colorPct(t?tot.approved/t*100:0)}">${pctSafe(tot.approved,t)}</td><td>${pctSafe(tot.reject,t)}</td><td>${pctSafe(tot.trash,t)}</td>`;
+          foot+=`<td>${pctSafe(tot.news,t)}</td><td>${pctSafe(tot.recall,t)}</td><td>${pctSafe(tot.noAnswer,t)}</td><td class="${clsTot}">${pctSafe(tot.approved,t)}</td><td>${pctSafe(tot.reject,t)}</td><td>${pctSafe(tot.trash,t)}</td>`;
         }else{
-          foot+=`<td>${tot.news}</td><td>${pctSafe(tot.news,t)}</td><td>${tot.recall}</td><td>${pctSafe(tot.recall,t)}</td><td>${tot.noAnswer}</td><td>${pctSafe(tot.noAnswer,t)}</td><td>${tot.approved}</td><td class="${colorPct(t?tot.approved/t*100:0)}">${pctSafe(tot.approved,t)}</td><td>${tot.reject}</td><td>${pctSafe(tot.reject,t)}</td><td>${tot.trash}</td><td>${pctSafe(tot.trash,t)}</td>`;
+          foot+=`<td>${tot.news}</td><td>${pctSafe(tot.news,t)}</td><td>${tot.recall}</td><td>${pctSafe(tot.recall,t)}</td><td>${tot.noAnswer}</td><td>${pctSafe(tot.noAnswer,t)}</td><td>${tot.approved}</td><td class="${clsTot}">${pctSafe(tot.approved,t)}</td><td>${tot.reject}</td><td>${pctSafe(tot.reject,t)}</td><td>${tot.trash}</td><td>${pctSafe(tot.trash,t)}</td>`;
         }
         tfoot.innerHTML=foot;
       }
     }
+
     function cambiarOrdenColumna(col){ estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1; if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0; columnaOrdenActual=estadoOrdenColumna[col]===0?null:col; savePref(PREF_ORDEN,estadoOrdenColumna); renderTabla(); }
     function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); renderTabla(); }
     function getValorOrdenable(d,col){ const t=d.total||0; const base={"Leads":d.total,"New":d.news,"% New":t?(d.news/t)*100:0,"Recall":d.recall,"% Recall":t?(d.recall/t)*100:0,"No Answer":d.noAnswer,"% No Answer":t?(d.noAnswer/t)*100:0,"Approve":d.approved,"% Approve":t?(d.approved/t)*100:0,"Reject":d.reject,"% Reject":t?(d.reject/t)*100:0,"Trash":d.trash,"% Trash":t?(d.trash/t)*100:0}; return base[col]||0; }
-    const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
 
     /* ===== Cloud histórico ===== */
     let cloudHistorico=[];
@@ -371,9 +401,7 @@
       rows.forEach(r=>{
         const iso  = r.fechaISO || ddmmyyyyToISO(r.fecha);
         const hhmm = r.hora24 || toHora24(r.hora);
-        if(!r.ts && iso && hhmm){
-          r.ts = new Date(`${iso}T${hhmm}:00`).getTime();
-        }
+        if(!r.ts && iso && hhmm){ r.ts = new Date(`${iso}T${hhmm}:00`).getTime(); }
         r.hora = hhmm || r.hora;
       });
       rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
@@ -517,7 +545,7 @@
       await ensurePaisesOptions();
       const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
 
-      // Preferencias
+      // Prefs
       const prefPais=readPref(PREF_FPAIS,'todos');
       const prefFecha=readPref(PREF_FFECHA,'');
       const prefPreset=readPref(PREF_PRESET,'dia');
@@ -538,6 +566,8 @@
       }
 
       cloudHistorico.forEach(r=>{
+        const pct = Number(r.pctApprove||0);
+        const cls = colorPct(pct);
         const tr=document.createElement("tr");
         tr.innerHTML=`
           <td>${r.hora||""}</td>
@@ -548,7 +578,7 @@
           <td>${r.recall||0}</td>
           <td>${r.noAnswer||0}</td>
           <td>${r.approve||0}</td>
-          <td>${Number(r.pctApprove||0).toFixed(1)}%</td>
+          <td class="${cls}">${pct.toFixed(1)}%</td>
           <td>${r.reject||0}</td>
           <td>${r.trash||0}</td>
           <td>
@@ -573,10 +603,7 @@
       const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
       const grayPal=['#111','#333','#555','#777','#999','#bbb'];
       const datasets=Object.keys(agr).map((k,i)=>({
-        label:k,
-        data:agr[k],
-        fill:false,
-        tension:.2,
+        label:k, data:agr[k], fill:false, tension:.2,
         borderColor: grayPal[i % grayPal.length],
         backgroundColor: grayPal[i % grayPal.length],
         pointRadius: 2
@@ -585,13 +612,13 @@
       window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
     }
 
-    // Exponer funciones a window (para los onclick del HTML)
+    // Exponer
     window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
     window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
     window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
     window.eliminarRegistro=eliminarRegistro;
 
-    // Auth → habilitar UI al conectar
+    // Auth
     onAuthStateChanged(auth, ()=>{
       authSettled = true;
       clearTimeout(authWatchdog);
@@ -601,13 +628,28 @@
     });
     signInAnonymously(auth).catch(e=>{ console.error('[GC] signInAnonymously error:', e); });
 
-    // Prefs iniciales de filtros
+    // Prefs iniciales
     document.addEventListener('DOMContentLoaded', ()=>{
       const prefPreset=readPref(PREF_PRESET,'dia');
       document.getElementById('presetRango').value=prefPreset;
       document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
       const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
     });
+
+    // Export CSV
+    function exportarHistoricoCSV(){
+      if(!cloudHistorico.length){ mostrarToast("ℹ️ No hay registros para exportar."); return; }
+      const encabezados=["Fecha","Hora","País","Leads","News","Recall","No Answer","Approve","% Approve","Reject","Trash"];
+      const filas=cloudHistorico.map(r=>[
+        r.fecha||"", r.hora||"", r.pais||"", r.leads||0, r.news||0, r.recall||0,
+        r.noAnswer||0, r.approve||0, r.pctApprove||0, r.reject||0, r.trash||0
+      ]);
+      const csv=[encabezados,...filas].map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url; a.download=`historico_gc_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
