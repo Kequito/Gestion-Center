@@ -1,8 +1,8 @@
 // Config global del ecosistema BW (marca + navegación)
 export const GC_CONFIG = {
   brand: {
-    logoPng: "images/logogestioncenter.png",
-    logoWebp: "images/logogestioncenter.webp",
+    logoPng: "images/logo1.png",
+    logoWebp: "images/logo1.webp",
     homeHref: "index.html",
   },
   heroDefault: {
