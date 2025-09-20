@@ -10,16 +10,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- 🔒 Ocultar hasta validar sesión -->
+    <!-- 🔒 Ocultar hasta validar sesión (con fallback) -->
     <style>html{visibility:hidden}</style>
-    <!-- Fallback: si guard.js no carga, mostramos el HTML para no quedar en azul -->
     <script>
-      (function(){
-        const t = setTimeout(()=>{ document.documentElement.style.visibility='visible'; }, 1200);
-        window.__gcVisTimer = t;
-      })();
+      // Si guard.js no habilita la visibilidad, forzamos el reveal para evitar pantalla azul
+      (function(){ window.__gc_vis_fallback = setTimeout(()=>{document.documentElement.style.visibility='visible'},1200); })();
     </script>
-    <!-- ✅ Ruta ABSOLUTA al guard (igual que el nuevo ecosistema) -->
     <script type="module" src="/assets/guard.js"></script>
 
     <style>
@@ -30,8 +26,7 @@
         --t-fast:.15s; --t-med:.22s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
         --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
         --hover-delay:80ms;
-        --sidebar-w:280px;         /* ancho expandido */
-        --sidebar-w-compact:72px;  /* ancho compacto  */
+        --sidebar-w:280px; --sidebar-w-compact:72px;
       }
       [data-theme="dark"]{
         --bg-app:#070b1a; --bg-aside:#0c1228;
@@ -44,227 +39,126 @@
       }
       *{box-sizing:border-box}
       html,body{height:100%}
-      body{
-        margin:0; font-family:var(--font-body); color:var(--txt);
-        background:var(--bg-app);
-        overflow-x:hidden;
-      }
+      body{margin:0; font-family:var(--font-body); color:var(--txt); background:var(--bg-app); overflow-x:hidden}
 
-      /* ===== Fondo fijo (luces decorativas) ===== */
-      #bg-fx{
-        position:fixed; inset:0; z-index:-2; pointer-events:none;
+      /* Luces + cuadrícula sutil */
+      #bg-fx{position:fixed; inset:0; z-index:-2; pointer-events:none;
         background:
           radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
           radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%);
-        background-repeat:no-repeat;
-        background-attachment:fixed;
-      }
-
-      /* Patrón de cuadrícula sutil con parallax */
-      #bg-grid{
-        position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+        background-repeat:no-repeat; background-attachment:fixed}
+      #bg-grid{position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
         background:
           linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
-          linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
-      }
+          linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px}
 
-      /* ===== Reveal ===== */
       @media (prefers-reduced-motion:no-preference){
-        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
+        .reveal{opacity:0; transform:translateY(8px); transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ===== Sidebar ===== */
+      /* ===== Sidebar (igual al ecosistema nuevo) ===== */
       aside{
         position:fixed; inset:0 auto 0 0; width:var(--sidebar-w); z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
         background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
         border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; padding:14px 12px; gap:12px; overflow:auto;
-        contain: content;
-        --pad-x: 10px;
+        display:flex; flex-direction:column; padding:14px 12px; gap:12px; overflow:auto; contain:content; --pad-x:10px;
       }
-      aside::before, aside::after{
-        content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
-      }
-      aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
-      aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
+      aside::before,aside::after{content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5}
+      aside::before{top:0; background:linear-gradient(#0000, rgba(0,0,0,.25))}
+      aside::after{bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000)}
 
-      .brand{
-        display:flex; align-items:center; justify-content:center;
-        padding:12px; border-radius:var(--radius);
+      .brand{display:flex; align-items:center; justify-content:center; padding:12px; border-radius:var(--radius);
         border:1px solid var(--stroke);
         background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        transition: transform var(--t-fast) var(--curve), box-shadow var(--t-fast) ease;
-        will-change: transform; text-decoration:none;
-      }
-      .brand:hover{ transform:scale(1.01) }
-      .brand picture{ display:block; }
-      .brand img{ width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+        transition:transform var(--t-fast) var(--curve)}
+      .brand:hover{transform:scale(1.01)}
+      .brand img{width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
 
-      .sidebar-toggle{
-        display:flex; align-items:center; justify-content:center;
-        gap:8px; width:100%; border:1px solid var(--stroke);
-        padding:10px; border-radius:12px; background:rgba(255,255,255,.04);
-        color:var(--txt); cursor:pointer; font-weight:700;
-        transition:filter var(--t-med) ease, transform var(--t-fast) ease;
-      }
-      .sidebar-toggle:hover{ filter:brightness(1.05) }
-      .sidebar-toggle:active{ transform:translateY(1px) }
-      .sidebar-toggle .lbl{ font-size:13px }
-      .sidebar-toggle[aria-pressed="true"] .lbl::after{ content:" (compacto)"; opacity:.8; font-weight:600 }
+      .sidebar-toggle{display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+        border:1px solid var(--stroke); padding:10px; border-radius:12px; background:rgba(255,255,255,.04);
+        color:var(--txt); cursor:pointer; font-weight:700}
+      .sidebar-toggle:hover{filter:brightness(1.05)} .sidebar-toggle:active{transform:translateY(1px)}
+      .sidebar-toggle[aria-pressed="true"] .lbl::after{content:" (compacto)"; opacity:.8; font-weight:600}
 
-      nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
-      .nav-group{
-        border:1px solid var(--stroke); border-radius:14px; overflow:hidden;
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent)
-      }
-      .nav-head{
-        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
-        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
-      }
-      .nav-head .chev{ transition:transform var(--t-med) var(--curve) }
-      .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
-      .nav-body{ overflow:hidden; transition:grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
-      .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
-      .nav-body-inner{ min-height:0; padding:6px; display:flex; flex-direction:column; gap:8px }
+      nav{position:relative; display:flex; flex-direction:column; gap:10px}
+      .nav-group{border:1px solid var(--stroke); border-radius:14px; overflow:hidden; background:color-mix(in oklab, var(--bg-aside) 92%, transparent)}
+      .nav-head{width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
+        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px}
+      .nav-head .chev{transition:transform var(--t-med) var(--curve)}
+      .nav-group.is-collapsed .nav-head .chev{transform:rotate(-90deg)}
+      .nav-body{overflow:hidden; transition:grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1}
+      .nav-group.is-collapsed .nav-body{grid-template-rows:0fr; opacity:.0}
+      .nav-body-inner{min-height:0; padding:6px; display:flex; flex-direction:column; gap:8px}
 
-      .nav-item{
-        display:flex; align-items:center; gap:10px; padding:12px var(--pad-x);
-        border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px;
-        border:1px solid transparent;
-        transition: background var(--t-med) ease var(--hover-delay), transform var(--t-fast) ease var(--hover-delay);
-        min-height:40px;
-      }
-      .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      .nav-item .label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100% }
-      .nav-item.active{
-        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
-        border-color:var(--stroke)
-      }
+      .nav-item{display:flex; align-items:center; gap:10px; padding:12px var(--pad-x); border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
+        transition:background var(--t-med) ease var(--hover-delay), transform var(--t-fast) ease var(--hover-delay); min-height:40px}
+      .nav-item:hover{background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px)}
+      .nav-item.active{background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent)); border-color:var(--stroke)}
+
+      /* Indicador activo – se posiciona relativo al NAV, pero el scroll host es el ASIDE */
       .nav-indicator{
         position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
         background:linear-gradient(180deg, var(--primary), var(--accent));
         box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
         transition:transform 220ms var(--curve), height 220ms ease;
-        will-change: transform, height;
-        pointer-events:none;
+        pointer-events:none
       }
 
       .spacer{flex:1}
-      .role-card{
-        display:flex; align-items:center; gap:10px; padding:10px 12px;
-        border-radius:14px; border:1px solid var(--stroke);
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
-      }
-      .role-dot{ width:14px; height:14px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25) }
-      .role-text small{ color:var(--txt-muted) }
-      .role-badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--stroke); background:rgba(255,255,255,.06) }
-      .logout{
-        width:100%; border:1px solid var(--stroke);
-        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
-        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
-        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
-      }
-      .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
+      .role-card{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--stroke); background:color-mix(in oklab, var(--bg-aside) 92%, transparent)}
+      .role-dot{width:14px; height:14px; border-radius:50%}
+      .role-badge{font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--stroke); background:rgba(255,255,255,.06)}
+      .logout{width:100%; border:1px solid var(--stroke); background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff; padding:12px; border-radius:12px; cursor:pointer; font-weight:700}
 
       /* ===== Main ===== */
       main{ margin-left:var(--sidebar-w); padding:24px 22px 40px; transition:margin-left var(--t-med) var(--curve) }
-      .hero{
-        position:relative; border-radius:var(--radius); padding:18px 20px;
-        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        border:1px solid var(--stroke); overflow:hidden; margin-bottom:14px;
-      }
+      .hero{ position:relative; border-radius:var(--radius); padding:18px 20px; background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent)); border:1px solid var(--stroke); overflow:hidden; margin-bottom:14px }
       .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
       .hero p{margin:0; color:var(--txt-muted); font-size:14px}
-      .blob{
-        position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%;
-        background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%);
-        filter:blur(18px); pointer-events:none; transform:translateZ(0);
-      }
+      .blob{ position:absolute; right:-90px; top:-90px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%); filter:blur(18px) }
 
-      /* ===== Card / filtros / tabla ===== */
-      .card{
-        position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
-        background:var(--bg-card); border:1px solid var(--stroke);
-        box-shadow:var(--elev-1); transform:translateZ(0);
-      }
-      .filters{
-        display:grid; grid-template-columns:repeat(5, minmax(180px,1fr)); gap:12px; align-items:end;
-        background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius); padding:12px; margin:10px 0 12px;
-      }
-      .filter-group{ display:flex; flex-direction:column; gap:6px; }
-      .filter-group label{ font-size:12px; color:var(--txt-muted); }
-      .filter-group select,.filter-group input[type="text"],.filter-group textarea{
-        padding:9px 12px; border-radius:12px; border:1px solid var(--table-border);
-        background:var(--table-bg); color:var(--txt); height:40px; outline:none;
-      }
+      .card{ position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; background:var(--bg-card); border:1px solid var(--stroke); box-shadow:var(--elev-1) }
+      .filters{ display:grid; grid-template-columns:repeat(5, minmax(180px,1fr)); gap:12px; align-items:end; background:var(--bg-card); border:1px solid var(--stroke); border-radius:var(--radius); padding:12px; margin:10px 0 12px }
+      .filter-group{ display:flex; flex-direction:column; gap:6px }
+      .filter-group label{ font-size:12px; color:var(--txt-muted) }
+      .filter-group select,.filter-group input[type="text"],.filter-group textarea{ padding:9px 12px; border-radius:12px; border:1px solid var(--table-border); background:var(--table-bg); color:var(--txt); height:40px; outline:none }
       .filter-group textarea{ height:auto; min-height:40px; resize:vertical; line-height:1.2; font-family:var(--font-body) }
-      .grid-span-2{ grid-column: span 2; } .grid-span-3{ grid-column: span 3; }
+      .grid-span-3{ grid-column: span 3 }
+      .rowstats{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px }
+      .chip{ background:#334766; border:1px solid #2a3d5e; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700 }
+      .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e }
 
-      .rowstats{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px; }
-      .chip{ background:#334766; border:1px solid #2a3d5e; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700; }
-      .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; align-self:center; }
+      table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18) }
+      thead th{ background:var(--table-head); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer }
+      tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center }
+      thead th:first-child, tbody td:first-child{ text-align:left }
+      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.95; cursor:copy }
 
-      .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
-      button{
-        padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:12px;
-        background:var(--btn); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25);
-        transition:background var(--t-med), transform var(--t-fast);
-      }
-      button:hover{ background:var(--btn-hover) } button:active{ transform:translateY(1px) }
-      .btn-alt{ background:var(--btn-alt) }
+      .sort-none::after{ content:"" } .sort-desc::after{ content:" ↓"; font-weight:900 } .sort-asc::after{ content:" ↑"; font-weight:900 }
+      .pct{ font-weight:800 } .pct.red{ color:#ff8a80 } .pct.orange{ color:#ffcc80 } .pct.green{ color:#80e27e }
+      #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000 }
 
-      .toggle{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid #2a3d5e; background:#334766; border-radius:12px; cursor:pointer; user-select:none; }
-      .toggle input{ appearance:none; width:34px; height:18px; border-radius:999px; background:#6b7fa3; position:relative; outline:none; transition:background .2s; }
-      .toggle input:checked{ background:#43a047; }
-      .toggle input::after{ content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; top:2px; left:2px; transition:left .2s; }
-      .toggle input:checked::after{ left:18px; }
-      .toggle span{ font-size:12px; color:var(--txt-muted) }
-
-      table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
-      thead th{ background:var(--table-head); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
-      tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
-      thead th:first-child, tbody td:first-child{ text-align:left; }
-      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.95; cursor:copy; }
-
-      .sort-none::after{ content:""; }
-      .sort-desc::after{ content:" ↓"; font-weight:900; }
-      .sort-asc::after{ content:" ↑"; font-weight:900; }
-
-      .pct{ font-weight:800; }
-      .pct.red{ color:#ff8a80; } .pct.orange{ color:#ffcc80; } .pct.green{ color:#80e27e; }
-
-      #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
-
-      /* ===== Sidebar compacto ===== */
+      /* Compacto */
       body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
       body.sidebar-compact main{ margin-left:var(--sidebar-w-compact) }
       body.sidebar-compact .brand img{ width:42px }
       body.sidebar-compact .nav-head .txt, body.sidebar-compact .nav-item .label, body.sidebar-compact .sidebar-toggle .lbl, body.sidebar-compact .role-text{ display:none }
-      body.sidebar-compact .nav-head{ justify-content:center }
-      body.sidebar-compact .nav-group{ gap:0 }
       body.sidebar-compact .nav-item{ justify-content:center; padding-inline:0 }
-      body.sidebar-compact .role-card{ justify-content:center; padding:10px }
-      .nav-item, .nav-head, .sidebar-toggle, .logout, .brand{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 
-      /* ===== Responsive ===== */
       @media (max-width:1080px){
         main{margin-left:0; padding:16px}
         aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
-        body.sidebar-compact aside{ width:auto }
-        body.sidebar-compact main{ margin-left:0 }
         .filters{grid-template-columns:repeat(2, minmax(140px,1fr))}
       }
     </style>
   </head>
   <body>
-    <!-- 🔵 Fondo fijo (luces) -->
     <div id="bg-fx" aria-hidden="true"></div>
-    <!-- Cuadrícula sutil -->
     <div id="bg-grid" aria-hidden="true"></div>
 
-    <!-- ===== SIDEBAR (idéntica al nuevo ecosistema) ===== -->
+    <!-- ===== SIDEBAR ===== -->
     <aside class="reveal" id="gc-aside">
       <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio" title="Inicio">
         <picture>
@@ -280,48 +174,34 @@
       <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
-        <a href="./index.html" class="nav-item" title="Inicio">
-          🏠 <span class="label">Inicio</span>
-        </a>
+        <a href="./index.html" class="nav-item" title="Inicio">🏠 <span class="label">Inicio</span></a>
 
-        <!-- REPORTES -->
         <section class="nav-group" data-key="grp-reportes">
-          <button class="nav-head" title="Reportes">
-            <span class="chev">▾</span> <span class="txt">📊 Reportes</span>
-          </button>
+          <button class="nav-head" title="Reportes"><span class="chev">▾</span> <span class="txt">📊 Reportes</span></button>
           <div class="nav-body"><div class="nav-body-inner">
             <a href="/reports/newreport.html" class="nav-item" title="New Report">🧰 <span class="label">New Report</span></a>
             <a href="/reports/psreport.html" class="nav-item" title="Post-Sale Report">🚚 <span class="label">Post-Sale Report</span></a>
           </div></div>
         </section>
 
-        <!-- OPERACIONES -->
         <section class="nav-group" data-key="grp-operaciones">
-          <button class="nav-head" title="Operaciones">
-            <span class="chev">▾</span> <span class="txt">🛠️ Operaciones</span>
-          </button>
+          <button class="nav-head" title="Operaciones"><span class="chev">▾</span> <span class="txt">🛠️ Operaciones</span></button>
           <div class="nav-body"><div class="nav-body-inner">
             <a href="/operations/distribucion.html" class="nav-item" title="Distribución">📋 <span class="label">Distribución</span></a>
             <a href="/operations/biops.html" class="nav-item" title="BI de OPs + Links">🔗 <span class="label">BI de OPs + Links</span></a>
           </div></div>
         </section>
 
-        <!-- COBERTURA -->
         <section class="nav-group" data-key="grp-cobertura">
-          <button class="nav-head" title="Cobertura">
-            <span class="chev">▾</span> <span class="txt">🌎 Cobertura</span>
-          </button>
+          <button class="nav-head" title="Cobertura"><span class="chev">▾</span> <span class="txt">🌎 Cobertura</span></button>
           <div class="nav-body"><div class="nav-body-inner">
             <a href="./cobertura.html" class="nav-item" title="Mapa de cobertura">🗺️ <span class="label">Mapa de cobertura</span></a>
             <a href="./newcobertura.html" class="nav-item" title="New Cobertura 1.1">🧭 <span class="label">New Cobertura 1.1</span></a>
           </div></div>
         </section>
 
-        <!-- UTILIDADES -->
         <section class="nav-group" data-key="grp-utils">
-          <button class="nav-head" title="Utilidades">
-            <span class="chev">▾</span> <span class="txt">🧩 Utilidades</span>
-          </button>
+          <button class="nav-head" title="Utilidades"><span class="chev">▾</span> <span class="txt">🧩 Utilidades</span></button>
           <div class="nav-body"><div class="nav-body-inner">
             <a href="/utilities/camprev.html" class="nav-item active" aria-current="page" title="Selector de Apoyo 2.0">👥 <span class="label">Selector de Apoyo 2.0</span></a>
           </div></div>
@@ -330,8 +210,8 @@
 
       <div class="spacer"></div>
 
-      <div class="role-card" id="roleCard" title="Rango del usuario">
-        <div class="role-dot" id="roleDot"></div>
+      <div class="role-card" id="roleCard">
+        <div class="role-dot" id="roleDot" style="background:linear-gradient(135deg,#94a3b8,#64748b)"></div>
         <div class="role-text">
           <strong id="roleName">Invitado</strong>
           <span class="role-badge" id="roleBadge" style="margin-left:6px">⭐ Invitado</span><br/>
@@ -344,46 +224,24 @@
 
     <!-- ===== CONTENIDO ===== -->
     <main>
-      <!-- HERO -->
       <section class="hero reveal">
         <div class="blob" aria-hidden="true"></div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
           <div>
             <h1>👥 Selector de Apoyo — Ver 2.0</h1>
-            <p>
-              Cruce dinámico de
-              <code>datadistribucion.json</code> +
-              <code>datacamprev.json</code>
-              con filtros combinables, orden acumulativo (Shift para secundario) y lista PEROP.
-            </p>
+            <p>Cruce dinámico de <code>datadistribucion.json</code> + <code>datacamprev.json</code> con filtros combinables, orden acumulativo (Shift para secundario) y lista PEROP.</p>
           </div>
           <div class="chip" id="fechaHora">—</div>
         </div>
       </section>
 
-      <!-- CONTROLES -->
       <section class="card reveal" style="--delay:.05s">
         <div class="filters">
-          <div class="filter-group">
-            <label for="fltTL">Team Leader</label>
-            <select id="fltTL"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltCamp">Campaña</label>
-            <select id="fltCamp"><option value="">Todas</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltDesc">Descanso</label>
-            <select id="fltDesc"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltTurno">Turno</label>
-            <select id="fltTurno"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltSearch">Buscar</label>
-            <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
-          </div>
+          <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltCamp">Campaña</label><select id="fltCamp"><option value="">Todas</option></select></div>
+          <div class="filter-group"><label for="fltDesc">Descanso</label><select id="fltDesc"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltTurno">Turno</label><select id="fltTurno"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltSearch">Buscar</label><input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/></div>
 
           <div class="filter-group grid-span-3">
             <label for="fltList">Lista PEROP1AM (uno por línea, o separados por , ;)</label>
@@ -418,7 +276,6 @@ PEROP1AM-39726
         </div>
       </section>
 
-      <!-- TABLA -->
       <section class="card reveal" style="--delay:.1s">
         <div style="overflow:auto">
           <table id="tblCampRev" title="Click: ordenar • Shift+Click: añadir como orden secundario • Clic repetido: descendente → ascendente → quitar">
@@ -446,10 +303,11 @@ PEROP1AM-39726
     <div id="toast"></div>
 
     <script type="module">
-      // ========= Indicador activo + auto-scroll =========
-      const items=[...document.querySelectorAll('nav .nav-item')];
-      const indicator=document.querySelector('.nav-indicator');
-      const navEl=document.getElementById('gc-nav');
+      // ========= Activo + indicador (scroll host = ASIDE) =========
+      const aside = document.getElementById('gc-aside');
+      const navEl = document.getElementById('gc-nav');
+      const items=[...navEl.querySelectorAll('a.nav-item')];
+      const indicator=navEl.querySelector('.nav-indicator');
 
       function setActive(){
         const current=(location.pathname.split('/').pop()||'camprev.html').toLowerCase();
@@ -460,24 +318,26 @@ PEROP1AM-39726
           a.classList.toggle('active', a===active);
           a.toggleAttribute('aria-current', a===active ? 'page':false);
         });
-        if(active){
-          const pr=navEl.getBoundingClientRect();
-          const r=active.getBoundingClientRect();
-          const y=r.top - pr.top + navEl.scrollTop;
-          indicator.style.height=r.height+'px';
-          indicator.style.transform=`translateY(${y}px)`;
-          const margin=16;
-          const topNeeded = y - margin;
-          const bottomNeeded = y + r.height + margin - navEl.clientHeight;
-          if (topNeeded < navEl.scrollTop) navEl.scrollTo({top: topNeeded, behavior:'smooth'});
-          else if (bottomNeeded > navEl.scrollTop) navEl.scrollTo({top: bottomNeeded, behavior:'smooth'});
-        }
+        if(!active) return;
+        const r=active.getBoundingClientRect();
+        const ref=(navEl.getBoundingClientRect());
+        // y relativo al NAV, sumando el scroll real del ASIDE (host)
+        const y=(r.top - ref.top) + aside.scrollTop;
+        indicator.style.height=r.height+'px';
+        indicator.style.transform=`translateY(${y}px)`;
+
+        // auto-scroll suave dentro del ASIDE
+        const margin=16;
+        const topNeeded = y - margin;
+        const bottomNeeded = y + r.height + margin - aside.clientHeight;
+        if (topNeeded < aside.scrollTop) aside.scrollTo({top: topNeeded, behavior:'smooth'});
+        else if (bottomNeeded > aside.scrollTop) aside.scrollTo({top: bottomNeeded, behavior:'smooth'});
       }
       setActive();
-      navEl.addEventListener('scroll', setActive);
+      aside.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
 
-      // ========= Grupos colapsables con memoria =========
+      // ========= Grupos colapsables =========
       document.querySelectorAll('.nav-group').forEach(g=>{
         const key=g.dataset.key, head=g.querySelector('.nav-head');
         const saved=localStorage.getItem(key);
@@ -489,95 +349,32 @@ PEROP1AM-39726
         });
       });
 
-      // ========= Reveal al scroll =========
+      // ========= Reveal + parallax =========
       const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
-        const io=new IntersectionObserver((entries)=>{
-          for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } }
-        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
-        document.querySelectorAll('.reveal').forEach(el=>{
-          const delay=el.style.getPropertyValue('--delay')||'0s';
-          el.style.transitionDelay=delay; io.observe(el);
-        });
+        const io=new IntersectionObserver((entries)=>{ for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } } }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        document.querySelectorAll('.reveal').forEach(el=>{ const d=el.style.getPropertyValue('--delay')||'0s'; el.style.transitionDelay=d; io.observe(el); });
       } else { document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
-
-      // ========= Parallax cuadrícula =========
       const bg=document.getElementById('bg-grid'); let rafId=null;
-      function parallax(e){
-        const x=(e.clientX/window.innerWidth - .5)*6;
-        const y=(e.clientY/window.innerHeight - .5)*6;
-        if(rafId) cancelAnimationFrame(rafId);
-        rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
-      }
+      function parallax(e){ const x=(e.clientX/window.innerWidth-.5)*6, y=(e.clientY/window.innerHeight-.5)*6; if(rafId) cancelAnimationFrame(rafId); rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; }); }
       if(!reduced) window.addEventListener('mousemove', parallax);
 
-      // ========= Role UI =========
-      const ROLE_STYLE={
-        'owner':{name:'Owner',desc:'Control total',badge:'👑 Owner',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'admin':{name:'Admin',desc:'Administración',badge:'🛡️ Admin',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'supervisor':{name:'Supervisor',desc:'Lidera TLs',badge:'⭐ Supervisor',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},
-        'team leader':{name:'Team Leader',desc:'Lidera equipo',badge:'⭐ TL',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},
-        'analista':{name:'Analista',desc:'Calidad / Datos',badge:'📊 Analista',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'calidad':{name:'Calidad',desc:'Auditoría',badge:'🧪 Calidad',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'operador':{name:'Operador',desc:'Ventas / Gestión',badge:'⚙️ Operador',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},
-        'invitado':{name:'Invitado',desc:'Acceso limitado',badge:'⭐ Invitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}
-      };
-      function getRole(){
-        const qp=new URLSearchParams(location.search).get('role');
-        const w=(window.gcRole||'').toString().trim();
-        const ls=(localStorage.getItem('gc-role')||'').trim();
-        return (qp||w||ls||'Invitado');
-      }
-      function applyRoleUI(roleRaw){
-        const roleDot=document.getElementById('roleDot');
-        const roleName=document.getElementById('roleName');
-        const roleDesc=document.getElementById('roleDesc');
-        const roleBadge=document.getElementById('roleBadge');
-
-        const r=roleRaw.toLowerCase();
-        const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado';
-        const cfg=ROLE_STYLE[key];
-
-        roleDot.style.background=cfg.gradient;
-        roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
-        roleName.textContent=cfg.name;
-        roleDesc.textContent=cfg.desc;
-        roleBadge.textContent=cfg.badge;
-
-        const card=document.getElementById('roleCard');
-        card.style.filter = (key==='invitado') ? 'saturate(0.8) brightness(0.95)' : 'none';
-
-        localStorage.setItem('gc-role', cfg.name);
-      }
-      applyRoleUI(getRole());
-
-      // ========= Compact/Expand =========
-      const btnToggle=document.getElementById('btnSidebarToggle');
-      const compactKey='gc-sidebar-compact';
-      function setCompactState(on){
-        document.body.classList.toggle('sidebar-compact', !!on);
-        btnToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-        localStorage.setItem(compactKey, on ? '1' : '0');
-      }
-      btnToggle.addEventListener('click', ()=> setCompactState(!document.body.classList.contains('sidebar-compact')));
-      setCompactState(localStorage.getItem(compactKey)==='1');
+      // ========= Role UI (simple) =========
+      const ROLE_STYLE={ 'invitado':{name:'Invitado',desc:'Acceso limitado',badge:'⭐ Invitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'} };
+      function applyRoleUI(){ const cfg=ROLE_STYLE['invitado']; document.getElementById('roleName').textContent=cfg.name; document.getElementById('roleDesc').textContent=cfg.desc; document.getElementById('roleBadge').textContent=cfg.badge; document.getElementById('roleDot').style.background=cfg.gradient; }
+      applyRoleUI();
 
       // ========= Reloj =========
-      function actualizarFechaHora(){
-        const ahora=new Date();
-        const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-        const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
-      }
+      function actualizarFechaHora(){ const ahora=new Date(); const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const hora=ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`; }
       actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-      // ========= Utilidades =========
-      const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)};
+      // ========= Utils =========
+      const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)}
       const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
-      const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
+      const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}}
       const STATE_KEY='selector_apoyo_v2_state';
 
-      // ========= Base dinámica (GitHub Pages / Dominio propio) =========
+      // ========= Base dinámica =========
       function getBase(){
         const isGhProject = location.hostname.endsWith('github.io');
         const PROJECT_SLUG = 'Gestion-Center';
@@ -587,18 +384,13 @@ PEROP1AM-39726
       // ========= Estado =========
       let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
 
-      // ========= Carga =========
-      async function loadJSON(url){
-        const sep=url.includes('?')?'&':'?';
-        const r=await fetch(url+sep+'t='+(Date.now()));
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        return r.json();
-      }
+      // ========= Carga (rutas corregidas) =========
+      async function loadJSON(url){ const sep=url.includes('?')?'&':'?'; const r=await fetch(url+sep+'t='+(Date.now())); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
       async function loadData(){
         try{
           const base=getBase();
           const [distrib,camp]=await Promise.all([
-            loadJSON(base + 'datadistribucion.json'),
+            loadJSON(base + 'operations/datadistribucion.json'),
             loadJSON(base + 'utilities/datacamprev.json')
           ]);
           rawDistrib=distrib; rawCamp=camp;
@@ -620,7 +412,9 @@ PEROP1AM-39726
         }catch(e){
           console.error(e);
           toast('❌ No se pudieron cargar los JSON');
-          try{ document.documentElement.style.visibility='visible'; }catch(_){}
+        }finally{
+          try{ clearTimeout(window.__gc_vis_fallback); }catch(_){}
+          document.documentElement.style.visibility='visible';
         }
       }
 
@@ -644,7 +438,7 @@ PEROP1AM-39726
         return { full, digits };
       }
 
-      // ======= Filtros combinables + búsqueda multi-palabra =======
+      // ========= Filtrado + orden acumulativo =========
       function applyFiltersAndRender(){
         const vTL = norm(document.getElementById('fltTL').value);
         const vCa = norm(document.getElementById('fltCamp').value);
@@ -743,43 +537,22 @@ PEROP1AM-39726
         document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
       }
 
-      // ===== Orden 3 estados (último click = prioridad 1; Shift+Click = secundaria) =====
-      function resetHeadSortClasses(){
-        document.querySelectorAll('#headRow th').forEach(th=>{
-          th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
-        });
-      }
-      function refreshHeadSortClasses(){
-        resetHeadSortClasses();
-        sortState.forEach(({col,mode})=>{
-          const thEl=document.querySelector(`#headRow th[data-col="${col}"]`);
-          if(thEl && mode){ thEl.classList.remove('sort-none'); thEl.classList.add(mode===1?'sort-desc':'sort-asc'); }
-        });
-      }
+      // ===== Orden acumulativo (click/shift+click) =====
+      function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
+      function refreshHeadSortClasses(){ resetHeadSortClasses(); sortState.forEach(({col,mode})=>{ const th=document.querySelector(`#headRow th[data-col="${col}"]`); if(th&&mode){ th.classList.remove('sort-none'); th.classList.add(mode===1?'sort-desc':'sort-asc'); } }); }
       function cycleSort(th, e = { shiftKey:false }){
-        const col = th?.dataset?.col;
-        if(!col) return;
-
+        const col = th?.dataset?.col; if(!col) return;
         const idx = sortState.findIndex(s => s.col === col);
-        let nextMode = 1; // primer click => descendente
+        let next = 1;
         if (idx !== -1){
           const was = sortState[idx].mode;
-          if (was === 1) nextMode = 2;           // desc -> asc
-          else if (was === 2){                   // asc -> none (quitar)
-            sortState.splice(idx, 1);
-            refreshHeadSortClasses();
-            applyFiltersAndRender();
-            return;
-          }
-          sortState.splice(idx, 1);
+          if (was === 1) next = 2;
+          else if (was === 2){ sortState.splice(idx,1); refreshHeadSortClasses(); applyFiltersAndRender(); return; }
+          sortState.splice(idx,1);
         }
-
-        const entry = { col, mode: nextMode };
-        if (e.shiftKey) sortState.push(entry);   // secundaria
-        else            sortState.unshift(entry); // primaria
-
-        refreshHeadSortClasses();
-        applyFiltersAndRender();
+        const entry = { col, mode: next };
+        if (e.shiftKey) sortState.push(entry); else sortState.unshift(entry);
+        refreshHeadSortClasses(); applyFiltersAndRender();
       }
 
       // ===== Exportar / Copiar =====
@@ -799,10 +572,7 @@ PEROP1AM-39726
 
       // ===== Persistencia =====
       function saveState(){
-        const state={
-          fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value,
-          fltSearch:fltSearch.value, fltList:fltList.value, includeMode:toggleInclude.checked, sortState
-        };
+        const state={ fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value, fltSearch:fltSearch.value, fltList:fltList.value, includeMode:toggleInclude.checked, sortState };
         try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch{}
       }
       function restoreState(){
@@ -826,11 +596,7 @@ PEROP1AM-39726
       const toggleInclude=document.getElementById('toggleInclude');
       const toggleLabel=document.getElementById('toggleLabel');
 
-      document.getElementById('btnReset').addEventListener('click',()=>{
-        fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value='';
-        fltSearch.value=''; fltList.value=''; toggleInclude.checked=true; toggleLabel.textContent='Incluir lista';
-        sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos');
-      });
+      document.getElementById('btnReset').addEventListener('click',()=>{ fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value=''; fltSearch.value=''; fltList.value=''; toggleInclude.checked=true; toggleLabel.textContent='Incluir lista'; sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos'); });
       document.getElementById('btnExport').addEventListener('click', exportCSV);
       document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
       document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
@@ -840,32 +606,24 @@ PEROP1AM-39726
       [fltSearch,fltList].forEach(el=>el.addEventListener('input',onInput));
       toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
 
-      // Soporte Shift+Click para ordenar acumulativo
       document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',(e)=>cycleSort(th, e)));
-
-      // Atajos
-      document.addEventListener('keydown',(e)=>{
-        if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); fltSearch.focus(); }
-        else if(e.key.toLowerCase()==='x'){ toggleInclude.checked=!toggleInclude.checked; toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); }
-      });
 
       // Init
       resetHeadSortClasses();
       loadData();
 
-      // Seguridad
+      // Seguridad / limpieza fallback
       if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido en guard.js'); }
-      try{ if(window.__gcVisTimer){ clearTimeout(window.__gcVisTimer); } }catch(_){}
+      try{ clearTimeout(window.__gc_vis_fallback); }catch(_){}
     </script>
 
-    <!-- 🔒 Normalizador de rutas (GitHub Pages / dominio propio) -->
+    <!-- Normalizador de rutas (GitHub Pages / dominio propio) -->
     <script>
     (() => {
       const isGhProject = location.hostname.endsWith('github.io');
       const PROJECT_SLUG = 'Gestion-Center';
       const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
 
-      // Normaliza enlaces de nav + brand + posibles anchors dentro del contenido
       document.querySelectorAll('nav a.nav-item[href], .brand[href]').forEach(a => {
         const href = a.getAttribute('href');
         if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
@@ -873,20 +631,12 @@ PEROP1AM-39726
         a.setAttribute('href', base + clean);
       });
 
-      // Normaliza logo
       const logo = document.querySelector('#brandLink img');
       if (logo) {
         let src = logo.getAttribute('src') || './images/logogestioncenter.png';
-        if (!/^https?:\/\//i.test(src)) {
-          src = src.replace(/^\.?\//, '');
-          logo.setAttribute('src', base + src);
-        }
+        if (!/^https?:\/\//i.test(src)) { src = src.replace(/^\.?\//, ''); logo.setAttribute('src', base + src); }
         const source = document.querySelector('#brandLink source');
-        if (source) {
-          let s = source.getAttribute('srcset') || './images/logogestioncenter.webp';
-          s = s.replace(/^\.?\//, '');
-          source.setAttribute('srcset', base + s);
-        }
+        if (source) { let s = source.getAttribute('srcset') || './images/logogestioncenter.webp'; s = s.replace(/^\.?\//, ''); source.setAttribute('srcset', base + s); }
       }
     })();
     </script>
