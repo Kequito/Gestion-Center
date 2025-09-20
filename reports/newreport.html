@@ -41,15 +41,19 @@
     /* Toolbar (estética base) */
     #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px }
     #nr .toolbar button,
+    #nr .toolbar a.button,
     #nr .history-actions button{
       padding:10px 14px; font-size:14px; cursor:pointer;
       border:1px solid var(--gray-300); border-radius:10px;
       background:var(--white); color:var(--gray-900);
       transition:background .15s ease, transform .03s ease, filter .15s ease;
+      text-decoration:none; display:inline-flex; align-items:center; gap:8px;
     }
     #nr .toolbar button:hover,
+    #nr .toolbar a.button:hover,
     #nr .history-actions button:hover{ background:var(--gray-100) }
     #nr .toolbar button:active,
+    #nr .toolbar a.button:active,
     #nr .history-actions button:active{ transform:translateY(1px) }
     #nr .toolbar button[disabled],
     #nr .history-actions button[disabled]{ opacity:.55; cursor:not-allowed }
@@ -125,8 +129,10 @@
   </style>
 </head>
 <body>
-  <gc-shell hero-title="Reportes" hero-subtitle="New Report CC Perú">
+  <!-- Ocultamos títulos del hero pasando vacío -->
+  <gc-shell hero-title="" hero-subtitle="">
     <section id="nr">
+      <!-- TÍTULO SUPERIOR ÚNICO -->
       <div class="page-title">🧰 New Report CC Perú</div>
       <p class="subtitle"><span id="fbBadge" class="badge">Conectando…</span></p>
 
@@ -138,6 +144,8 @@
         <button onclick="procesar('mixto')">🔁 Vista Mixta</button>
         <button class="btn-danger" onclick="borrarTodo()">🧹 Borrar</button>
         <button onclick="restablecerOrden()">🧭 Restablecer Orden</button>
+        <!-- NUEVO BOTÓN: Fuente (Panel) -->
+        <a class="button" href="https://panel.2wcall.com/stats/queue/index?QueueSearch%5Bcountries%5D=&QueueSearch%5Bdate_type%5D=partner_created_at&QueueSearch%5Bdate_range%5D=20%2F09%2F2025+0%3A00+-+20%2F09%2F2025+23%3A59&QueueSearch%5Bpartner_id%5D=1" target="_blank" rel="noopener">🔗 Fuente (Panel)</a>
       </div>
 
       <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…"></textarea>
@@ -151,7 +159,7 @@
       <div class="history-actions" style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px;">
         <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
         <button class="btn-danger" onclick="borrarHistorial()">🗑️ Borrar historial</button>
-        <button onclick="exportarHistoricoCSV()">⬇️ Exportar histórico (CSV)</button>
+        <!-- 🔻 Eliminado: Exportar histórico (CSV) -->
       </div>
 
       <!-- Filtros -->
@@ -615,7 +623,7 @@
     // Exponer
     window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
     window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
-    window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
+    window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
     window.eliminarRegistro=eliminarRegistro;
 
     // Auth
@@ -635,21 +643,6 @@
       document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
       const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
     });
-
-    // Export CSV
-    function exportarHistoricoCSV(){
-      if(!cloudHistorico.length){ mostrarToast("ℹ️ No hay registros para exportar."); return; }
-      const encabezados=["Fecha","Hora","País","Leads","News","Recall","No Answer","Approve","% Approve","Reject","Trash"];
-      const filas=cloudHistorico.map(r=>[
-        r.fecha||"", r.hora||"", r.pais||"", r.leads||0, r.news||0, r.recall||0,
-        r.noAnswer||0, r.approve||0, r.pctApprove||0, r.reject||0, r.trash||0
-      ]);
-      const csv=[encabezados,...filas].map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const url=URL.createObjectURL(blob); const a=document.createElement('a');
-      a.href=url; a.download=`historico_gc_${new Date().toISOString().slice(0,10)}.csv`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    }
   </script>
 </body>
 </html>
