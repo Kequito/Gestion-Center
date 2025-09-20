@@ -16,22 +16,22 @@
     <script>
       (function(){
         const t = setTimeout(()=>{ document.documentElement.style.visibility='visible'; }, 1200);
-        window.__gcVisTimer = t; // para limpiar desde guard.js si quiere
+        window.__gcVisTimer = t;
       })();
     </script>
-    <!-- ✅ Ruta ABSOLUTA al guard -->
+    <!-- ✅ Ruta ABSOLUTA al guard (igual que el nuevo ecosistema) -->
     <script type="module" src="/assets/guard.js"></script>
 
     <style>
-      /* =========================
-         DESIGN SYSTEM — v2.0
-         ========================= */
       :root{
         --radius:16px; --radius-sm:12px; --radius-xs:10px;
-        --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
+        --font-title:'Outfit',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+        --font-body:'Lexend',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+        --t-fast:.15s; --t-med:.22s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
         --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
+        --hover-delay:80ms;
+        --sidebar-w:280px;         /* ancho expandido */
+        --sidebar-w-compact:72px;  /* ancho compacto  */
       }
       [data-theme="dark"]{
         --bg-app:#070b1a; --bg-aside:#0c1228;
@@ -42,79 +42,124 @@
         --table-bg:rgba(20,28,56,.7); --table-head:#111a39; --table-border:rgba(255,255,255,.10);
         --btn:#30478b; --btn-hover:#3f62c5; --btn-alt:#2a3d5e;
       }
-
       *{box-sizing:border-box}
       html,body{height:100%}
-
-      /* ===== Fondo continuo + luces + ruido anti-banding ===== */
       body{
         margin:0; font-family:var(--font-body); color:var(--txt);
-        background:linear-gradient(180deg, #070b1a 0%, #0a1022 40%, #0b1329 100%);
+        background:var(--bg-app);
         overflow-x:hidden;
       }
-      body::before{
-        content:""; position:fixed; inset:-20% -10% -20% -10%;
-        z-index:-2; pointer-events:none;
+
+      /* ===== Fondo fijo (luces decorativas) ===== */
+      #bg-fx{
+        position:fixed; inset:0; z-index:-2; pointer-events:none;
         background:
-          radial-gradient(1200px 1200px at 12% -10%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 65%),
-          radial-gradient(1000px 1000px at 92% 0%,  color-mix(in oklab, var(--accent) 28%,  transparent), transparent 60%);
-        filter:blur(18px) saturate(110%);
-      }
-      body::after{
-        content:""; position:fixed; inset:0;
-        z-index:-1; pointer-events:none; opacity:.05; mix-blend-mode:soft-light;
-        background-image:url('data:image/svg+xml;utf8,\
-        <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140">\
-          <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>\
-          <rect width="100%" height="100%" filter="url(%23n)" opacity="0.35"/>\
-        </svg>');
-        background-size:180px 180px;
+          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
+          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%);
+        background-repeat:no-repeat;
+        background-attachment:fixed;
       }
 
+      /* Patrón de cuadrícula sutil con parallax */
+      #bg-grid{
+        position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
+        background:
+          linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+          linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
+      }
+
+      /* ===== Reveal ===== */
       @media (prefers-reduced-motion:no-preference){
         .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ====== Sidebar ====== */
+      /* ===== Sidebar ===== */
       aside{
-        position:fixed; inset:0 auto 0 0; width:280px; z-index:25;
+        position:fixed; inset:0 auto 0 0; width:var(--sidebar-w); z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
         background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
         border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; padding:22px 14px; gap:12px; overflow:auto;
+        display:flex; flex-direction:column; padding:14px 12px; gap:12px; overflow:auto;
+        contain: content;
+        --pad-x: 10px;
       }
-      .logo{
-        display:flex; align-items:center; justify-content:center; gap:10px;
-        font-family:var(--font-title); font-size:20px; font-weight:700; letter-spacing:.2px;
-        padding:12px; border-radius:var(--radius); border:1px solid var(--stroke);
+      aside::before, aside::after{
+        content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
+      }
+      aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
+      aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
+
+      .brand{
+        display:flex; align-items:center; justify-content:center;
+        padding:12px; border-radius:var(--radius);
+        border:1px solid var(--stroke);
         background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        position:relative; isolation:isolate;
+        transition: transform var(--t-fast) var(--curve), box-shadow var(--t-fast) ease;
+        will-change: transform; text-decoration:none;
       }
-      .logo::after{
-        content:""; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none;
-        box-shadow:0 0 28px color-mix(in oklab, var(--primary) 35%, transparent),
-                   0 0 42px color-mix(in oklab, var(--accent) 22%, transparent);
-        opacity:.18;
+      .brand:hover{ transform:scale(1.01) }
+      .brand picture{ display:block; }
+      .brand img{ width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+
+      .sidebar-toggle{
+        display:flex; align-items:center; justify-content:center;
+        gap:8px; width:100%; border:1px solid var(--stroke);
+        padding:10px; border-radius:12px; background:rgba(255,255,255,.04);
+        color:var(--txt); cursor:pointer; font-weight:700;
+        transition:filter var(--t-med) ease, transform var(--t-fast) ease;
       }
-      nav{ position:relative; display:flex; flex-direction:column; gap:8px; }
-      nav a{
-        display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px;
-        text-decoration:none; color:var(--txt); font-size:15px; border:1px solid transparent;
-        transition:background var(--t-med) ease, transform var(--t-fast) ease;
+      .sidebar-toggle:hover{ filter:brightness(1.05) }
+      .sidebar-toggle:active{ transform:translateY(1px) }
+      .sidebar-toggle .lbl{ font-size:13px }
+      .sidebar-toggle[aria-pressed="true"] .lbl::after{ content:" (compacto)"; opacity:.8; font-weight:600 }
+
+      nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
+      .nav-group{
+        border:1px solid var(--stroke); border-radius:14px; overflow:hidden;
+        background:color-mix(in oklab, var(--bg-aside) 92%, transparent)
       }
-      nav a:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      nav a.active{
+      .nav-head{
+        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
+        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
+      }
+      .nav-head .chev{ transition:transform var(--t-med) var(--curve) }
+      .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
+      .nav-body{ overflow:hidden; transition:grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
+      .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
+      .nav-body-inner{ min-height:0; padding:6px; display:flex; flex-direction:column; gap:8px }
+
+      .nav-item{
+        display:flex; align-items:center; gap:10px; padding:12px var(--pad-x);
+        border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px;
+        border:1px solid transparent;
+        transition: background var(--t-med) ease var(--hover-delay), transform var(--t-fast) ease var(--hover-delay);
+        min-height:40px;
+      }
+      .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
+      .nav-item .label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100% }
+      .nav-item.active{
         background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
-        border-color:var(--stroke);
+        border-color:var(--stroke)
       }
       .nav-indicator{
-        position:absolute; left:0; width:4px; height:40px; border-radius:0 3px 3px 0;
+        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
         background:linear-gradient(180deg, var(--primary), var(--accent));
         box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
-        transition:transform var(--t-med) var(--curve), height var(--t-med) ease; will-change:transform,height;
+        transition:transform 220ms var(--curve), height 220ms ease;
+        will-change: transform, height;
+        pointer-events:none;
       }
+
       .spacer{flex:1}
+      .role-card{
+        display:flex; align-items:center; gap:10px; padding:10px 12px;
+        border-radius:14px; border:1px solid var(--stroke);
+        background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
+      }
+      .role-dot{ width:14px; height:14px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25) }
+      .role-text small{ color:var(--txt-muted) }
+      .role-badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--stroke); background:rgba(255,255,255,.06) }
       .logout{
         width:100%; border:1px solid var(--stroke);
         background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
@@ -123,8 +168,8 @@
       }
       .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
-      /* ====== Main ====== */
-      main{ margin-left:280px; padding:24px 22px 40px; }
+      /* ===== Main ===== */
+      main{ margin-left:var(--sidebar-w); padding:24px 22px 40px; transition:margin-left var(--t-med) var(--curve) }
       .hero{
         position:relative; border-radius:var(--radius); padding:18px 20px;
         background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
@@ -138,7 +183,7 @@
         filter:blur(18px); pointer-events:none; transform:translateZ(0);
       }
 
-      /* ====== Controles ====== */
+      /* ===== Card / filtros / tabla ===== */
       .card{
         position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
         background:var(--bg-card); border:1px solid var(--stroke);
@@ -177,7 +222,6 @@
       .toggle input:checked::after{ left:18px; }
       .toggle span{ font-size:12px; color:var(--txt-muted) }
 
-      /* ====== Tabla ====== */
       table{ width:100%; border-collapse:separate; border-spacing:0; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
       thead th{ background:var(--table-head); color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer; }
       tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center; }
@@ -193,50 +237,112 @@
 
       #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
 
-      @media (max-width:1200px){ .filters{ grid-template-columns:repeat(3, minmax(170px,1fr)) } }
-      @media (max-width:960px){
-        main{ margin-left:0; padding:16px }
-        aside{ position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke) }
-        .filters{ grid-template-columns:repeat(2, minmax(140px,1fr)) }
+      /* ===== Sidebar compacto ===== */
+      body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
+      body.sidebar-compact main{ margin-left:var(--sidebar-w-compact) }
+      body.sidebar-compact .brand img{ width:42px }
+      body.sidebar-compact .nav-head .txt, body.sidebar-compact .nav-item .label, body.sidebar-compact .sidebar-toggle .lbl, body.sidebar-compact .role-text{ display:none }
+      body.sidebar-compact .nav-head{ justify-content:center }
+      body.sidebar-compact .nav-group{ gap:0 }
+      body.sidebar-compact .nav-item{ justify-content:center; padding-inline:0 }
+      body.sidebar-compact .role-card{ justify-content:center; padding:10px }
+      .nav-item, .nav-head, .sidebar-toggle, .logout, .brand{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+
+      /* ===== Responsive ===== */
+      @media (max-width:1080px){
+        main{margin-left:0; padding:16px}
+        aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
+        body.sidebar-compact aside{ width:auto }
+        body.sidebar-compact main{ margin-left:0 }
+        .filters{grid-template-columns:repeat(2, minmax(140px,1fr))}
       }
     </style>
   </head>
   <body>
-    <!-- Patrón de cuadrícula sutil -->
-    <div id="bg-grid" aria-hidden="true" style="
-      position:fixed; inset:0; z-index:-3; opacity:.07; pointer-events:none;
-      background:
-        linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
-        linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;">
-    </div>
+    <!-- 🔵 Fondo fijo (luces) -->
+    <div id="bg-fx" aria-hidden="true"></div>
+    <!-- Cuadrícula sutil -->
+    <div id="bg-grid" aria-hidden="true"></div>
 
-    <!-- SIDEBAR -->
-    <aside class="reveal">
-      <div class="logo">🧭 Gestión Center</div>
-      <nav role="navigation" aria-label="Navegación principal">
+    <!-- ===== SIDEBAR (idéntica al nuevo ecosistema) ===== -->
+    <aside class="reveal" id="gc-aside">
+      <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio" title="Inicio">
+        <picture>
+          <source srcset="./images/logogestioncenter.webp" type="image/webp"/>
+          <img id="brandLogo" src="./images/logogestioncenter.png" alt="Gestión Center" loading="lazy" decoding="async"/>
+        </picture>
+      </a>
+
+      <button class="sidebar-toggle" id="btnSidebarToggle" aria-pressed="false" title="Compactar / Expandir">
+        <span class="icon">⇆</span><span class="lbl">Cambiar ancho</span>
+      </button>
+
+      <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
-        <a href="/index.html" class="nav-item">🏠 <span>Inicio</span></a>
-        <a href="/plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
-        <!-- 🔁 Ruta actualizada -->
-        <a href="/Gestion-Center/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <a href="./index.html" class="nav-item" title="Inicio">
+          🏠 <span class="label">Inicio</span>
+        </a>
 
-        <a href="/biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
-        <a href="/cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
-        <a href="/utilities/camprev.html" class="nav-item active" aria-current="page">👥 <span>Selector de Apoyo Ver 2.0</span></a>
-        <a href="/postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
-        <a href="/opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
-        <a href="/pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
-        <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
-        <a href="/newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
-        <a href="/tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
-        <a href="/login.html" class="nav-item">🧪 <span>Test</span></a>
+        <!-- REPORTES -->
+        <section class="nav-group" data-key="grp-reportes">
+          <button class="nav-head" title="Reportes">
+            <span class="chev">▾</span> <span class="txt">📊 Reportes</span>
+          </button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="/reports/newreport.html" class="nav-item" title="New Report">🧰 <span class="label">New Report</span></a>
+            <a href="/reports/psreport.html" class="nav-item" title="Post-Sale Report">🚚 <span class="label">Post-Sale Report</span></a>
+          </div></div>
+        </section>
+
+        <!-- OPERACIONES -->
+        <section class="nav-group" data-key="grp-operaciones">
+          <button class="nav-head" title="Operaciones">
+            <span class="chev">▾</span> <span class="txt">🛠️ Operaciones</span>
+          </button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="/operations/distribucion.html" class="nav-item" title="Distribución">📋 <span class="label">Distribución</span></a>
+            <a href="/operations/biops.html" class="nav-item" title="BI de OPs + Links">🔗 <span class="label">BI de OPs + Links</span></a>
+          </div></div>
+        </section>
+
+        <!-- COBERTURA -->
+        <section class="nav-group" data-key="grp-cobertura">
+          <button class="nav-head" title="Cobertura">
+            <span class="chev">▾</span> <span class="txt">🌎 Cobertura</span>
+          </button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="./cobertura.html" class="nav-item" title="Mapa de cobertura">🗺️ <span class="label">Mapa de cobertura</span></a>
+            <a href="./newcobertura.html" class="nav-item" title="New Cobertura 1.1">🧭 <span class="label">New Cobertura 1.1</span></a>
+          </div></div>
+        </section>
+
+        <!-- UTILIDADES -->
+        <section class="nav-group" data-key="grp-utils">
+          <button class="nav-head" title="Utilidades">
+            <span class="chev">▾</span> <span class="txt">🧩 Utilidades</span>
+          </button>
+          <div class="nav-body"><div class="nav-body-inner">
+            <a href="/utilities/camprev.html" class="nav-item active" aria-current="page" title="Selector de Apoyo 2.0">👥 <span class="label">Selector de Apoyo 2.0</span></a>
+          </div></div>
+        </section>
       </nav>
+
       <div class="spacer"></div>
+
+      <div class="role-card" id="roleCard" title="Rango del usuario">
+        <div class="role-dot" id="roleDot"></div>
+        <div class="role-text">
+          <strong id="roleName">Invitado</strong>
+          <span class="role-badge" id="roleBadge" style="margin-left:6px">⭐ Invitado</span><br/>
+          <small id="roleDesc">Acceso limitado</small>
+        </div>
+      </div>
+
       <button class="logout" onclick="gcLogout()">Salir</button>
     </aside>
 
-    <!-- CONTENIDO -->
+    <!-- ===== CONTENIDO ===== -->
     <main>
       <!-- HERO -->
       <section class="hero reveal">
@@ -248,7 +354,7 @@
               Cruce dinámico de
               <code>datadistribucion.json</code> +
               <code>datacamprev.json</code>
-              con filtros combinables, orden acumulativo y lista PEROP.
+              con filtros combinables, orden acumulativo (Shift para secundario) y lista PEROP.
             </p>
           </div>
           <div class="chip" id="fechaHora">—</div>
@@ -340,47 +446,121 @@ PEROP1AM-39726
     <div id="toast"></div>
 
     <script type="module">
-      // ========= Nave activo + indicador =========
+      // ========= Indicador activo + auto-scroll =========
       const items=[...document.querySelectorAll('nav .nav-item')];
       const indicator=document.querySelector('.nav-indicator');
-      const current=(location.pathname.split('/').pop()||'camprev.html').toLowerCase();
+      const navEl=document.getElementById('gc-nav');
+
       function setActive(){
+        const current=(location.pathname.split('/').pop()||'camprev.html').toLowerCase();
         let active=items[0];
         items.forEach(a=>{
           const href=(a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
           if(href && href===current) active=a;
           a.classList.toggle('active', a===active);
-          a.toggleAttribute('aria-current', a===active ? 'page' : false);
+          a.toggleAttribute('aria-current', a===active ? 'page':false);
         });
-        const rect=active.getBoundingClientRect();
-        const p=active.parentElement.getBoundingClientRect();
-        const y=rect.top - p.top + active.parentElement.scrollTop;
-        indicator.style.height=rect.height+'px';
-        indicator.style.transform=`translateY(${y}px)`;
+        if(active){
+          const pr=navEl.getBoundingClientRect();
+          const r=active.getBoundingClientRect();
+          const y=r.top - pr.top + navEl.scrollTop;
+          indicator.style.height=r.height+'px';
+          indicator.style.transform=`translateY(${y}px)`;
+          const margin=16;
+          const topNeeded = y - margin;
+          const bottomNeeded = y + r.height + margin - navEl.clientHeight;
+          if (topNeeded < navEl.scrollTop) navEl.scrollTo({top: topNeeded, behavior:'smooth'});
+          else if (bottomNeeded > navEl.scrollTop) navEl.scrollTo({top: bottomNeeded, behavior:'smooth'});
+        }
       }
       setActive();
-      const nav=document.querySelector('nav');
-      nav.addEventListener('scroll', setActive);
+      navEl.addEventListener('scroll', setActive);
       window.addEventListener('resize', setActive);
 
-      // ========= Reveal =========
+      // ========= Grupos colapsables con memoria =========
+      document.querySelectorAll('.nav-group').forEach(g=>{
+        const key=g.dataset.key, head=g.querySelector('.nav-head');
+        const saved=localStorage.getItem(key);
+        if(saved==='0') g.classList.add('is-collapsed');
+        head.addEventListener('click', ()=>{
+          g.classList.toggle('is-collapsed');
+          localStorage.setItem(key, g.classList.contains('is-collapsed')?'0':'1');
+          setActive();
+        });
+      });
+
+      // ========= Reveal al scroll =========
       const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
         const io=new IntersectionObserver((entries)=>{
           for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } }
-        },{threshold:.12, rootMargin:'0px 0px -10% 0px'});
-        document.querySelectorAll('.reveal').forEach(el=>{ const d=el.style.getPropertyValue('--delay')||'0s'; el.style.transitionDelay=d; io.observe(el); });
-      }else{ document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
+        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        document.querySelectorAll('.reveal').forEach(el=>{
+          const delay=el.style.getPropertyValue('--delay')||'0s';
+          el.style.transitionDelay=delay; io.observe(el);
+        });
+      } else { document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // ========= Parallax sutil =========
+      // ========= Parallax cuadrícula =========
       const bg=document.getElementById('bg-grid'); let rafId=null;
       function parallax(e){
-        const x=(e.clientX / window.innerWidth - .5)*6;
-        const y=(e.clientY / window.innerHeight - .5)*6;
+        const x=(e.clientX/window.innerWidth - .5)*6;
+        const y=(e.clientY/window.innerHeight - .5)*6;
         if(rafId) cancelAnimationFrame(rafId);
         rafId=requestAnimationFrame(()=>{ bg.style.transform=`translate(${x}px, ${y}px)`; });
       }
       if(!reduced) window.addEventListener('mousemove', parallax);
+
+      // ========= Role UI =========
+      const ROLE_STYLE={
+        'owner':{name:'Owner',desc:'Control total',badge:'👑 Owner',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
+        'admin':{name:'Admin',desc:'Administración',badge:'🛡️ Admin',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
+        'supervisor':{name:'Supervisor',desc:'Lidera TLs',badge:'⭐ Supervisor',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},
+        'team leader':{name:'Team Leader',desc:'Lidera equipo',badge:'⭐ TL',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},
+        'analista':{name:'Analista',desc:'Calidad / Datos',badge:'📊 Analista',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
+        'calidad':{name:'Calidad',desc:'Auditoría',badge:'🧪 Calidad',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
+        'operador':{name:'Operador',desc:'Ventas / Gestión',badge:'⚙️ Operador',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},
+        'invitado':{name:'Invitado',desc:'Acceso limitado',badge:'⭐ Invitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}
+      };
+      function getRole(){
+        const qp=new URLSearchParams(location.search).get('role');
+        const w=(window.gcRole||'').toString().trim();
+        const ls=(localStorage.getItem('gc-role')||'').trim();
+        return (qp||w||ls||'Invitado');
+      }
+      function applyRoleUI(roleRaw){
+        const roleDot=document.getElementById('roleDot');
+        const roleName=document.getElementById('roleName');
+        const roleDesc=document.getElementById('roleDesc');
+        const roleBadge=document.getElementById('roleBadge');
+
+        const r=roleRaw.toLowerCase();
+        const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado';
+        const cfg=ROLE_STYLE[key];
+
+        roleDot.style.background=cfg.gradient;
+        roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
+        roleName.textContent=cfg.name;
+        roleDesc.textContent=cfg.desc;
+        roleBadge.textContent=cfg.badge;
+
+        const card=document.getElementById('roleCard');
+        card.style.filter = (key==='invitado') ? 'saturate(0.8) brightness(0.95)' : 'none';
+
+        localStorage.setItem('gc-role', cfg.name);
+      }
+      applyRoleUI(getRole());
+
+      // ========= Compact/Expand =========
+      const btnToggle=document.getElementById('btnSidebarToggle');
+      const compactKey='gc-sidebar-compact';
+      function setCompactState(on){
+        document.body.classList.toggle('sidebar-compact', !!on);
+        btnToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        localStorage.setItem(compactKey, on ? '1' : '0');
+      }
+      btnToggle.addEventListener('click', ()=> setCompactState(!document.body.classList.contains('sidebar-compact')));
+      setCompactState(localStorage.getItem(compactKey)==='1');
 
       // ========= Reloj =========
       function actualizarFechaHora(){
@@ -397,6 +577,13 @@ PEROP1AM-39726
       const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}};
       const STATE_KEY='selector_apoyo_v2_state';
 
+      // ========= Base dinámica (GitHub Pages / Dominio propio) =========
+      function getBase(){
+        const isGhProject = location.hostname.endsWith('github.io');
+        const PROJECT_SLUG = 'Gestion-Center';
+        return isGhProject ? `/${PROJECT_SLUG}/` : '/';
+      }
+
       // ========= Estado =========
       let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
 
@@ -409,10 +596,10 @@ PEROP1AM-39726
       }
       async function loadData(){
         try{
+          const base=getBase();
           const [distrib,camp]=await Promise.all([
-            // ✅ rutas absolutas
-            loadJSON('/datadistribucion.json'),
-            loadJSON('/Gestion-Center/utilities/datacamprev.json')
+            loadJSON(base + 'datadistribucion.json'),
+            loadJSON(base + 'utilities/datacamprev.json')
           ]);
           rawDistrib=distrib; rawCamp=camp;
           dataFinal=rawCamp.reduce((acc,row)=>{
@@ -433,7 +620,6 @@ PEROP1AM-39726
         }catch(e){
           console.error(e);
           toast('❌ No se pudieron cargar los JSON');
-          // Mostrar la página en caso de error de carga
           try{ document.documentElement.style.visibility='visible'; }catch(_){}
         }
       }
@@ -456,10 +642,6 @@ PEROP1AM-39726
         const full=new Set(tokens);
         const digits=new Set(tokens.map(t=>{ const m=t.match(/(\d{3,})$/); return m?m[1]:''; }).filter(Boolean));
         return { full, digits };
-      }
-      function peropPass(peropClean, peropNum, {full,digits}, includeMode){
-        const inList=full.has(peropClean)||(peropNum && digits.has(peropNum));
-        return includeMode ? inList : !inList;
       }
 
       // ======= Filtros combinables + búsqueda multi-palabra =======
@@ -658,7 +840,7 @@ PEROP1AM-39726
       [fltSearch,fltList].forEach(el=>el.addEventListener('input',onInput));
       toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
 
-      // Soporte Shift+Click
+      // Soporte Shift+Click para ordenar acumulativo
       document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',(e)=>cycleSort(th, e)));
 
       // Atajos
@@ -671,10 +853,42 @@ PEROP1AM-39726
       resetHeadSortClasses();
       loadData();
 
-      // Seguridad: gcLogout debe estar expuesto por guard.js
+      // Seguridad
       if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido en guard.js'); }
-      // guard.js hará: document.documentElement.style.visibility='visible' al validar sesión.
       try{ if(window.__gcVisTimer){ clearTimeout(window.__gcVisTimer); } }catch(_){}
+    </script>
+
+    <!-- 🔒 Normalizador de rutas (GitHub Pages / dominio propio) -->
+    <script>
+    (() => {
+      const isGhProject = location.hostname.endsWith('github.io');
+      const PROJECT_SLUG = 'Gestion-Center';
+      const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
+
+      // Normaliza enlaces de nav + brand + posibles anchors dentro del contenido
+      document.querySelectorAll('nav a.nav-item[href], .brand[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
+        const clean = href.replace(/^\.?\//, '');
+        a.setAttribute('href', base + clean);
+      });
+
+      // Normaliza logo
+      const logo = document.querySelector('#brandLink img');
+      if (logo) {
+        let src = logo.getAttribute('src') || './images/logogestioncenter.png';
+        if (!/^https?:\/\//i.test(src)) {
+          src = src.replace(/^\.?\//, '');
+          logo.setAttribute('src', base + src);
+        }
+        const source = document.querySelector('#brandLink source');
+        if (source) {
+          let s = source.getAttribute('srcset') || './images/logogestioncenter.webp';
+          s = s.replace(/^\.?\//, '');
+          source.setAttribute('srcset', base + s);
+        }
+      }
+    })();
     </script>
   </body>
 </html>
