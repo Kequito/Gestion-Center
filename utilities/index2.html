@@ -13,26 +13,25 @@
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
 
-    <!-- ✅ Bootloader: muestra si falla y carga guard con BASE absoluto -->
+    <!-- ✅ Bootloader: evita blanco y carga guard con BASE absoluto -->
     <script type="module">
       // Watchdog anti-pantalla-blanca
       window.__guardWatchdog = setTimeout(() => {
         try { document.documentElement.style.visibility = 'visible'; } catch(e){}
       }, 2500);
 
-      // Calcula BASE robusto (GitHub Pages repo vs dominio propio)
+      // BASE robusto (GitHub Pages repo vs dominio propio)
       const isGh = location.hostname.endsWith('github.io');
       const parts = location.pathname.split('/').filter(Boolean);
       const repo = isGh ? (parts[0] || '') : '';
       const BASE = isGh ? `/${repo}/` : '/';
       const abs = (p) => new URL(p.replace(/^\//,''), location.origin + BASE).href;
 
-      // Intenta importar el guard desde BASE/assets/guard.js
+      // Importa el guard desde BASE/assets/guard.js
       try {
         await import(abs('assets/guard.js'));
       } catch (e) {
         console.error('[index2] No se pudo cargar guard.js:', e);
-        // Define un logout mínimo para evitar warnings y muestra la página
         if (typeof window.gcLogout !== 'function') {
           window.gcLogout = () => { location.href = abs('login.html'); };
         }
@@ -102,15 +101,26 @@
         background:transparent;
         color:var(--white);
         border-radius:10px;
-        padding:10px;
+        padding:10px 12px;
         font-weight:700;
         cursor:pointer;
+
+        /* ✅ legibilidad y separación */
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        min-height:44px;
+        line-height:1.1;
+        white-space:nowrap;
       }
+      .sidebar-toggle .icon{ font-size:16px }
 
       nav{display:flex; flex-direction:column; gap:10px}
+
       .nav-group{
         border:1px solid var(--gray-300);
-        border-radius:10px;
+        border-radius:12px;           /* ✅ card redondeado */
         overflow:hidden;
         background:#0f0f0f;
       }
@@ -119,21 +129,22 @@
         text-align:left; padding:10px 12px; border:0; cursor:pointer;
         font-weight:700; display:flex; align-items:center; gap:8px;
       }
-      .nav-body{display:block}
-      .nav-group.is-collapsed .nav-body{display:none}
+      .nav-body{display:block; padding:6px} /* ✅ aire para que se note el radio */
 
       .nav-item{
         display:flex; align-items:center; gap:10px;
         color:var(--white); text-decoration:none;
         padding:12px 12px;
-        border-top:1px solid rgba(255,255,255,.08);
+        border-radius:10px;            /* ✅ items redondeados */
+        margin:4px;                    /* ✅ separado del borde */
+        background:transparent;
       }
-      .nav-item:first-of-type{border-top:0}
       .nav-item:hover{background:#141414}
       .nav-item.active{
         background:var(--white);
         color:var(--gray-900);
         border-left:3px solid var(--gray-900);
+        border-radius:10px;            /* ✅ activo redondeado */
       }
 
       .spacer{flex:1}
