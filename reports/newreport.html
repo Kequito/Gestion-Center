@@ -1,613 +1,605 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gestión Center — v2.0 · Selector de Apoyo 2.0</title>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión Center – New Report CC Perú</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-app:#1c2a45; --bg-aside:#152035; --txt:#ffffff; --txt-muted:#cfd8dc; --hover:#1c2a45;
+      --primary-color:#0d47a1; --accent-color:#42a5f5; --table-bg:#22314f; --table-border:#2f446a; --header-bg:#0d47a1;
+      --green-color:#2e7d32; --red-color:#c62828; --orange-color:#f57c00;
+    }
+    body{ margin:0; font-family:'Lexend',sans-serif; background:var(--bg-app); color:var(--txt); display:flex; min-height:100vh; }
+    aside{ background:var(--bg-aside); width:220px; height:100vh; padding:40px 20px; box-sizing:border-box; display:flex; flex-direction:column; position:fixed; left:0; top:0; }
+    .logo{ font-size:22px; font-weight:700; margin-bottom:32px; text-align:center; line-height:1.2; }
+    nav a{ color:var(--txt); margin:14px 0; text-decoration:none; font-size:15px; padding:10px 12px; border-radius:8px; transition:background-color .25s,transform .05s; display:flex; align-items:flex-start; gap:10px; width:100%; box-sizing:border-box; white-space:normal; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
+    nav a:hover{ background:var(--hover); }
+    nav a.active{ background:var(--hover); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+    .spacer{ flex:1; }
 
-    <!-- Fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    main{ margin-left:220px; padding:28px; width:calc(100% - 220px); box-sizing:border-box; }
+    .page-title{ display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; margin:0 0 4px; }
+    .subtitle{ margin:0 0 8px; color:var(--txt-muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+    .badge{ font-size:12px; padding:4px 8px; border-radius:999px; background:#334766; border:1px solid #2a3d5e; }
+    .badge.ok{ background:#1b5e20; border-color:#1b5e20; }
+    .badge.warn{ background:#8d2a2a; border-color:#8d2a2a; }
 
-    <!-- 🔒 Ocultar hasta validar sesión -->
-    <style>html{visibility:hidden}</style>
-    <script type="module" src="../assets/guard.js"></script>
+    .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; opacity:.9; }
 
-    <style>
-      :root{
-        --radius:16px; --radius-sm:12px; --radius-xs:10px;
-        --font-title:'Outfit',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-        --font-body:'Lexend',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-        --t-fast:.15s; --t-med:.22s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
-        --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
-        --hover-delay:80ms;
-        --sidebar-w:280px;         /* ancho expandido */
-        --sidebar-w-compact:72px;  /* ancho compacto  */
-      }
-      [data-theme="dark"]{
-        --bg-app:#070b1a; --bg-aside:#0c1228;
-        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
-        --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
-        --primary:#5b8bff; --accent:#7ae3ff;
-        --table-bg:rgba(17,24,49,.65);
-      }
-      *{box-sizing:border-box}
-      html,body{height:100%}
-      body{
-        margin:0; font-family:var(--font-body); color:var(--txt);
-        background:var(--bg-app);
-        overflow-x:hidden;
-      }
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
+    button{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:10px; background:var(--primary-color); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .2s,transform .03s; }
+    button:hover{ background:var(--accent-color); }
+    button:active{ transform:translateY(1px); }
+    button[disabled]{ opacity:.55; cursor:not-allowed; }
 
-      /* ===== Fondo fijo (luces decorativas) ===== */
-      #bg-fx{
-        position:fixed; inset:0; z-index:-2; pointer-events:none;
-        background:
-          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
-          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%);
-        background-repeat:no-repeat; background-attachment:fixed;
-      }
-      /* ===== Sidebar (idéntica al Index) ===== */
-      aside{
-        position:fixed; inset:0 auto 0 0; width:var(--sidebar-w); z-index:25;
-        backdrop-filter:saturate(120%) blur(8px);
-        background:color-mix(in oklab, var(--bg-aside) 96%, transparent);
-        border-right:1px solid var(--stroke);
-        display:flex; flex-direction:column; padding:14px 12px; gap:12px; overflow:auto;
-        contain: content;
-        --pad-x: 10px;
-      }
-      aside::before, aside::after{
-        content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
-      }
-      aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
-      aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
+    /* Base del botón peligro */
+    .btn-danger{ background:#8d2a2a; border:1px solid #6f2020; }
+    .btn-danger:hover{ background:#a93333; }
 
-      .brand{
-        display:flex; align-items:center; justify-content:center;
-        padding:12px; border-radius:var(--radius);
-        border:1px solid var(--stroke);
-        background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        transition: transform var(--t-fast) var(--curve), box-shadow var(--t-fast) ease;
-        will-change: transform;
-        text-decoration:none;
-      }
-      .brand:hover{ transform:scale(1.01) }
-      .brand picture{ display:block; }
-      .brand img{ width:160px; height:auto; object-fit:contain; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+    textarea{ width:100%; min-height:150px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:12px; border:1px solid var(--accent-color); background:var(--table-bg); color:var(--txt); border-radius:12px; box-sizing:border-box; }
 
-      .sidebar-toggle{
-        display:flex; align-items:center; justify-content:center;
-        gap:8px; width:100%; border:1px solid var(--stroke);
-        padding:10px; border-radius:12px; background:rgba(255,255,255,.04);
-        color:var(--txt); cursor:pointer; font-weight:700;
-        transition:filter var(--t-med) ease, transform var(--t-fast) ease;
-      }
-      .sidebar-toggle:hover{ filter:brightness(1.05) }
-      .sidebar-toggle:active{ transform:translateY(1px) }
-      .sidebar-toggle .lbl{ font-size:13px }
-      .sidebar-toggle[aria-pressed="true"] .lbl::after{ content:" (compacto)"; opacity:.8; font-weight:600 }
+    table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%; background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+    th,td{ border-bottom:1px solid var(--table-border); padding:10px; text-align:center; }
+    thead th{ background:var(--header-bg); color:#fff; cursor:pointer; position:relative; }
+    thead th:first-child, tbody td:first-child{ text-align:left; }
+    .bandera{ width:20px; height:14px; margin-right:6px; vertical-align:middle; }
+    .bold{ font-weight:700; }
 
-      nav{ position:relative; display:flex; flex-direction:column; gap:10px; }
-      .nav-group{
-        border:1px solid var(--stroke); border-radius:14px; overflow:hidden;
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent)
-      }
-      .nav-head{
-        width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--txt);
-        font:700 13px/1 var(--font-title); letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; gap:8px;
-      }
-      .nav-head .chev{ transition:transform var(--t-med) var(--curve) }
-      .nav-group.is-collapsed .nav-head .chev{ transform:rotate(-90deg) }
-      .nav-body{ overflow:hidden; transition:grid-template-rows .35s var(--curve), opacity .25s ease; display:grid; grid-template-rows:1fr; opacity:1 }
-      .nav-group.is-collapsed .nav-body{ grid-template-rows:0fr; opacity:.0 }
-      .nav-body-inner{ min-height:0; padding:6px; display:flex; flex-direction:column; gap:8px }
+    .green{ background:var(--green-color); color:#fff; }
+    .red{ background:var(--red-color); color:#fff; }
+    .orange{ background:var(--orange-color); color:#fff; }
 
-      .nav-item{
-        display:flex; align-items:center; gap:10px; padding:12px var(--pad-x);
-        border-radius:10px; text-decoration:none; color:var(--txt); font-size:15px;
-        border:1px solid transparent;
-        transition: background var(--t-med) ease var(--hover-delay),
-                    transform var(--t-fast) ease var(--hover-delay);
-        min-height:40px;
-      }
-      .nav-item:hover{ background:color-mix(in oklab, var(--bg-aside) 80%, transparent); transform:translateX(2px) }
-      .nav-item .label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100% }
-      .nav-item.active{
-        background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
-        border-color:var(--stroke)
-      }
-      .nav-indicator{
-        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
-        background:linear-gradient(180deg, var(--primary), var(--accent));
-        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
-        transition:transform 220ms var(--curve), height 220ms ease;
-        will-change: transform, height;
-        pointer-events:none;
-      }
+    tfoot td{ font-weight:800; background:rgba(66,165,245,.16); border-top:2px solid var(--table-border); }
 
-      .spacer{flex:1}
-      .role-card{
-        display:flex; align-items:center; gap:10px; padding:10px 12px;
-        border-radius:14px; border:1px solid var(--stroke);
-        background:color-mix(in oklab, var(--bg-aside) 92%, transparent);
-      }
-      .role-dot{ width:14px; height:14px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,.06) inset, 0 0 14px rgba(0,0,0,.25) }
-      .role-text small{ color:var(--txt-muted) }
-      .role-badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--stroke); background:rgba(255,255,255,.06) }
-      .logout{
-        width:100%; border:1px solid var(--stroke);
-        background:linear-gradient(180deg, #ef4444, #d62c2c); color:#fff;
-        padding:12px; border-radius:12px; cursor:pointer; font-weight:700;
-        transition:transform var(--t-fast) ease, filter var(--t-med) ease;
-      }
-      .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
+    .filters{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid var(--table-border); border-radius:12px; padding:10px 12px; margin-top:18px; }
+    .filter-group{ display:flex; align-items:center; gap:10px; }
+    .filter-group label{ display:flex; align-items:center; gap:8px; font-weight:700; margin:0; }
+    .filter-group select, .filter-group input[type="date"]{ padding:8px 12px; border-radius:10px; border:1px solid var(--primary-color); background:var(--table-bg); color:var(--txt); min-width:140px; line-height:1; height:38px; }
+    .filter-group .clear-btn{ background:#344768; border:1px solid var(--table-border); }
+    .filter-group .clear-btn:hover{ background:#3e577f; }
 
-      /* ===== Main ===== */
-      main{ margin-left:var(--sidebar-w); padding:24px 22px 40px; transition:margin-left var(--t-med) var(--curve) }
-      body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
-      body.sidebar-compact main{ margin-left:var(--sidebar-w-compact) }
-      body.sidebar-compact .brand img{ width:42px }
-      body.sidebar-compact .nav-head .txt, body.sidebar-compact .nav-item .label, body.sidebar-compact .sidebar-toggle .lbl, body.sidebar-compact .role-text{ display:none }
-      body.sidebar-compact .nav-head{ justify-content:center }
-      body.sidebar-compact .nav-group{ gap:0 }
-      body.sidebar-compact .nav-item{ justify-content:center; padding-inline:0 }
-      body.sidebar-compact .role-card{ justify-content:center; padding:10px }
-      .hero{
-        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
-        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
-        border:1px solid var(--stroke); overflow:hidden;
-      }
-      .hero h1{margin:0 0 6px; font:700 22px/1.2 var(--font-title)}
-      .hero p{margin:0; color:var(--txt-muted); font-size:14px}
+    .history-actions{ display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px; justify-content:flex-start; }
 
-      /* ===== Contenido CampRev ===== */
-      .filters{
-        display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px;
-        background:rgba(255,255,255,.05); border:1px solid var(--stroke);
-        padding:10px; border-radius:12px;
-      }
-      .filters select, .filters input{
-        padding:8px 10px; border-radius:10px; border:1px solid var(--stroke);
-        background:var(--table-bg); color:var(--txt); min-width:140px; height:38px;
-      }
-      .filters .search{ min-width:220px }
-      table{
-        width:100%; border-collapse:separate; border-spacing:0; margin-top:10px;
-        background:var(--table-bg); border:1px solid var(--stroke); border-radius:12px; overflow:hidden;
-        box-shadow:var(--elev-1);
-      }
-      thead th, td{ padding:10px; border-bottom:1px solid var(--stroke); text-align:center }
-      thead th:first-child, tbody td:first-child{ text-align:left }
-      thead th{
-        position:relative; cursor:pointer;
-        background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-        font:700 13px/1 var(--font-title);
-      }
-      .bandera{ width:20px; height:14px; margin-right:6px; vertical-align:middle }
-      .money::before{ content:"$" }
-      .actions{ display:flex; gap:8px; justify-content:center }
-      .btn{
-        padding:8px 12px; border:1px solid var(--stroke); border-radius:10px;
-        background:rgba(255,255,255,.06); color:var(--txt); cursor:pointer;
-      }
-      .btn:active{ transform:translateY(1px) }
-      .right{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px }
-      .muted{ color:var(--txt-muted); font-size:13px }
+    /* Métricas rápidas */
+    .quick-metrics{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    .metric{ background:rgba(255,255,255,.05); border:1px solid var(--table-border); padding:10px 12px; border-radius:10px; min-width:150px; }
+    .metric .title{ font-size:12px; color:var(--txt-muted); margin-bottom:4px; }
+    .metric .value{ font-size:18px; font-weight:800; }
+    .metric .delta.up{ color:#76ff7a; }
+    .metric .delta.down{ color:#ff9e9e; }
 
-      /* Responsive tabla */
-      @media (max-width:1000px){
-        .filters{ gap:8px }
-        table{ font-size:13px }
-        thead th, td{ padding:8px }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- 🔵 Fondo fijo (luces) -->
-    <div id="bg-fx" aria-hidden="true"></div>
+    #toast{ position:fixed; bottom:18px; right:20px; background:#222; color:#fff; padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000; }
 
-    <!-- ===== SIDEBAR (idéntica al Index) ===== -->
-    <aside class="reveal" id="gc-aside">
-      <a class="brand" href="../index.html" id="brandLink" aria-label="Inicio" title="Inicio">
-        <picture>
-          <source srcset="../images/logogestioncenter.webp" type="image/webp"/>
-          <img id="brandLogo" src="../images/logogestioncenter.png" alt="Gestión Center" loading="lazy" decoding="async"/>
-        </picture>
-      </a>
+    /* ——— Botón Eliminar compacto solo en la tabla del histórico ——— */
+    #tablaHistorico .btn-danger{
+      padding: 6px 10px;       /* más pequeño que el resto */
+      font-size: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    }
+    #tablaHistorico .btn-danger:hover{
+      background:#a93333;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="logo">🧭 Gestión Center</div>
+    <nav>
+        <a href="index.html">🏠 Inicio</a>
+        <a href="plandetrabajo.html">✅ Plan de trabajo</a>
+        <a href="distribucion.html">📋 Distribución</a>
+        <a href="estadisticas.html">📈 Estadísticas</a>
+        <a href="cobertura.html">🌎 Cobertura</a>
+        <a href="camprev.html">👥 Selector de Apoyo Ver 2.0</a>
+        <a href="postsale.html">🚚 Post-Sale New Report </a>
+        <a class="active" href="opo11.html">🧰 New Report CC Perú</a>
+        <a href="#contacto">📬 Contacto</a>
+    </nav>
+    <div class="spacer"></div>
+  </aside>
 
-      <button class="sidebar-toggle" id="btnSidebarToggle" aria-pressed="false" title="Compactar / Expandir">
-        <span class="icon">⇆</span><span class="lbl">Cambiar ancho</span>
-      </button>
+  <main>
+    <div class="page-title">🧰 New Report CC Perú</div>
+    <p class="subtitle">
+      Pega la tabla desde tu Panel y visualiza las métricas · Historial por hora compartido
+      <span id="fbBadge" class="badge">Conectando…</span>
+    </p>
 
-      <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
-        <div class="nav-indicator" aria-hidden="true"></div>
+    <div class="datetime" id="fechaHora"></div>
 
-        <a href="../index.html" class="nav-item" title="Inicio">
-          🏠 <span class="label">Inicio</span>
-        </a>
+    <div class="toolbar">
+      <button onclick="procesar('numerico')">📦 Vista Numérica</button>
+      <button onclick="procesar('porcentaje')">📈 Vista Porcentual</button>
+      <button onclick="procesar('mixto')">🔁 Vista Mixta</button>
+      <button onclick="borrarTodo()">🧹 Borrar</button>
+      <button onclick="restablecerOrden()">🧭 Restablecer Orden</button>
+    </div>
 
-        <!-- REPORTES -->
-        <section class="nav-group" data-key="grp-reportes">
-          <button class="nav-head" title="Reportes">
-            <span class="chev">▾</span> <span class="txt">📊 Reportes</span>
-          </button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="../reports/newreport.html" class="nav-item" title="New Report">🧰 <span class="label">New Report</span></a>
-            <a href="../reports/psreport.html" class="nav-item" title="Post-Sale Report">🚚 <span class="label">Post-Sale Report</span></a>
-          </div></div>
-        </section>
+    <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…"></textarea>
 
-        <!-- OPERACIONES -->
-        <section class="nav-group" data-key="grp-operaciones">
-          <button class="nav-head" title="Operaciones">
-            <span class="chev">▾</span> <span class="txt">🛠️ Operaciones</span>
-          </button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="../operations/distribucion.html" class="nav-item" title="Distribución">📋 <span class="label">Distribución</span></a>
-            <a href="../operations/biops.html" class="nav-item" title="BI de OPs + Links">🔗 <span class="label">BI de OPs + Links</span></a>
-          </div></div>
-        </section>
+    <table id="tablaReporte">
+      <thead><tr id="encabezadoTabla"></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr id="filaTotales"></tr></tfoot>
+    </table>
 
-        <!-- COBERTURA -->
-        <section class="nav-group" data-key="grp-cobertura">
-          <button class="nav-head" title="Cobertura">
-            <span class="chev">▾</span> <span class="txt">🌎 Cobertura</span>
-          </button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="../cobertura.html" class="nav-item" title="Mapa de cobertura">🗺️ <span class="label">Mapa de cobertura</span></a>
-            <a href="../newcobertura.html" class="nav-item" title="New Cobertura 1.1">🧭 <span class="label">New Cobertura 1.1</span></a>
-          </div></div>
-        </section>
+    <div class="history-actions">
+      <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
+      <button onclick="borrarHistorial()">🗑️ Borrar historial</button>
+      <button onclick="exportarHistoricoCSV()">⬇️ Exportar histórico (CSV)</button>
+    </div>
 
-        <!-- UTILIDADES -->
-        <section class="nav-group" data-key="grp-utils">
-          <button class="nav-head" title="Utilidades">
-            <span class="chev">▾</span> <span class="txt">🧩 Utilidades</span>
-          </button>
-          <div class="nav-body"><div class="nav-body-inner">
-            <a href="../utilities/camprev.html" class="nav-item" title="Selector de Apoyo 2.0">👥 <span class="label">Selector de Apoyo 2.0</span></a>
-          </div></div>
-        </section>
-      </nav>
-
-      <div class="spacer"></div>
-
-      <div class="role-card" id="roleCard" title="Rango del usuario">
-        <div class="role-dot" id="roleDot"></div>
-        <div class="role-text">
-          <strong id="roleName">Invitado</strong>
-          <span class="role-badge" id="roleBadge" style="margin-left:6px">⭐ Invitado</span><br/>
-          <small id="roleDesc">Acceso limitado</small>
-        </div>
-      </div>
-
-      <button class="logout" onclick="gcLogout()">Salir</button>
-    </aside>
-
-    <!-- ===== CONTENIDO ===== -->
-    <main>
-      <section class="hero reveal">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
-          <div>
-            <h1>👥 Selector de Apoyo 2.0</h1>
-            <p>Cruce dinámico de <b>datadistribucion.json</b> + <b>camprev.json</b> con filtros combinables.</p>
-          </div>
-          <div class="right">
-            <button class="btn" id="btnReload">↻ Recargar</button>
-            <button class="btn" id="btnReset">🧭 Restablecer</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="filters">
-        <select id="fPais" title="Filtrar por país">
+    <!-- Filtros -->
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filtroPais">🌎 País:</label>
+        <select id="filtroPais" onchange="onFiltroChange()">
           <option value="todos">🌍 Todos</option>
-          <option>Chile</option><option>Colombia</option><option>Costa Rica</option>
-          <option>Ecuador</option><option>Mexico</option><option>Paraguay</option>
-          <option>Peru</option><option>Uruguay</option><option>Venezuela</option>
         </select>
-        <select id="fTurno" title="Filtrar por turno">
-          <option value="todos">⏰ Todos los turnos</option>
-          <option>07:00 - 16:00</option>
-          <option>08:00 - 17:00</option>
-          <option>09:00 - 18:00</option>
-          <option>10:00 - 19:00</option>
-          <option>11:00 - 20:00</option>
-          <option>12:00 - 21:00</option>
-          <option>13:00 - 22:00</option>
-          <option>14:00 - 23:00</option>
-          <option>15:00 - 00:00</option>
-          <option>22:00 - 07:00</option>
-        </select>
-        <select id="fTL" title="Filtrar por Team Leader">
-          <option value="todos">⭐ Todos los TL</option>
-        </select>
-        <input id="fSearch" class="search" placeholder="🔎 Buscar por nombre, PEROP1AM, campaña…" />
-      </section>
-
-      <table id="tabla">
-        <thead>
-          <tr id="theadRow">
-            <th data-k="idx">#</th>
-            <th data-k="op">Operador</th>
-            <th data-k="perop">PEROP1AM</th>
-            <th data-k="pais">País</th>
-            <th data-k="turno">Turno</th>
-            <th data-k="campana">Campaña</th>
-            <th data-k="tl">TL</th>
-            <th data-k="avg">Avg Check</th>
-            <th data-k="status">Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <div class="right">
-        <span class="muted" id="resume">—</span>
       </div>
-    </main>
 
-    <script type="module">
-      // ========= Indicador activo + auto-scroll =========
-      const items=[...document.querySelectorAll('nav .nav-item')];
-      const indicator=document.querySelector('.nav-indicator');
-      const navEl=document.getElementById('gc-nav');
+      <div class="filter-group">
+        <label for="presetRango">🗓️ Rango:</label>
+        <select id="presetRango" onchange="onPresetChange()">
+          <option value="dia">Día específico</option>
+          <option value="hoy">Hoy</option>
+          <option value="ayer">Ayer</option>
+          <option value="7d">Últimos 7 días</option>
+        </select>
+      </div>
 
-      function setActive(){
-        const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-        let active=items[0];
-        items.forEach(a=>{
-          const href=(a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
-          if(href && href===current) active=a;
-          a.classList.toggle('active', a===active);
-          a.toggleAttribute('aria-current', a===active ? 'page':false);
-        });
-        if(active){
-          const pr=navEl.getBoundingClientRect();
-          const r=active.getBoundingClientRect();
-          const y=r.top - pr.top + navEl.scrollTop;
-          indicator.style.height=r.height+'px';
-          indicator.style.transform=`translateY(${y}px)`;
-          const margin=16;
-          const topNeeded = y - margin;
-          const bottomNeeded = y + r.height + margin - navEl.clientHeight;
-          if (topNeeded < navEl.scrollTop) navEl.scrollTo({top: topNeeded, behavior:'smooth'});
-          else if (bottomNeeded > navEl.scrollTop) navEl.scrollTo({top: bottomNeeded, behavior:'smooth'});
-        }
+      <div class="filter-group">
+        <label for="filtroFecha">📅 Fecha:</label>
+        <input type="date" id="filtroFecha" onchange="onFiltroChange()"/>
+        <button class="clear-btn" onclick="limpiarFecha()">Todos</button>
+      </div>
+    </div>
+
+    <!-- Métricas rápidas -->
+    <div id="quickMetrics" class="quick-metrics" style="display:none;">
+      <div class="metric">
+        <div class="title">Min % Approve</div>
+        <div id="mMin" class="value">–</div>
+      </div>
+      <div class="metric">
+        <div class="title">Mediana % Approve</div>
+        <div id="mMed" class="value">–</div>
+      </div>
+      <div class="metric">
+        <div class="title">Max % Approve</div>
+        <div id="mMax" class="value">–</div>
+      </div>
+      <div class="metric">
+        <div class="title">Δ vs hora previa</div>
+        <div id="mDelta" class="value">–</div>
+      </div>
+    </div>
+
+    <h3 class="page-title" style="font-size:18px; margin-top:6px;">📋 Registro histórico por hora</h3>
+    <table id="tablaHistorico">
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Fecha</th>
+          <th>País</th>
+          <th>Leads</th>
+          <th>News</th>
+          <th>Recall</th>
+          <th>No Answer</th>
+          <th>Approve</th>
+          <th>% Approve</th>
+          <th>Reject</th>
+          <th>Trash</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <canvas id="graficoAvance" height="220"></canvas>
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ========= Script (auth hotfix + eliminar fila + botón pequeño) ========= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
+      authDomain: "gestioncenterdata.firebaseapp.com",
+      projectId: "gestioncenterdata",
+      storageBucket: "gestioncenterdata.appspot.com",
+      messagingSenderId: "628401314464",
+      appId: "1:628401314464:web:0671233dfd801ee43587c5",
+      measurementId: "G-NBFZYTN094"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    const fbBadge = document.getElementById('fbBadge');
+    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
+
+    // Watchdog anti “Conectando…” infinito
+    let authSettled = false;
+    const authWatchdog = setTimeout(()=>{
+      if (!authSettled) {
+        console.warn('[GC] Auth watchdog timeout → Solo lectura');
+        setBadge('Solo lectura','warn');
+        renderTablaHistorico();
       }
-      setActive();
-      navEl.addEventListener('scroll', setActive);
-      window.addEventListener('resize', setActive);
+    }, 6000);
 
-      // ========= Grupos colapsables con memoria =========
-      document.querySelectorAll('.nav-group').forEach(g=>{
-        const key=g.dataset.key, head=g.querySelector('.nav-head');
-        const saved=localStorage.getItem(key);
-        if(saved==='0') g.classList.add('is-collapsed');
-        head.addEventListener('click', ()=>{
-          g.classList.toggle('is-collapsed');
-          localStorage.setItem(key, g.classList.contains('is-collapsed')?'0':'1');
-          setActive();
-        });
-      });
+    /* ===== Utilidades ===== */
+    const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais',
+          PREF_FFECHA='gc_filtro_fecha_iso', PREF_PRESET='gc_preset_rango';
+    const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+    const readPref=(k,d=null)=>{ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{ return d;} };
 
-      // ========= Compact/Expand =========
-      const btnToggle=document.getElementById('btnSidebarToggle');
-      const compactKey='gc-sidebar-compact';
-      function setCompactState(on){
-        document.body.classList.toggle('sidebar-compact', !!on);
-        btnToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-        localStorage.setItem(compactKey, on ? '1' : '0');
+    const pad2=n=>String(n).padStart(2,'0');
+    const formatDDMMYYYY=d=>`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
+    const formatISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+    function ddmmyyyyToISO(s){ if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; }
+
+    function toHora24(str){
+      if(!str) return "";
+      let s=str.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[\.]/g,'');
+      const m24=s.match(/^(\d{1,2}):(\d{2})$/); if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
+      const m12=s.match(/^(\d{1,2}):(\d{2})(am|pm)$/);
+      if(m12){ let h=+m12[1]%12, min=+m12[2]; if(m12[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`; }
+      return str;
+    }
+
+    function actualizarFechaHora(){
+      const ahora=new Date();
+      const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
+    }
+    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+
+    let vistaActual=readPref(PREF_VISTA,'numerico'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
+
+    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","Paraguay":"py","Peru":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
+    function mostrarToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.style.display="block"; t.style.opacity=1; setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600); setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200); }
+
+    const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
+
+    function borrarTodo(){ document.getElementById("inputData").value=""; document.querySelector("#tablaReporte tbody").innerHTML=""; document.querySelector("#encabezadoTabla").innerHTML=""; document.querySelector("#filaTotales").innerHTML=""; dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); }
+
+    function procesar(vista){
+      vistaActual=vista; savePref(PREF_VISTA,vista); estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
+      const input=document.getElementById("inputData").value.trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
+      const filas=input.split("\n"), headersRaw=filas[0].split("\t").map(h=>h.trim()), headersLC=headersRaw.map(h=>h.toLowerCase());
+      const idx=(names)=> (Array.isArray(names)?names:[names]).reduce((r,n)=> r>=0?r:(headersRaw.indexOf(n)>=0?headersRaw.indexOf(n):headersLC.indexOf(n.toLowerCase())), -1);
+      const IDX={ country:idx(COLMAP.country), total:idx(COLMAP.total), news:idx(COLMAP.news), recall:idx(COLMAP.recall), noAnswer:idx(COLMAP.noAnswer), approved:idx(COLMAP.approved), reject:idx(COLMAP.reject), trash:idx(COLMAP.trash) };
+      if(IDX.country===-1||IDX.total===-1){ mostrarToast("⚠️ Falta Country/Total."); return; }
+      if(IDX.approved===-1){ mostrarToast("ℹ️ No encuentro ‘Approved’; usaré 0."); }
+      dataGlobal={};
+      for(let i=1;i<filas.length;i++){
+        const f=filas[i].split("\t"), pais=(f[IDX.country]||"").trim(); if(!pais) continue;
+        if(!dataGlobal[pais]) dataGlobal[pais]={total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0};
+        const val=j=> j===-1?0:(parseInt(f[j])||0);
+        dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall); dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
       }
-      btnToggle.addEventListener('click', ()=> setCompactState(!document.body.classList.contains('sidebar-compact')));
-      setCompactState(localStorage.getItem(compactKey)==='1');
+      dataOriginal=Object.entries(dataGlobal);
+      renderTabla(); mostrarToast("✅ Datos procesados");
+    }
 
-      // ========= Role UI (mismo sistema) =========
-      const ROLE_STYLE={
-        'owner':{name:'Owner',desc:'Control total',badge:'👑 Owner',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'admin':{name:'Admin',desc:'Administración',badge:'🛡️ Admin',color:'#f59e0b',gradient:'linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4)'},
-        'supervisor':{name:'Supervisor',desc:'Lidera TLs',badge:'⭐ Supervisor',color:'#5b8bff',gradient:'linear-gradient(135deg,#5b8bff,#60a5fa)'},
-        'team leader':{name:'Team Leader',desc:'Lidera equipo',badge:'⭐ TL',color:'#a78bfa',gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)'},
-        'analista':{name:'Analista',desc:'Calidad / Datos',badge:'📊 Analista',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'calidad':{name:'Calidad',desc:'Auditoría',badge:'🧪 Calidad',color:'#22d3ee',gradient:'linear-gradient(135deg,#22d3ee,#06b6d4)'},
-        'operador':{name:'Operador',desc:'Ventas / Gestión',badge:'⚙️ Operador',color:'#22c55e',gradient:'linear-gradient(135deg,#22c55e,#16a34a)'},
-        'invitado':{name:'Invitado',desc:'Acceso limitado',badge:'⭐ Invitado',color:'#94a3b8',gradient:'linear-gradient(135deg,#94a3b8,#64748b)'}
-      };
-      function getRole(){
-        const qp=new URLSearchParams(location.search).get('role');
-        const w=(window.gcRole||'').toString().trim();
-        const ls=(localStorage.getItem('gc-role')||'').trim();
-        return (qp||w||ls||'Invitado');
-      }
-      (function applyRoleUI(roleRaw){
-        const roleDot=document.getElementById('roleDot');
-        const roleName=document.getElementById('roleName');
-        const roleDesc=document.getElementById('roleDesc');
-        const roleBadge=document.getElementById('roleBadge');
-        const r=roleRaw.toLowerCase();
-        const key=Object.keys(ROLE_STYLE).find(k=>r.includes(k))||'invitado';
-        const cfg=ROLE_STYLE[key];
-        roleDot.style.background=cfg.gradient;
-        roleDot.style.boxShadow=`0 0 0 3px rgba(255,255,255,.06) inset, 0 0 18px ${cfg.color}55`;
-        roleName.textContent=cfg.name; roleDesc.textContent=cfg.desc; roleBadge.textContent=cfg.badge;
-        const card=document.getElementById('roleCard');
-        card.style.filter = (key==='invitado') ? 'saturate(0.8) brightness(0.95)' : 'none';
-        localStorage.setItem('gc-role', cfg.name);
-      })(getRole());
-
-      // ========= Normalizador rutas (GitHub Pages / dominio propio) =========
-      (function(){
-        const isGhProject = location.hostname.endsWith('github.io');
-        const PROJECT_SLUG = 'Gestion-Center';
-        const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
-        document.querySelectorAll('nav a.nav-item[href], .brand[href]').forEach(a=>{
-          const href=a.getAttribute('href'); if(!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
-          const clean=href.replace(/^\.?\//,''); a.setAttribute('href', base + clean);
-        });
-        const logo=document.querySelector('#brandLink img');
-        if(logo){ let src=logo.getAttribute('src')||'../images/logogestioncenter.png';
-          if(!/^https?:\/\//i.test(src)){ src=src.replace(/^\.?\//,''); logo.setAttribute('src', base + src); }
-          const source=document.querySelector('#brandLink source');
-          if(source){ let s=source.getAttribute('srcset')||'../images/logogestioncenter.webp';
-            s=s.replace(/^\.?\//,''); source.setAttribute('srcset', base + s); }
-        }
-      })();
-
-      // ========= CampRev: datos + UI =========
-      const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","Paraguay":"py","Peru":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
+    function renderTabla(){
+      const enc=document.getElementById("encabezadoTabla"), cuerpo=document.querySelector("#tablaReporte tbody"), tfoot=document.getElementById("filaTotales");
+      enc.innerHTML=""; cuerpo.innerHTML=""; tfoot.innerHTML="";
+      let cols=["País","Leads"];
+      if(vistaActual==="numerico"){ cols.push("New","Recall","No Answer","Approve","Reject","Trash");
+      }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
+      }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
+      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
+      let datos=[...dataOriginal];
+      if(columnaOrdenActual){ const e=estadoOrdenColumna[columnaOrdenActual]||0; datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual); return e===1?B-A:e===2?A-B:0; }); }
       const flag=p=>codigos[p]?`<img class="bandera" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
-
-      const $ = sel => document.querySelector(sel);
-      const fPais = $('#fPais');
-      const fTurno = $('#fTurno');
-      const fTL = $('#fTL');
-      const fSearch = $('#fSearch');
-      const tbody = document.querySelector('#tabla tbody');
-      const resume = $('#resume');
-
-      let baseDistrib = [];   // datadistribucion.json
-      let baseCampRev = [];   // camprev.json
-      let rows = [];          // combinado
-      let sortState = {};     // estado de orden por columna (0 none, 1 desc, 2 asc)
-
-      async function loadJSON(path){
-        const res = await fetch(path, {cache:'no-store'});
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        return res.json();
+      for(const [pais,d] of datos){
+        const t=d.total||1;
+        const tr=document.createElement("tr");
+        let html=`<td class="bold">${flag(pais)} ${pais}</td><td>${d.total}</td>`;
+        if(vistaActual==="numerico"){ html+=`<td>${d.news}</td><td>${d.recall}</td><td>${d.noAnswer}</td><td>${d.approved}</td><td>${d.reject}</td><td>${d.trash}</td>`;
+        }else if(vistaActual==="porcentaje"){ html+=`<td>${pct(d.news,t)}</td><td>${pct(d.recall,t)}</td><td>${pct(d.noAnswer,t)}</td><td class="${colorPct(d.approved/t*100)}">${pct(d.approved,t)}</td><td>${pct(d.reject,t)}</td><td>${pct(d.trash,t)}</td>`;
+        }else{ html+=`<td>${d.news}</td><td>${pct(d.news,t)}</td><td>${d.recall}</td><td>${pct(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pct(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${colorPct(d.approved/t*100)}">${pct(d.approved,t)}</td><td>${d.reject}</td><td>${pct(d.reject,t)}</td><td>${d.trash}</td><td>${pct(d.trash,t)}</td>`; }
+        tr.innerHTML=html; cuerpo.appendChild(tr);
       }
-
-      async function loadData(){
-        // Rutas relativas desde /utilities/camprev.html
-        const distrib = await loadJSON('../data/datadistribucion.json');
-        const camp = await loadJSON('../data/camprev.json');
-        baseDistrib = Array.isArray(distrib) ? distrib : (distrib.data || []);
-        baseCampRev = Array.isArray(camp) ? camp : (camp.data || []);
+      const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.trash+=d.trash; a.reject+=d.reject; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
+      if(Object.keys(dataGlobal).length){
+        let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||1;
+        if(vistaActual==="numerico"){ foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
+        }else if(vistaActual==="porcentaje"){ foot+=`<td>${pct(tot.news,t)}</td><td>${pct(tot.recall,t)}</td><td>${pct(tot.noAnswer,t)}</td><td class="${colorPct(tot.approved/t*100)}">${pct(tot.approved,t)}</td><td>${pct(tot.reject,t)}</td><td>${pct(tot.trash,t)}</td>`;
+        }else{ foot+=`<td>${tot.news}</td><td>${pct(tot.news,t)}</td><td>${tot.recall}</td><td>${pct(tot.recall,t)}</td><td>${tot.noAnswer}</td><td>${pct(tot.noAnswer,t)}</td><td>${tot.approved}</td><td class="${colorPct(tot.approved/t*100)}">${pct(tot.approved,t)}</td><td>${tot.reject}</td><td>${pct(tot.reject,t)}</td><td>${tot.trash}</td><td>${pct(tot.trash,t)}</td>`; }
+        tfoot.innerHTML=foot;
       }
+    }
+    function cambiarOrdenColumna(col){ estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1; if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0; columnaOrdenActual=estadoOrdenColumna[col]===0?null:col; savePref(PREF_ORDEN,estadoOrdenColumna); renderTabla(); }
+    function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); renderTabla(); }
+    function getValorOrdenable(d,col){ const t=d.total||1; const base={"Leads":d.total,"New":d.news,"% New":(d.news/t)*100,"Recall":d.recall,"% Recall":(d.recall/t)*100,"No Answer":d.noAnswer,"% No Answer":(d.noAnswer/t)*100,"Approve":d.approved,"% Approve":(d.approved/t)*100,"Reject":d.reject,"% Reject":(d.reject/t)*100,"Trash":d.trash,"% Trash":(d.trash/t)*100}; return base[col]||0; }
+    const pct=(v,t)=>((v/t)*100).toFixed(1)+"%";
+    const colorPct=p=>p<=25?"red":p>=30?"green":"orange";
 
-      function merge(){
-        const byPerop = new Map(baseDistrib.map(d => [String(d.PEROP1AM||d.perop||'').trim(), d]));
-        const merged = [];
-        for(const c of baseCampRev){
-          const key = String(c.PEROP1AM || c.perop || '').trim();
-          const d = byPerop.get(key);
-          if(!d) continue; // 👈 omitir si no existe en datadistribucion
-          merged.push({
-            idx: 0,
-            op: d.Nombre || d.name || '',
-            perop: key,
-            pais: d.Pais || d.pais || '',
-            turno: d.Turno || d.turno || '',
-            campana: c.Campana || c.campana || d.Campaña || d.campana || '',
-            tl: d.TL || d.tl || '',
-            avg: Number(c.AvgCheck || c.avg || 0),
-            status: d.Status || d.status || 'Presente'
-          });
+    /* ===== Cloud histórico con FALLBACK ===== */
+    let cloudHistorico=[];
+    const filtroPaisEl=document.getElementById("filtroPais");
+    const filtroFechaEl=document.getElementById("filtroFecha");
+    const presetEl=document.getElementById("presetRango");
+
+    function rangeFromPreset(preset, dateISO){
+      const now=new Date();
+      const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+      const startOf=(iso)=> new Date(`${iso}T00:00:00`).getTime();
+      const addDays=(iso,days)=>{ const d=new Date(`${iso}T00:00:00`); d.setDate(d.getDate()+days); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
+      if(preset==='hoy'){ const s=startOf(todayISO), e=startOf(addDays(todayISO,1)); return {start:s, end:e}; }
+      if(preset==='ayer'){ const y=addDays(todayISO,-1); return {start:startOf(y), end:startOf(todayISO)}; }
+      if(preset==='7d'){ const s=addDays(todayISO,-6); return {start:startOf(s), end:startOf(addDays(todayISO,1))}; }
+      if(preset==='dia' && dateISO){ return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))}; }
+      return {start:null, end:null};
+    }
+
+    function normalizeRows(rows){
+      rows.forEach(r=>{
+        const iso  = r.fechaISO || ddmmyyyyToISO(r.fecha);
+        const hhmm = r.hora24 || toHora24(r.hora);
+        if(!r.ts && iso && hhmm){
+          r.ts = new Date(`${iso}T${hhmm}:00`).getTime();
         }
-        // Index visible 1..N
-        merged.forEach((r,i)=> r.idx=i+1);
-        rows = merged;
-        // Poblar TL únicos
-        const tls = [...new Set(rows.map(r=>r.tl).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-        fTL.innerHTML = `<option value="todos">⭐ Todos los TL</option>` + tls.map(t=>`<option>${t}</option>`).join('');
-      }
+        r.hora = hhmm || r.hora;
+      });
+      rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
+      return rows;
+    }
 
-      function applyFilters(){
-        const q = (fSearch.value||'').toLowerCase().trim();
-        const p = fPais.value;
-        const t = fTurno.value;
-        const tl= fTL.value;
-
-        let out = rows.filter(r=>{
-          if(p!=='todos' && r.pais!==p) return false;
-          if(t!=='todos' && r.turno!==t) return false;
-          if(tl!=='todos' && r.tl!==tl) return false;
-          if(q){
-            const hay = (r.op||'').toLowerCase().includes(q)
-                    || (r.perop||'').toLowerCase().includes(q)
-                    || (r.campana||'').toLowerCase().includes(q)
-                    || (r.tl||'').toLowerCase().includes(q);
-            if(!hay) return false;
+    async function fetchHistoricoCloud(fp, startTs, endTs){
+      const base = collection(db,'historico');
+      try {
+        let qy;
+        if(fp !== 'todos' && startTs != null && endTs != null){
+          qy = query(base, where('pais','==',fp), where('ts','>=',startTs), where('ts','<', endTs));
+        } else if(startTs != null && endTs != null){
+          qy = query(base, where('ts','>=',startTs), where('ts','<', endTs));
+        } else if(fp !== 'todos'){
+          qy = query(base, where('pais','==',fp));
+        } else {
+          qy = base;
+        }
+        const snap = await getDocs(qy);
+        const rows = [];
+        snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // conservar id
+        return normalizeRows(rows);
+      } catch (e) {
+        console.warn('[GC] fetchHistoricoCloud fallback:', e);
+        if (e.code === 'failed-precondition') {
+          let q2 = base;
+          if (startTs != null && endTs != null){
+            q2 = query(base, where('ts','>=',startTs), where('ts','<', endTs));
           }
-          return true;
-        });
-
-        // Orden si hay alguna columna activa
-        const activeCol = Object.keys(sortState).find(k=>sortState[k]>0);
-        if(activeCol){
-          const st = sortState[activeCol]; // 1 desc, 2 asc
-          out.sort((a,b)=>{
-            const A = a[activeCol]; const B = b[activeCol];
-            const num = (v)=> (typeof v==='number' || /^\d+(\.\d+)?$/.test(String(v))) ? Number(v) : null;
-            const nA=num(A), nB=num(B);
-            let cmp=0;
-            if(nA!=null && nB!=null) cmp = nA - nB;
-            else cmp = String(A||'').localeCompare(String(B||''), 'es', {numeric:true});
-            return st===1 ? -cmp : cmp;
-          });
+          const snap = await getDocs(q2);
+          let rows = [];
+          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
+          if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
+          return normalizeRows(rows);
         }
+        throw e;
+      }
+    }
 
-        renderTable(out);
+    async function registrarAvance(){
+      if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
+      if(!auth.currentUser){ mostrarToast("⚠️ Sin autenticación (solo lectura)."); return; }
+
+      const now=new Date();
+      const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+      const fecha=formatDDMMYYYY(now), fechaISO=formatISO(now), ts=now.getTime();
+
+      const colRef=collection(db,'historico');
+      const writes=[];
+      for(const [pais,d] of Object.entries(dataGlobal)){
+        const total=d.total||1;
+        writes.push(addDoc(colRef,{
+          fecha, fechaISO, hora:hora24, hora24:hora24, ts, pais,
+          leads:d.total, news:d.news, recall:d.recall, noAnswer:d.noAnswer,
+          approve:d.approved, pctApprove:((d.approved/total)*100).toFixed(1),
+          reject:d.reject, trash:d.trash
+        }));
+      }
+      try{
+        await Promise.all(writes);
+        mostrarToast("✅ Avance registrado en la nube.");
+        await renderTablaHistorico();
+        renderGrafico();
+      }catch(e){
+        console.error('[GC] Firestore write error:', e);
+        mostrarToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
+      }
+    }
+
+    async function borrarHistorial(){
+      if(!confirm("¿Borrar TODO el historial de la nube?")) return;
+      try{
+        const snap=await getDocs(collection(db,'historico'));
+        const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
+        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
+      }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
+    }
+
+    // 🗑️ Eliminar registro individual
+    async function eliminarRegistro(id){
+      if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
+      if(!auth.currentUser){ mostrarToast("⚠️ No autenticado: no puedes eliminar."); return; }
+      const ok = confirm("¿Seguro que deseas eliminar este registro?");
+      if(!ok) return;
+      try{
+        await deleteDoc(doc(db, 'historico', id));
+        mostrarToast("🗑️ Registro eliminado.");
+        await renderTablaHistorico();
+        renderGrafico();
+      }catch(e){
+        console.error(e);
+        mostrarToast("❌ No se pudo eliminar: " + (e.code || e.message));
+      }
+    }
+
+    async function ensurePaisesOptions(){
+      if(filtroPaisEl.options.length>1) return;
+      try{
+        const snap=await getDocs(collection(db,'historico'));
+        const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
+        [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;filtroPaisEl.appendChild(o); });
+      }catch(e){ console.warn('[GC] ensurePaisesOptions:', e); }
+    }
+
+    function calcMedian(arr){
+      if(!arr.length) return 0;
+      const v=[...arr].sort((a,b)=>a-b);
+      const m=Math.floor(v.length/2);
+      return v.length%2?v[m]:(v[m-1]+v[m])/2;
+    }
+
+    function renderQuickMetrics(){
+      const box=document.getElementById('quickMetrics');
+      if(!cloudHistorico.length){ box.style.display='none'; return; }
+      const vals=cloudHistorico.map(r=>parseFloat(r.pctApprove||0)).filter(n=>!isNaN(n));
+      if(!vals.length){ box.style.display='none'; return; }
+      const min=Math.min(...vals).toFixed(1);
+      const med=calcMedian(vals).toFixed(1);
+      const max=Math.max(...vals).toFixed(1);
+
+      document.getElementById('mMin').textContent=`${min}%`;
+      document.getElementById('mMed').textContent=`${med}%`;
+      document.getElementById('mMax').textContent=`${max}%`;
+
+      let deltaTxt='–', cls='';
+      if(vals.length>=2){
+        const last=vals[vals.length-1], prev=vals[vals.length-2];
+        const d=(last-prev).toFixed(1);
+        const arrow = (d>=0? '↑':'↓');
+        cls = d>=0? 'delta up':'delta down';
+        deltaTxt = `${arrow} ${Math.abs(d)} pp`;
+      }
+      const mDelta=document.getElementById('mDelta');
+      mDelta.className='value ' + cls;
+      mDelta.textContent=deltaTxt;
+
+      box.style.display='flex';
+    }
+
+    async function renderTablaHistorico(){
+      await ensurePaisesOptions();
+      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
+
+      // Preferencias
+      const prefPais=readPref(PREF_FPAIS,'todos');
+      const prefFecha=readPref(PREF_FFECHA,'');
+      const prefPreset=readPref(PREF_PRESET,'dia');
+      if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
+      presetEl.value = prefPreset;
+      if(prefFecha) filtroFechaEl.value = prefFecha;
+
+      const preset = presetEl.value;
+      const dateISO = filtroFechaEl.value || '';
+      const {start, end} = rangeFromPreset(preset, dateISO);
+
+      try{
+        cloudHistorico=await fetchHistoricoCloud(filtroPaisEl.value, start, end);
+      }catch(e){
+        console.error('[GC] Fetch histórico:', e);
+        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
+        cloudHistorico=[];
       }
 
-      function renderTable(data){
-        const html = data.map(r=>`
-          <tr>
-            <td>${r.idx}</td>
-            <td>${r.op}</td>
-            <td>${r.perop}</td>
-            <td>${flag(r.pais)} ${r.pais}</td>
-            <td>${r.turno}</td>
-            <td>${r.campana}</td>
-            <td>${r.tl}</td>
-            <td class="money">${r.avg.toFixed(2)}</td>
-            <td>${r.status}</td>
-          </tr>
-        `).join('');
-        tbody.innerHTML = html || `<tr><td colspan="9" class="muted">Sin resultados con los filtros actuales.</td></tr>`;
-        resume.textContent = `Mostrando ${data.length} de ${rows.length} registros`;
+      cloudHistorico.forEach(r=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
+          <td>${r.hora||""}</td>
+          <td>${r.fecha||""}</td>
+          <td>${r.pais||""}</td>
+          <td>${r.leads||0}</td>
+          <td>${r.news||0}</td>
+          <td>${r.recall||0}</td>
+          <td>${r.noAnswer||0}</td>
+          <td>${r.approve||0}</td>
+          <td>${Number(r.pctApprove||0).toFixed(1)}%</td>
+          <td>${r.reject||0}</td>
+          <td>${r.trash||0}</td>
+          <td>
+            <button class="btn-danger" ${r._id ? '' : 'disabled'}
+              onclick="eliminarRegistro('${r._id||''}')" title="Eliminar este registro">
+              🗑️ Eliminar
+            </button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      renderQuickMetrics();
+      renderGrafico();
+    }
+
+    function onFiltroChange(){ savePref(PREF_FPAIS, filtroPaisEl.value); savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); }
+    function onPresetChange(){ const preset=presetEl.value; savePref(PREF_PRESET, preset); filtroFechaEl.disabled = (preset !== 'dia'); renderTablaHistorico(); }
+    function limpiarFecha(){ filtroFechaEl.value=""; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); }
+
+    function exportarHistoricoCSV(){
+      if(!cloudHistorico.length){ mostrarToast("ℹ️ No hay registros para exportar."); return; }
+      const encabezados=["Fecha","Hora","País","Leads","News","Recall","No Answer","Approve","% Approve","Reject","Trash"];
+      const filas=cloudHistorico.map(r=>[ r.fecha||"", r.hora||"", r.pais||"", r.leads||0, r.news||0, r.recall||0, r.noAnswer||0, r.approve||0, r.pctApprove||0, r.reject||0, r.trash||0 ]);
+      const csv=[encabezados,...filas].map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`historico_gc_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    function renderGrafico(){
+      const ctx=document.getElementById('graficoAvance').getContext('2d');
+      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
+      const datasets=Object.keys(agr).map(k=>({label:k,data:agr[k],fill:false,tension:.2}));
+      if(window.graficoAvance) window.graficoAvance.destroy();
+      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
+    }
+
+    // Exponer a window
+    window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
+    window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
+    window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
+    window.eliminarRegistro=eliminarRegistro;
+
+    // Listener de auth primero…
+    onAuthStateChanged(auth, (u)=>{
+      authSettled = true;
+      clearTimeout(authWatchdog);
+      if(u){
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+        setBadge('Conectado ✓','ok');
+      }else{
+        setBadge('Solo lectura','warn');
       }
+      renderTablaHistorico();
+    });
 
-      // Orden tri-estado para todas las columnas
-      document.querySelectorAll('#theadRow th').forEach(th=>{
-        th.addEventListener('click', ()=>{
-          const k = th.dataset.k;
-          if(!k) return;
-          sortState = {}; // reset otros
-          sortState[k] = ((sortState[k]||0)+1) % 3; // 0->1 desc, 1->2 asc, 2->0 none
-          applyFilters();
-        });
-      });
+    // …y luego intentamos sesión anónima
+    signInAnonymously(auth).catch(e=>{
+      console.error('[GC] signInAnonymously error:', e);
+    });
 
-      // Eventos filtros
-      [fPais,fTurno,fTL].forEach(el=> el.addEventListener('change', applyFilters));
-      fSearch.addEventListener('input', applyFilters);
-      document.getElementById('btnReload').addEventListener('click', async ()=>{
-        try{
-          document.getElementById('btnReload').disabled = true;
-          await loadData(); merge(); applyFilters();
-        } finally {
-          document.getElementById('btnReload').disabled = false;
-        }
-      });
-      document.getElementById('btnReset').addEventListener('click', ()=>{
-        fPais.value='todos'; fTurno.value='todos'; fTL.value='todos'; fSearch.value='';
-        sortState={}; applyFilters();
-      });
-
-      // Boot
-      (async function init(){
-        try{
-          await loadData();
-          merge();
-          applyFilters();
-          // Activa reveal simple
-          document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
-        }catch(e){
-          tbody.innerHTML = `<tr><td colspan="9">⚠️ Error cargando datos: ${e.message}</td></tr>`;
-        }
-      })();
-    </script>
-  </body>
+    // Primer pintado de preferencia de rango/fecha
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const prefPreset=readPref(PREF_PRESET,'dia');
+      document.getElementById('presetRango').value=prefPreset;
+      document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
+      const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
+    });
+  </script>
+</body>
 </html>
