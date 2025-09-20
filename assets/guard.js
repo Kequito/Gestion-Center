@@ -1,10 +1,16 @@
 // assets/guard.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signOut
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// === TU CONFIG REAL ===
+/* =========================
+   CONFIG
+   ========================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
   authDomain: "gestioncenterdata.firebaseapp.com",
@@ -15,7 +21,67 @@ const firebaseConfig = {
   measurementId: "G-NBFZYTN094",
 };
 
-// --- Init
+/* =========================
+   UTIL: BASE URL robusto
+   ========================= */
+function computeBase() {
+  const host = location.hostname;
+  if (host.endsWith("github.io")) {
+    // Project Pages => https://user.github.io/<repo>/
+    const parts = location.pathname.split("/").filter(Boolean);
+    const repo = parts[0] || "";
+    return `${location.origin}/${repo ? repo + "/" : ""}`;
+  }
+  // Dominio propio / hosting normal
+  return `${location.origin}/`;
+}
+const BASE = computeBase();
+const abs = (path) => new URL(path.replace(/^\//, ""), BASE).href;
+
+/* =========================
+   RUTAS PÚBLICAS
+   ========================= */
+const LOGIN_URL = abs("login.html");
+const PUBLIC_PATHS = new Set([
+  new URL("login.html", BASE).pathname,
+  new URL("404.html", BASE).pathname,
+  // Si algún día quieres hacer index público, descomenta:
+  // new URL("index.html", BASE).pathname,
+]);
+
+function isPublicPath() {
+  // Normaliza: quita duplicados y tolera trailing slash (p.ej. /login/)
+  const p = location.pathname.replace(/\/+/g, "/");
+  if (PUBLIC_PATHS.has(p)) return true;
+  for (const pub of PUBLIC_PATHS) {
+    if (p === pub.replace(/\.html$/, "/")) return true;
+  }
+  return false;
+}
+
+/* =========================
+   VISIBILIDAD / FALLBACK
+   ========================= */
+let pageShown = false;
+function showPage() {
+  if (!pageShown) {
+    document.documentElement.style.visibility = "visible";
+    pageShown = true;
+  }
+}
+
+// Watchdog de 2.5s para evitar “pantalla en blanco” si algo falla/lento.
+// En producción puedes subir el tiempo o quitarlo si no quieres el fallback.
+const watchdog = setTimeout(() => {
+  if (!pageShown) {
+    console.warn("[guard] Watchdog: mostrando la página por fallback.");
+    showPage();
+  }
+}, 2500);
+
+/* =========================
+   INIT FIREBASE + AUTH
+   ========================= */
 let app, auth;
 try {
   app = initializeApp(firebaseConfig);
@@ -23,63 +89,36 @@ try {
   await setPersistence(auth, browserLocalPersistence);
 } catch (e) {
   console.error("[guard] Firebase init error:", e);
-  document.documentElement.style.visibility = "visible";
+  showPage(); // evita pantalla blanca si Firebase no carga
   throw e;
 }
 
-// --- Base URL robusto (GH Pages proyecto vs dominio raíz)
-function computeBase() {
-  const host = location.hostname;
-  // Si corre en *.github.io asumimos Project Pages: /<repo>/
-  if (host.endsWith("github.io")) {
-    const first = location.pathname.split("/").filter(Boolean)[0] || "";
-    return `${location.origin}/${first ? first + "/" : ""}`;
-  }
-  // Dominio propio u otro hosting: raíz del dominio
-  return `${location.origin}/`;
-}
-const BASE = computeBase();
-
-// Helpers de URL absolutas
-const abs = (path) => new URL(path.replace(/^\//, ""), BASE).href;
-
-// Rutas públicas
-const LOGIN_URL = abs("login.html");
-// Añade aquí otras públicas si quieres
-const PUBLIC_PATHS = new Set([
-  new URL("login.html", BASE).pathname,
-  new URL("404.html", BASE).pathname,
-  // Permite también el index público si haces páginas sin auth:
-  // new URL("index.html", BASE).pathname,
-]);
-
-function isPublicPath() {
-  // Normaliza pathname (quita doble slash, tolera trailing slash)
-  const p = location.pathname.replace(/\/+/g, "/");
-  if (PUBLIC_PATHS.has(p)) return true;
-  // Permite variantes con slash final (login/ -> login.html)
-  for (const pub of PUBLIC_PATHS) {
-    if (p === pub.replace(/\.html$/, "/")) return true;
-  }
-  return false;
-}
-
-function showPage() {
-  document.documentElement.style.visibility = "visible";
-}
-
-// --- Guard principal
+/* =========================
+   GUARD PRINCIPAL
+   ========================= */
 onAuthStateChanged(auth, (user) => {
+  clearTimeout(watchdog); // si llegó hasta aquí, no necesitamos fallback
   const publicPage = isPublicPath();
 
   if (!user && !publicPage) {
     try { localStorage.setItem("redirectAfterLogin", location.href); } catch {}
-    // Usa URL absoluta basada en BASE (evita dominios raros)
-    location.href = LOGIN_URL;
+    location.href = LOGIN_URL; // absoluta y consistente con BASE
     return;
   }
   showPage();
 });
 
-// Exponer logout global
-window.gcLogout = () => signOut(auth);
+/* =========================
+   LOGOUT GLOBAL
+   ========================= */
+window.gcLogout = async () => {
+  try { await signOut(auth); } catch (e) {
+    console.warn("[guard] signOut warning:", e);
+  } finally {
+    // Redirige siempre al login absoluto, evita rutas relativas rotas
+    location.href = LOGIN_URL;
+  }
+};
+
+// (Opcional) expón BASE por si lo quieres reutilizar en otras utilidades
+window.__GC_BASE__ = BASE;
