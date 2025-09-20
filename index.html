@@ -24,12 +24,22 @@
         --hover-delay:80ms;
         --sidebar-w:280px;         /* ancho expandido */
         --sidebar-w-compact:72px;  /* ancho compacto  */
+
+        /* Sistema de colores extendido */
+        --primary:#5b8bff;
+        --accent:#7ae3ff;
+        --success:#22c55e;
+        --warning:#f59e0b;
+        --danger:#ef4444;
+
+        /* Badges / pills */
+        --pill-bg:rgba(255,255,255,.06);
+        --pill-bd:rgba(255,255,255,.12);
       }
       [data-theme="dark"]{
         --bg-app:#070b1a; --bg-aside:#0c1228;
         --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
         --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
-        --primary:#5b8bff; --accent:#7ae3ff;
       }
       *{box-sizing:border-box}
       html,body{height:100%}
@@ -58,22 +68,21 @@
         contain: content; /* rendimiento */
         --pad-x: 10px;
       }
-      /* Scroll shadows (polish) */
       aside::before, aside::after{
         content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
       }
       aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
       aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
 
-      /* Encabezado de marca mejorado */
+      /* Encabezado de marca (rectangular) */
       .brand{
         display:flex; align-items:center; justify-content:center;
-        padding:12px; border-radius:var(--radius);
+        padding:8px 12px; border-radius:12px; /* más rectangular */
         border:1px solid var(--stroke);
         background:linear-gradient(132deg, color-mix(in oklab, var(--primary) 18%, transparent), color-mix(in oklab, var(--accent) 12%, transparent));
         transition: transform var(--t-fast) var(--curve), box-shadow var(--t-fast) ease;
         will-change: transform;
-        text-decoration:none;
+        text-decoration:none; min-height:54px;
       }
       .brand:hover{ transform:scale(1.01) }
       .brand picture{ display:block; }
@@ -122,7 +131,6 @@
         background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
         border-color:var(--stroke)
       }
-      /* Indicador activo elástico */
       .nav-indicator{
         position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
         background:linear-gradient(180deg, var(--primary), var(--accent));
@@ -133,14 +141,14 @@
       }
 
       /* Foco accesible */
-      .nav-item:focus-visible, .nav-head:focus-visible, .sidebar-toggle:focus-visible, .logout:focus-visible, .brand:focus-visible{
+      .nav-item:focus-visible, .nav-head:focus-visible, .sidebar-toggle:focus-visible, .logout:focus-visible, .brand:focus-visible, .kquick .qbtn:focus-visible{
         outline:2px solid color-mix(in oklab, var(--accent) 65%, white);
         outline-offset:2px; border-radius:12px;
       }
 
       .spacer{flex:1}
 
-      /* Role card mejorado */
+      /* Role card */
       .role-card{
         display:flex; align-items:center; gap:10px; padding:10px 12px;
         border-radius:14px; border:1px solid var(--stroke);
@@ -172,6 +180,56 @@
         filter:blur(18px); pointer-events:none; transform:translateZ(0);
       }
 
+      /* Barra superior del hero: acciones y notificaciones */
+      .hero-bar{
+        display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      }
+      .hero-right{
+        margin-left:auto; display:flex; align-items:center; gap:8px;
+      }
+      .icon-btn{
+        display:inline-flex; align-items:center; justify-content:center;
+        width:38px; height:38px; border-radius:10px; border:1px solid var(--stroke);
+        background:rgba(255,255,255,.08); cursor:pointer; font-weight:800;
+        transition:transform var(--t-fast) ease, filter var(--t-fast) ease;
+      }
+      .icon-btn:hover{ filter:brightness(1.05) } .icon-btn:active{ transform:translateY(1px) }
+      .notif-dot{
+        display:inline-grid; place-items:center; min-width:16px; height:16px; padding:0 4px;
+        border-radius:999px; font-size:11px; font-weight:800; color:#0b1022;
+        background:linear-gradient(180deg, var(--warning), color-mix(in oklab, var(--warning) 65%, white));
+        border:1px solid color-mix(in oklab, var(--warning) 60%, white);
+        transform:translate(12px,-12px);
+      }
+
+      /* Quick Actions */
+      .kquick{
+        display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;
+      }
+      .kquick .qbtn{
+        display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
+        border:1px solid var(--pill-bd); border-radius:999px; background:var(--pill-bg);
+        font:600 13px/1 var(--font-body); cursor:pointer;
+        transition:transform var(--t-fast) ease, filter var(--t-fast) ease, border-color var(--t-fast) ease;
+      }
+      .kquick .qbtn:hover{ filter:brightness(1.05); border-color:color-mix(in oklab, var(--primary) 35%, var(--pill-bd)) }
+      .kquick .qbtn:active{ transform:translateY(1px) }
+
+      /* KPIs */
+      .kpis{
+        margin-top:14px;
+        display:grid; gap:12px;
+        grid-template-columns:repeat(3, minmax(200px,1fr));
+      }
+      .kpi{
+        background:var(--bg-card); border:1px solid var(--stroke); border-radius:14px; padding:14px;
+        box-shadow:var(--elev-1);
+      }
+      .kpi h4{ margin:0 0 6px; font:700 13px/1 var(--font-title); color:var(--txt-muted) }
+      .kpi .val{ font:800 26px/1 var(--font-title); letter-spacing:.3px }
+      .kpi .trend{ font:600 12px/1 var(--font-body); margin-top:6px; opacity:.9 }
+      .trend.up{ color:var(--success) } .trend.down{ color:var(--danger) } .trend.flat{ color:var(--txt-muted) }
+
       .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(2, minmax(290px, 1fr))}
       .card{
         position:relative; border-radius:var(--radius); padding:14px 16px; overflow:hidden; isolation:isolate;
@@ -180,10 +238,47 @@
         transform:translateZ(0)
       }
       .card:hover{ transform:translateY(-2px); box-shadow:var(--elev-2); border-color:color-mix(in oklab, var(--primary) 25%, var(--stroke)) }
-      .card h3{ margin:0 0 10px; color:var(--txt); font:600 15px/1.1 var(--font-title) }
+      .card h3{ margin:0 0 6px; color:var(--txt); font:700 15px/1.1 var(--font-title) }
+      .card p{ margin:.25rem 0 .5rem; color:var(--txt-muted); font-size:13px }
       .card a{ display:flex; align-items:center; gap:8px; color:var(--txt); text-decoration:none; padding:8px 0; border-radius:10px }
       .card a span{ opacity:.85; transition:opacity var(--t-fast) ease, transform var(--t-fast) ease }
       .card a:hover span{ opacity:1; transform:translateX(2px) }
+
+      /* Panel de notificaciones */
+      .notif-panel{
+        position:fixed; right:18px; top:18px; width:360px; max-width:calc(100vw - 32px);
+        background:var(--bg-card); border:1px solid var(--stroke); border-radius:14px;
+        box-shadow:var(--elev-2); padding:12px; display:none; z-index:40;
+      }
+      .notif-item{ border:1px solid var(--stroke); border-radius:12px; padding:10px; background:rgba(255,255,255,.04); margin-top:8px }
+      .notif-item h5{ margin:0 0 4px; font:700 14px/1 var(--font-title) }
+      .notif-item p{ margin:0; font-size:13px; color:var(--txt-muted) }
+
+      /* Panel de configuración (modal) */
+      .settings-backdrop{
+        position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:39;
+        backdrop-filter: blur(2px);
+      }
+      .settings-panel{
+        position:fixed; inset:0; display:grid; place-items:center; z-index:40; pointer-events:none;
+      }
+      .settings-card{
+        width:520px; max-width:calc(100vw - 32px);
+        background:var(--bg-card); border:1px solid var(--stroke); border-radius:16px;
+        box-shadow:var(--elev-2); padding:16px; pointer-events:auto; display:none;
+      }
+      .settings-card h3{ margin:0 0 10px; font:700 18px/1 var(--font-title) }
+      .settings-row{ display:flex; gap:10px; align-items:center; margin:8px 0 }
+      .switch{
+        appearance:none; width:44px; height:26px; border-radius:999px; position:relative; cursor:pointer;
+        background:rgba(255,255,255,.12); border:1px solid var(--stroke); transition:background var(--t-fast) ease;
+      }
+      .switch::after{
+        content:""; position:absolute; left:2px; top:2px; width:20px; height:20px; border-radius:50%;
+        background:#fff; transition:transform var(--t-fast) ease;
+      }
+      .switch:checked{ background:linear-gradient(90deg, var(--primary), var(--accent)) }
+      .switch:checked::after{ transform:translateX(18px) }
 
       /* ===== Sidebar compacto ===== */
       body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
@@ -194,7 +289,6 @@
       body.sidebar-compact .nav-group{ gap:0 }
       body.sidebar-compact .nav-item{ justify-content:center; padding-inline:0 }
       body.sidebar-compact .role-card{ justify-content:center; padding:10px }
-      /* tooltips simples usando title por ahora */
       .nav-item, .nav-head, .sidebar-toggle, .logout, .brand{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 
       /* ===== Responsive ===== */
@@ -204,6 +298,10 @@
         body.sidebar-compact aside{ width:auto }
         body.sidebar-compact main{ margin-left:0 }
         .grid{grid-template-columns:1fr}
+        .kpis{ grid-template-columns:1fr 1fr }
+      }
+      @media (max-width:640px){
+        .kpis{ grid-template-columns:1fr }
       }
     </style>
   </head>
@@ -218,7 +316,7 @@
 
     <!-- ===== SIDEBAR ===== -->
     <aside class="reveal" id="gc-aside">
-      <!-- Brand con webp + fallback png -->
+      <!-- Brand rectangular con webp + fallback png -->
       <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio" title="Inicio">
         <picture>
           <source srcset="./images/logogestioncenter.webp" type="image/webp"/>
@@ -301,11 +399,51 @@
     <main>
       <section class="hero reveal">
         <div class="blob" aria-hidden="true"></div>
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+
+        <!-- Barra superior del hero: título + acciones -->
+        <div class="hero-bar">
           <div>
-            <h1>Hola Kevin, listo para romperla hoy 💪</h1>
+            <h1 style="font-family:var(--font-title)">Hola Kevin, listo para romperla hoy 💪</h1>
             <p>Sesión verificada ✅ | Accesos rápidos y estado general.</p>
           </div>
+
+          <div class="hero-right">
+            <!-- Notificaciones -->
+            <button class="icon-btn" id="btnNotif" aria-label="Notificaciones">
+              🔔
+              <span id="notifDot" class="notif-dot" style="display:none">0</span>
+            </button>
+            <!-- Configuración -->
+            <button class="icon-btn" id="btnSettings" aria-label="Configuración">⚙️</button>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="kquick" aria-label="Acciones rápidas">
+          <button class="qbtn" id="qaBuscarOP">🔍 Buscar OP</button>
+          <button class="qbtn" id="qaReporteDiario">📊 Reporte diario</button>
+          <button class="qbtn" id="qaHoy">📅 Hoy</button>
+          <button class="qbtn" id="qaDistribucion" onclick="location.href='/operations/distribucion.html'">📋 Distribución</button>
+          <button class="qbtn" id="qaBI" onclick="location.href='/operations/biops.html'">🔗 BI de OPs</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpis" id="kpiWrap">
+          <article class="kpi">
+            <h4>Aprobación global</h4>
+            <div class="val" id="kpiApprove">—</div>
+            <div class="trend flat" id="kpiApproveTrend">Sin cambios</div>
+          </article>
+          <article class="kpi">
+            <h4>OPs activos</h4>
+            <div class="val" id="kpiOps">—</div>
+            <div class="trend up" id="kpiOpsTrend">+0 vs ayer</div>
+          </article>
+          <article class="kpi">
+            <h4>Tasa de contacto</h4>
+            <div class="val" id="kpiContact">—</div>
+            <div class="trend down" id="kpiContactTrend">-0 vs ayer</div>
+          </article>
         </div>
       </section>
 
@@ -313,28 +451,65 @@
       <section class="grid">
         <article class="card reveal" style="--delay:.05s">
           <h3>Reportes</h3>
+          <p>Entradas principales del día a día.</p>
           <a href="/reports/newreport.html">🧰 <span>New Report</span></a>
           <a href="/reports/psreport.html">🚚 <span>Post-Sale Report</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.1s">
           <h3>Operaciones</h3>
+          <p>Distribución y accesos de Business Intelligence.</p>
           <a href="/operations/distribucion.html">📋 <span>Distribución</span></a>
           <a href="/operations/biops.html">🔗 <span>BI de OPs + Links</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.15s">
           <h3>Cobertura</h3>
+          <p>Geografía y nuevas versiones.</p>
           <a href="./cobertura.html">🌎 <span>Mapa de cobertura</span></a>
           <a href="./newcobertura.html">🧭 <span>New Cobertura 1.1</span></a>
         </article>
 
         <article class="card reveal" style="--delay:.2s">
           <h3>Utilidades</h3>
+          <p>Herramientas de apoyo a gestión.</p>
           <a href="/utilities/camprev.html">👥 <span>Selector de Apoyo 2.0</span></a>
         </article>
       </section>
     </main>
+
+    <!-- Panel de Notificaciones -->
+    <div class="notif-panel" id="notifPanel" role="dialog" aria-labelledby="notifTitle" aria-modal="true">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="notifTitle" style="margin:0; font:700 16px/1 var(--font-title)">Notificaciones</h3>
+        <button class="icon-btn" id="btnNotifClose" aria-label="Cerrar">✖️</button>
+      </div>
+      <div id="notifList" style="margin-top:8px">
+        <!-- items dinámicos -->
+      </div>
+    </div>
+    <div class="settings-backdrop" id="settingsBackdrop" aria-hidden="true"></div>
+    <div class="settings-panel" aria-hidden="true">
+      <div class="settings-card" id="settingsCard" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+          <h3 id="settingsTitle">Configuración</h3>
+          <button class="icon-btn" id="btnSettingsClose" aria-label="Cerrar">✖️</button>
+        </div>
+
+        <div class="settings-row">
+          <label for="swTheme" style="min-width:180px">Tema claro</label>
+          <input type="checkbox" id="swTheme" class="switch" />
+        </div>
+        <div class="settings-row">
+          <label for="swCompact" style="min-width:180px">Sidebar compacta</label>
+          <input type="checkbox" id="swCompact" class="switch" />
+        </div>
+        <div class="settings-row">
+          <label for="swAnim" style="min-width:180px">Animaciones</label>
+          <input type="checkbox" id="swAnim" class="switch" checked />
+        </div>
+      </div>
+    </div>
 
     <script type="module">
       // ========= Indicador activo + auto-scroll =========
@@ -351,7 +526,6 @@
           a.classList.toggle('active', a===active);
           a.toggleAttribute('aria-current', a===active ? 'page':false);
         });
-        // Indicador elástico + auto-scroll near viewport
         if(active){
           const pr=navEl.getBoundingClientRect();
           const r=active.getBoundingClientRect();
@@ -436,7 +610,6 @@
         roleDesc.textContent=cfg.desc;
         roleBadge.textContent=cfg.badge;
 
-        // Invitado: baja el brillo del card
         const card=document.getElementById('roleCard');
         card.style.filter = (key==='invitado') ? 'saturate(0.8) brightness(0.95)' : 'none';
 
@@ -453,8 +626,127 @@
         localStorage.setItem(compactKey, on ? '1' : '0');
       }
       btnToggle.addEventListener('click', ()=> setCompactState(!document.body.classList.contains('sidebar-compact')));
-      // Restaurar preferencia
       setCompactState(localStorage.getItem(compactKey)==='1');
+
+      // ========= Notificaciones =========
+      const notifBtn = document.getElementById('btnNotif');
+      const notifPanel = document.getElementById('notifPanel');
+      const notifList = document.getElementById('notifList');
+      const notifDot  = document.getElementById('notifDot');
+      const notifClose= document.getElementById('btnNotifClose');
+
+      async function loadAnnouncements(){
+        let items = [
+          {title:'Bienvenido 👋', text:'Recuerda revisar Distribución antes de iniciar turno.'},
+          {title:'Capacitación 3:00 PM', text:'Sala 2 (Ops). Asistencia confirmada.'}
+        ];
+        try{
+          const res = await fetch('./assets/announcements.json', {cache:'no-store'});
+          if(res.ok){
+            const remote = await res.json();
+            if(Array.isArray(remote) && remote.length) items = remote;
+          }
+        }catch(_){} // fallback silencioso
+        renderAnnouncements(items);
+      }
+      function renderAnnouncements(items){
+        notifList.innerHTML = '';
+        items.forEach(it=>{
+          const div = document.createElement('div');
+          div.className='notif-item';
+          div.innerHTML = `<h5>${it.title||'Anuncio'}</h5><p>${it.text||''}</p>`;
+          notifList.appendChild(div);
+        });
+        if(items.length){
+          notifDot.textContent = items.length;
+          notifDot.style.display = 'inline-grid';
+        }else{
+          notifDot.style.display = 'none';
+        }
+      }
+      function toggleNotif(open){
+        notifPanel.style.display = open ? 'block' : 'none';
+      }
+      notifBtn.addEventListener('click', ()=> toggleNotif(notifPanel.style.display!=='block'));
+      notifClose.addEventListener('click', ()=> toggleNotif(false));
+      window.addEventListener('click', (e)=>{
+        if(notifPanel.style.display==='block' && !notifPanel.contains(e.target) && e.target!==notifBtn){
+          toggleNotif(false);
+        }
+      });
+      loadAnnouncements();
+
+      // ========= Configuración (modal) =========
+      const settingsBackdrop = document.getElementById('settingsBackdrop');
+      const settingsCard = document.getElementById('settingsCard');
+      const btnSettings = document.getElementById('btnSettings');
+      const btnSettingsClose = document.getElementById('btnSettingsClose');
+      const swTheme = document.getElementById('swTheme');
+      const swCompact = document.getElementById('swCompact');
+      const swAnim = document.getElementById('swAnim');
+
+      function openSettings(){
+        settingsBackdrop.style.display='block';
+        settingsCard.style.display='block';
+        settingsBackdrop.setAttribute('aria-hidden','false');
+      }
+      function closeSettings(){
+        settingsBackdrop.style.display='none';
+        settingsCard.style.display='none';
+        settingsBackdrop.setAttribute('aria-hidden','true');
+      }
+      btnSettings.addEventListener('click', openSettings);
+      btnSettingsClose.addEventListener('click', closeSettings);
+      settingsBackdrop.addEventListener('click', closeSettings);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSettings(); });
+
+      // Prefs
+      const THEME_KEY='gc-theme'; // 'dark'|'light'
+      function applyTheme(mode){
+        const m = mode==='light' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', m);
+        localStorage.setItem(THEME_KEY, m);
+        swTheme.checked = (m==='light');
+      }
+      applyTheme(localStorage.getItem(THEME_KEY)||'dark');
+      swTheme.addEventListener('change', ()=> applyTheme(swTheme.checked ? 'light' : 'dark'));
+
+      swCompact.checked = localStorage.getItem(compactKey)==='1';
+      swCompact.addEventListener('change', ()=> setCompactState(swCompact.checked));
+
+      const ANIM_KEY='gc-anim';
+      function applyAnim(on){
+        document.documentElement.style.setProperty('--hover-delay', on? '80ms':'0ms');
+        localStorage.setItem(ANIM_KEY, on?'1':'0');
+      }
+      applyAnim(localStorage.getItem(ANIM_KEY)!=='0');
+      swAnim.checked = localStorage.getItem(ANIM_KEY)!=='0';
+      swAnim.addEventListener('change', ()=> applyAnim(swAnim.checked));
+
+      // ========= KPIs (placeholder con lógica mínima) =========
+      function fmtPct(n){ return (Math.round(n*10)/10).toFixed(1)+'%' }
+      function setKPIs({approve=87.3, approveTrend=+1.2, ops=142, opsTrend=+5, contact=42.0, contactTrend=-0.7}={}){
+        const elA=document.getElementById('kpiApprove');
+        const elAT=document.getElementById('kpiApproveTrend');
+        const elO=document.getElementById('kpiOps');
+        const elOT=document.getElementById('kpiOpsTrend');
+        const elC=document.getElementById('kpiContact');
+        const elCT=document.getElementById('kpiContactTrend');
+
+        elA.textContent = fmtPct(approve);
+        elAT.textContent = (approveTrend>0?'+':'') + fmtPct(Math.abs(approveTrend)) + ' vs ayer';
+        elAT.className='trend ' + (approveTrend>0?'up':approveTrend<0?'down':'flat');
+
+        elO.textContent = ops;
+        elOT.textContent = (opsTrend>0?'+':'') + Math.abs(opsTrend) + ' vs ayer';
+        elOT.className='trend ' + (opsTrend>0?'up':opsTrend<0?'down':'flat');
+
+        elC.textContent = fmtPct(contact);
+        elCT.textContent = (contactTrend>0?'+':'') + fmtPct(Math.abs(contactTrend)) + ' vs ayer';
+        elCT.className='trend ' + (contactTrend>0?'up':contactTrend<0?'down':'flat');
+      }
+      // Puedes remplazar esto por un fetch real en el futuro:
+      setKPIs();
 
       // ========= Seguridad: logout expuesto por guard.js =========
       if(typeof window.gcLogout!=='function'){
@@ -469,11 +761,18 @@
       const PROJECT_SLUG = 'Gestion-Center';
       const base = isGhProject ? `/${PROJECT_SLUG}/` : '/';
 
-      document.querySelectorAll('nav a.nav-item[href], .brand[href], .card a[href]').forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
-        const clean = href.replace(/^\.?\//, '');
-        a.setAttribute('href', base + clean);
+      document.querySelectorAll('nav a.nav-item[href], .brand[href], .card a[href], .kquick .qbtn[onclick]').forEach(a => {
+        // Normaliza <a> y también botones con onclick location.href='/...'
+        if (a.tagName === 'A') {
+          const href = a.getAttribute('href');
+          if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
+          const clean = href.replace(/^\.?\//, '');
+          a.setAttribute('href', base + clean);
+        } else if (a.hasAttribute('onclick')) {
+          const js = a.getAttribute('onclick');
+          const m = js && js.match(/location\.href=['"]\/([^'"]+)['"]/);
+          if (m) a.setAttribute('onclick', `location.href='${base}${m[1]}'`);
+        }
       });
 
       // Normaliza logo (soporta fallback png)
@@ -484,7 +783,6 @@
           src = src.replace(/^\.?\//, '');
           logo.setAttribute('src', base + src);
         }
-        // También el source webp
         const source = document.querySelector('#brandLink source');
         if (source) {
           let s = source.getAttribute('srcset') || './images/logogestioncenter.webp';
