@@ -35,11 +35,18 @@
       html,body{height:100%}
       body{
         margin:0; font-family:var(--font-body); color:var(--txt);
+        background:var(--bg-app); /* 🔵 base plana: luces se mueven a #bg-fx */
+        overflow-x:hidden;
+      }
+
+      /* ===== Fondo fijo (luces decorativas) ===== */
+      #bg-fx{
+        position:fixed; inset:0; z-index:-2; pointer-events:none;
         background:
           radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
-          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
-          var(--bg-app);
-        overflow-x:hidden;
+          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%);
+        background-repeat:no-repeat;
+        background-attachment:fixed;
       }
 
       /* ===== Reveal ===== */
@@ -208,6 +215,9 @@
     </style>
   </head>
   <body>
+    <!-- 🔵 Fondo fijo (luces) -->
+    <div id="bg-fx" aria-hidden="true"></div>
+
     <!-- Fondo en cuadrícula sutil con parallax -->
     <div id="bg-grid" aria-hidden="true" style="
       position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
@@ -393,7 +403,7 @@
         });
       } else { document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // ========= Parallax fondo =========
+      // ========= Parallax fondo (solo en la cuadrícula sutil) =========
       const bg=document.getElementById('bg-grid'); let rafId=null;
       function parallax(e){
         const x=(e.clientX/window.innerWidth - .5)*6;
