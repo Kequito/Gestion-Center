@@ -13,18 +13,33 @@
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
 
-    <!-- ✅ Watchdog: evita pantalla blanca si guard.js no carga -->
-    <script>
+    <!-- ✅ Bootloader: muestra si falla y carga guard con BASE absoluto -->
+    <script type="module">
+      // Watchdog anti-pantalla-blanca
       window.__guardWatchdog = setTimeout(() => {
         try { document.documentElement.style.visibility = 'visible'; } catch(e){}
       }, 2500);
-    </script>
 
-    <!-- ✅ Ruta correcta al guard desde /utilities/ -->
-    <script
-      type="module"
-      src="../assets/guard.js"
-      onerror="document.documentElement.style.visibility='visible'">
+      // Calcula BASE robusto (GitHub Pages repo vs dominio propio)
+      const isGh = location.hostname.endsWith('github.io');
+      const parts = location.pathname.split('/').filter(Boolean);
+      const repo = isGh ? (parts[0] || '') : '';
+      const BASE = isGh ? `/${repo}/` : '/';
+      const abs = (p) => new URL(p.replace(/^\//,''), location.origin + BASE).href;
+
+      // Intenta importar el guard desde BASE/assets/guard.js
+      try {
+        await import(abs('assets/guard.js'));
+      } catch (e) {
+        console.error('[index2] No se pudo cargar guard.js:', e);
+        // Define un logout mínimo para evitar warnings y muestra la página
+        if (typeof window.gcLogout !== 'function') {
+          window.gcLogout = () => { location.href = abs('login.html'); };
+        }
+        document.documentElement.style.visibility = 'visible';
+      } finally {
+        if (window.__guardWatchdog) clearTimeout(window.__guardWatchdog);
+      }
     </script>
 
     <noscript><style>html{visibility:visible}</style></noscript>
