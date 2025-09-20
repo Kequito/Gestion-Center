@@ -12,7 +12,6 @@
 
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
-    <!-- ⚠️ desde /reports/ subimos un nivel -->
     <script type="module" src="../assets/guard.js"></script>
 
     <!-- ======== Estilos del ecosistema (idénticos al index v2.0) ======== -->
@@ -34,10 +33,7 @@
       }
       *{box-sizing:border-box}
       html,body{height:100%}
-      body{
-        margin:0; font-family:var(--font-body); color:var(--txt);
-        background:var(--bg-app); overflow-x:hidden;
-      }
+      body{ margin:0; font-family:var(--font-body); color:var(--txt); background:var(--bg-app); overflow-x:hidden; }
 
       /* Fondo decorativo */
       #bg-fx{
@@ -54,13 +50,12 @@
           linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
       }
 
-      /* Reveal */
       @media (prefers-reduced-motion:no-preference){
         .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
       }
 
-      /* ===== Sidebar (idéntico) ===== */
+      /* ===== Sidebar ===== */
       aside{
         position:fixed; inset:0 auto 0 0; width:var(--sidebar-w); z-index:25;
         backdrop-filter:saturate(120%) blur(8px);
@@ -69,9 +64,7 @@
         display:flex; flex-direction:column; padding:14px 12px; gap:12px; overflow:auto;
         contain:content; --pad-x:10px;
       }
-      aside::before, aside::after{
-        content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5;
-      }
+      aside::before, aside::after{ content:""; position:sticky; display:block; height:14px; pointer-events:none; z-index:5; }
       aside::before{ top:0; background:linear-gradient(#0000, rgba(0,0,0,.25)) }
       aside::after{ bottom:0; background:linear-gradient(rgba(0,0,0,.25), #0000) }
 
@@ -118,12 +111,8 @@
         background:linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--accent) 14%, transparent));
         border-color:var(--stroke)
       }
-      .nav-indicator{
-        position:absolute; left:6px; width:4px; height:40px; border-radius:0 3px 3px 0;
-        background:linear-gradient(180deg, var(--primary), var(--accent));
-        box-shadow:0 0 16px color-mix(in oklab, var(--accent) 65%, transparent);
-        transition:transform 220ms cubic-bezier(.2,.7,.2,1), height 220ms ease;
-        pointer-events:none;
+      .nav-indicator{ /* 🔕 oculto por solicitud */
+        display:none !important;
       }
 
       .spacer{flex:1}
@@ -143,7 +132,6 @@
       }
       .logout:hover{filter:brightness(1.05)} .logout:active{transform:translateY(1px)}
 
-      /* Main del ecosistema */
       main{ margin-left:var(--sidebar-w); padding:24px 22px 40px; transition:margin-left var(--t-med) cubic-bezier(.2,.7,.2,1) }
 
       /* Sidebar compacto */
@@ -155,7 +143,6 @@
       body.sidebar-compact .nav-item{ justify-content:center; padding-inline:0 }
       body.sidebar-compact .role-card{ justify-content:center; padding:10px }
 
-      /* Responsive */
       @media (max-width:1080px){
         main{margin-left:0; padding:16px}
         aside{position:sticky; width:auto; inset:auto; border-right:none; border-bottom:1px solid var(--stroke)}
@@ -219,7 +206,7 @@
     <div id="bg-fx" aria-hidden="true"></div>
     <div id="bg-grid" aria-hidden="true"></div>
 
-    <!-- ===== SIDEBAR (idéntico al index v2.0) ===== -->
+    <!-- ===== SIDEBAR ===== -->
     <aside class="reveal" id="gc-aside">
       <a class="brand" href="../index.html" id="brandLink" aria-label="Inicio" title="Inicio">
         <picture>
@@ -240,7 +227,6 @@
         <section class="nav-group" data-key="grp-reportes">
           <button class="nav-head" title="Reportes"><span class="chev">▾</span> <span class="txt">📊 Reportes</span></button>
           <div class="nav-body"><div class="nav-body-inner">
-            <!-- Esta página -->
             <a href="newreport.html" class="nav-item" title="New Report">🧰 <span class="label">New Report</span></a>
             <a href="psreport.html" class="nav-item" title="Post-Sale Report">🚚 <span class="label">Post-Sale Report</span></a>
           </div></div>
@@ -289,7 +275,7 @@
       <section id="nr" class="reveal">
         <div class="page-title">🧰 New Report CC Perú</div>
         <p class="subtitle">
-          Pega la tabla desde tu Panel y visualiza las métricas · Historial por hora compartido
+          <!-- 🔇 se eliminó el texto, queda solo el badge -->
           <span id="fbBadge" class="badge">Conectando…</span>
         </p>
 
@@ -392,9 +378,9 @@
 
     <!-- ===== Scripts del ecosistema (activo nav, colapsables, rol, parallax, compacto) ===== -->
     <script type="module">
-      // Indicador activo + auto-scroll
+      // Indicador activo + auto-scroll (tolerante si no hay .nav-indicator)
       const items=[...document.querySelectorAll('nav .nav-item')];
-      const indicator=document.querySelector('.nav-indicator');
+      const indicator=document.querySelector('.nav-indicator'); // puede ser null
       const navEl=document.getElementById('gc-nav');
       function setActive(){
         const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
@@ -405,7 +391,7 @@
           a.classList.toggle('active', a===active);
           a.toggleAttribute('aria-current', a===active ? 'page':false);
         });
-        if(active){
+        if(active && indicator){
           const pr=navEl.getBoundingClientRect();
           const r=active.getBoundingClientRect();
           const y=r.top - pr.top + navEl.scrollTop;
@@ -512,7 +498,6 @@
         const href = a.getAttribute('href');
         if (!href || href.startsWith('#') || /^https?:\/\//i.test(href)) return;
         const clean = href.replace(/^\.?\//, '');
-        // Como estamos en /reports/, mantener rutas relativas correctas
         a.setAttribute('href', isGhProject ? base + clean : (href.startsWith('../') ? href : clean));
       });
 
@@ -536,7 +521,7 @@
     <!-- ====== Librerías del reporte ====== -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- ========= Script del REPORTE (idéntico, solo rutas ajustadas y scope #nr) ========= -->
+    <!-- ========= Script del REPORTE ========= -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
       import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
@@ -559,12 +544,13 @@
       const fbBadge = document.getElementById('fbBadge');
       function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
 
-      // Watchdog anti “Conectando…” infinito
+      // Watchdog temporal abierto
       let authSettled = false;
       const authWatchdog = setTimeout(()=>{
         if (!authSettled) {
-          console.warn('[GC] Auth watchdog timeout → Solo lectura');
-          setBadge('Solo lectura','warn');
+          console.warn('[GC] Auth watchdog timeout → habilitado sin auth (temporal)');
+          document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+          setBadge('Conectado ✓','ok');
           renderTablaHistorico();
         }
       }, 6000);
@@ -601,7 +587,7 @@
 
       let vistaActual=readPref(PREF_VISTA,'numerico'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
 
-      // Banderas (alias básicos; si luego quieres normalizar acentos lo vemos)
+      // Banderas con alias
       const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
 
       function mostrarToast(msg){
@@ -683,7 +669,7 @@
       function getValorOrdenable(d,col){ const t=d.total||0; const base={"Leads":d.total,"New":d.news,"% New":t?(d.news/t)*100:0,"Recall":d.recall,"% Recall":t?(d.recall/t)*100:0,"No Answer":d.noAnswer,"% No Answer":t?(d.noAnswer/t)*100:0,"Approve":d.approved,"% Approve":t?(d.approved/t)*100:0,"Reject":d.reject,"% Reject":t?(d.reject/t)*100:0,"Trash":d.trash,"% Trash":t?(d.trash/t)*100:0}; return base[col]||0; }
       const colorPct=p=>p<=25?"red":p>=30?"green":"orange";
 
-      /* ===== Cloud histórico con FALLBACK ===== */
+      /* ===== Cloud histórico ===== */
       let cloudHistorico=[];
       const filtroPaisEl=document.getElementById("filtroPais");
       const filtroFechaEl=document.getElementById("filtroFecha");
@@ -729,7 +715,7 @@
           }
           const snap = await getDocs(qy);
           const rows = [];
-          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id })); // conservar id
+          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
           return normalizeRows(rows);
         } catch (e) {
           console.warn('[GC] fetchHistoricoCloud fallback:', e);
@@ -748,9 +734,14 @@
         }
       }
 
+      // (temporal) habilitar siempre
+      document.addEventListener('DOMContentLoaded', ()=>{
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+      });
+
       async function registrarAvance(){
         if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
-        if(!auth.currentUser){ mostrarToast("⚠️ Sin autenticación (solo lectura)."); return; }
+        // (temporal) no bloqueamos por falta de auth
 
         const now=new Date();
         const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
@@ -787,10 +778,9 @@
         }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
       }
 
-      // 🗑️ Eliminar registro individual
+      // 🗑️ Eliminar registro individual (temporal sin check de auth)
       async function eliminarRegistro(id){
         if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
-        if(!auth.currentUser){ mostrarToast("⚠️ No autenticado: no puedes eliminar."); return; }
         const ok = confirm("¿Seguro que deseas eliminar este registro?");
         if(!ok) return;
         try{
@@ -920,22 +910,18 @@
         window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
       }
 
-      // Exponer a window (mismos nombres)
+      // Exponer a window
       window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
       window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
       window.exportarHistoricoCSV=exportarHistoricoCSV; window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
       window.eliminarRegistro=eliminarRegistro;
 
-      // Auth
-      onAuthStateChanged(auth, (u)=>{
+      // Auth: siempre habilitado (temporal)
+      onAuthStateChanged(auth, ()=>{
         authSettled = true;
         clearTimeout(authWatchdog);
-        if(u){
-          document.getElementById('btnRegistrar')?.removeAttribute('disabled');
-          setBadge('Conectado ✓','ok');
-        }else{
-          setBadge('Solo lectura','warn');
-        }
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+        setBadge('Conectado ✓','ok');
         renderTablaHistorico();
       });
 
