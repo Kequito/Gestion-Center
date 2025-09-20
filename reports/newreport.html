@@ -7,11 +7,21 @@
 
   <!-- Carga el shell con BASE robusto (GitHub Pages o dominio propio) -->
   <script type="module">
-    const isGh = location.hostname.endsWith('github.io');
-    const parts = location.pathname.split('/').filter(Boolean);
-    const repo  = isGh ? (parts[0] || '') : '';
-    const base  = isGh ? `/${repo}/` : '/';
-    import(new URL('../assets/bw/shell.js', location.origin + base).href);
+  const isGh  = location.hostname.endsWith('github.io');
+  const parts = location.pathname.split('/').filter(Boolean);
+  const repo  = isGh ? (parts[0] || '') : '';
+  const base  = isGh ? `/${repo}/` : '/';
+  const abs   = (p) => new URL(p.replace(/^\//, ''), location.origin + base).href;
+
+  // 👇 Importa siempre desde la BASE (sin ../)
+  import(abs('assets/bw/shell.js')).catch(e => {
+    console.error('[newreport] No se pudo cargar shell.js:', e);
+    // Fallback mínimo para que al menos se lea algo si falla el shell
+    document.head.insertAdjacentHTML('beforeend', `
+      <style>:root{--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
+      --gray-700:#3f3f3f;--gray-900:#111;--white:#fff;--black:#0a0a0a;
+      font-family: Lexend,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}</style>`);
+  });
   </script>
 
   <!-- Chart.js (para el gráfico de avance) -->
