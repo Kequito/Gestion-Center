@@ -1,335 +1,265 @@
 // assets/bw/shell.js
-// Ecosistema B/N minimal para Gestión Center (Lexend, sidebar, nav, compacto, rutas base)
-// Incluye estandarización GLOBAL: encabezados de tabla con fondo negro y texto blanco.
+/* ===========================================================
+   GC Shell (BW) — sidebar + header + estilos base + guard
+   Carga config dinámica con fallback para no romper la UI
+   =========================================================== */
 
-(() => {
-  /* =========================
-     BASE robusto (GitHub Pages repo vs dominio propio)
-     ========================= */
-  const isGh  = location.hostname.endsWith('github.io');
-  const parts = location.pathname.split('/').filter(Boolean);
-  const repo  = isGh ? (parts[0] || '') : '';
-  const BASE  = isGh ? `/${repo}/` : '/';
-  const ABS   = (p) => new URL(p.replace(/^\//,''), location.origin + BASE).href;
+// ---------- BASE robusto ----------
+const isGh  = location.hostname.endsWith("github.io");
+const parts = location.pathname.split("/").filter(Boolean);
+const repo  = isGh ? (parts[0] || "") : "";
+const BASE  = isGh ? `/${repo}/` : "/";
+const abs   = (p) => new URL(p.replace(/^\//, ""), location.origin + BASE).href;
+window.__GC_BASE__ = BASE;
 
-  /* =========================
-     Inyección de fuente Lexend (idempotente)
-     ========================= */
-  function ensureFont() {
-    if (!document.querySelector('link[data-gc-font="lexend"]')) {
-      const l1 = document.createElement('link');
-      l1.rel = 'preconnect'; l1.href = 'https://fonts.googleapis.com'; l1.setAttribute('data-gc-font','lexend');
-      const l2 = document.createElement('link');
-      l2.rel = 'preconnect'; l2.href = 'https://fonts.gstatic.com'; l2.crossOrigin = 'anonymous'; l2.setAttribute('data-gc-font','lexend');
-      const l3 = document.createElement('link');
-      l3.rel = 'stylesheet';
-      l3.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap';
-      l3.setAttribute('data-gc-font','lexend');
-      document.head.append(l1,l2,l3);
-    }
+// ---------- Cargar configuración dinámica con fallback ----------
+async function loadConfig() {
+  try {
+    const mod = await import(abs("assets/bw/gc.config.js"));
+    const cfg = mod?.GC_CONFIG || mod?.default;
+    if (!cfg) throw new Error("GC_CONFIG vacío");
+    return cfg;
+  } catch (e) {
+    console.warn("[gc-shell] gc.config.js no disponible, uso fallback:", e);
+    // 👇 Fallback seguro (tu navegación por defecto)
+    return {
+      brand: {
+        homeHref: "index.html",
+        logoWebp: "images/logo1.webp",
+        logoPng : "images/logogestioncenter.png",
+      },
+      heroDefault: {
+        title: "Hola Kevin, listo para romperla hoy 💪",
+        subtitle: "Sesión verificada ✅ | Accesos rápidos y estado general.",
+      },
+      nav: [
+        { type: "link", id: "home", label: "Inicio", icon: "🏠", href: "index.html" },
+        {
+          type: "group",
+          id: "grp-reportes",
+          title: "Reportes",
+          items: [
+            { label: "New Report", icon: "🧰", href: "reports/newreport.html" },
+            { label: "Post-Sale Report", icon: "🚚", href: "reports/psreport.html" },
+          ],
+        },
+        {
+          type: "group",
+          id: "grp-operaciones",
+          title: "Operaciones",
+          items: [
+            { label: "Distribución", icon: "📋", href: "operations/distribucion.html" },
+            { label: "BI de OPs + Links", icon: "🔗", href: "operations/biops.html" },
+          ],
+        },
+        {
+          type: "group",
+          id: "grp-cobertura",
+          title: "Cobertura",
+          items: [
+            { label: "Mapa de cobertura", icon: "🗺️", href: "cobertura.html" },
+            { label: "New Cobertura 1.1", icon: "🧭", href: "newcobertura.html" },
+          ],
+        },
+        {
+          type: "group",
+          id: "grp-utils",
+          title: "Utilidades",
+          items: [
+            { label: "Selector de Apoyo 2.0", icon: "👥", href: "utilities/camprev.html" },
+          ],
+        },
+      ],
+    };
+  }
+}
+
+// ---------- Inyectar fuente + CSS + guard, y gestionar visibilidad ----------
+async function ensureGuardAndHead() {
+  const head = document.head;
+
+  // Fuente
+  if (!document.querySelector('link[href*="fonts.googleapis.com"]')) {
+    head.insertAdjacentHTML(
+      "beforeend",
+      `<link rel="preconnect" href="https://fonts.googleapis.com">
+       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+       <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">`
+    );
   }
 
-  /* =========================
-     Inyección de estilos globales (idempotente)
-     ========================= */
-  const CSS_ID = 'gc-shell-style';
-  function ensureStyles() {
-    if (document.getElementById(CSS_ID)) return;
-    const css = /* css */ `
-:root{
-  --font: 'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --black:#0a0a0a; --white:#ffffff;
-  --gray-900:#111111; --gray-700:#3f3f3f; --gray-500:#737373;
-  --gray-300:#d4d4d4; --gray-200:#e5e5e5; --gray-100:#f5f5f5;
-  --sidebar-w:280px; --sidebar-w-compact:72px; --radius:12px;
-
-  /* === Estándar global solicitado === */
-  --tbl-head-bg:#000;     /* fondo negro */
-  --tbl-head-fg:#fff;     /* texto blanco */
-  --tbl-head-border:#000; /* borde negro */
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0; font-family:var(--font);
-  background:var(--white); color:var(--gray-900);
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-}
-
-/* ===== Sidebar ===== */
-aside{
-  position:fixed; inset:0 auto 0 0; z-index:20;
-  width:var(--sidebar-w);
-  background:var(--black); color:var(--white);
-  border-right:1px solid var(--gray-300);
-  display:flex; flex-direction:column; gap:12px;
-  padding:12px; overflow:auto;
-}
-.brand{
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--gray-300); border-radius:var(--radius);
-  padding:10px; text-decoration:none; background:#0f0f0f;
-}
-.brand img{width:160px; height:auto; display:block}
-
-.sidebar-toggle{
-  width:100%; border:1px solid var(--gray-300);
-  background:transparent; color:var(--white);
-  border-radius:10px; padding:10px 12px; font-weight:700; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  min-height:44px; line-height:1.1; white-space:nowrap;
-}
-.sidebar-toggle .icon{ font-size:16px }
-
-nav{display:flex; flex-direction:column; gap:10px}
-.nav-group{
-  border:1px solid var(--gray-300); border-radius:12px;
-  overflow:hidden; background:#0f0f0f;
-}
-.nav-head{
-  width:100%; background:transparent; color:var(--white);
-  text-align:left; padding:10px 12px; border:0; cursor:pointer;
-  font-weight:700; display:flex; align-items:center; gap:8px;
-}
-.nav-body{ display:block; padding:6px }
-.nav-group.is-collapsed .nav-body{ display:none }
-
-.nav-item{
-  display:flex; align-items:center; gap:10px;
-  color:var(--white); text-decoration:none;
-  padding:12px 12px; border-radius:10px;
-  margin:4px; background:transparent;
-}
-.nav-item:hover{ background:#141414 }
-.nav-item.active{
-  background:var(--white); color:var(--gray-900);
-  border-left:3px solid var(--gray-900); border-radius:10px;
-}
-
-.spacer{flex:1}
-.role-card{
-  display:flex; align-items:center; gap:10px;
-  padding:10px; border:1px solid var(--gray-300); border-radius:10px;
-  background:#0f0f0f; color:var(--white);
-}
-.role-dot{width:14px; height:14px; border-radius:50%; background:var(--gray-500)}
-.role-badge{font-size:12px; padding:2px 8px; border:1px solid var(--gray-300); border-radius:999px}
-
-.logout{
-  width:100%; padding:12px; border-radius:10px;
-  border:1px solid var(--gray-300); background:#1a1a1a; color:#fff; cursor:pointer; font-weight:700;
-}
-
-/* ===== Main ===== */
-main{ margin-left:var(--sidebar-w); padding:20px }
-.hero{
-  border:1px solid var(--gray-300); border-radius:var(--radius);
-  padding:14px; background:var(--gray-100);
-}
-.hero h1{margin:0 0 6px; font-size:22px}
-.hero p{margin:0; color:var(--gray-700); font-size:14px}
-
-.grid{display:grid; gap:12px; margin-top:14px; grid-template-columns:repeat(2, minmax(280px, 1fr))}
-.card{
-  border:1px solid var(--gray-300); border-radius:var(--radius);
-  padding:12px; background:var(--white);
-}
-.card h3{margin:0 0 8px; font-size:15px}
-.card a{
-  display:flex; align-items:center; gap:8px;
-  color:var(--gray-900); text-decoration:none; padding:8px 0; border-top:1px solid var(--gray-200)
-}
-.card a:first-of-type{border-top:0}
-.card a:hover{ background:var(--gray-100) }
-
-/* ===== Compacto ===== */
-body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
-body.sidebar-compact main{ margin-left:var(--sidebar-w-compact) }
-body.sidebar-compact .brand img{ width:42px }
-body.sidebar-compact .nav-head .txt,
-body.sidebar-compact .nav-item .label,
-body.sidebar-compact .sidebar-toggle .lbl,
-body.sidebar-compact .role-text{ display:none }
-/* ajustes visuales para que no se mezclen */
-body.sidebar-compact .nav-head{ justify-content:center; padding:8px }
-body.sidebar-compact .nav-body{ padding:4px 2px }
-body.sidebar-compact .nav-item{
-  margin:6px; padding:10px 0;
-  justify-content:center; min-height:40px;
-  border-radius:12px;
-}
-body.sidebar-compact .nav-item.active{
-  border-left:none; background:var(--white); color:var(--gray-900);
-  outline:2px solid var(--white);
-}
-
-/* ===== Responsive ===== */
-@media (max-width:1080px){
-  main{margin-left:0}
-  aside{position:sticky; width:auto; inset:auto}
-  body.sidebar-compact aside{width:auto}
-  body.sidebar-compact main{margin-left:0}
-  .grid{grid-template-columns:1fr}
-}
-
-/* Foco accesible alto contraste */
-.nav-item:focus-visible, .nav-head:focus-visible, .sidebar-toggle:focus-visible,
-.logout:focus-visible, .brand:focus-visible{
-  outline:2px solid var(--white); outline-offset:2px;
-}
-
-/* ====== ESTÁNDAR GLOBAL DE TABLAS ====== */
-table thead th{
-  background:var(--tbl-head-bg);
-  color:var(--tbl-head-fg);
-  border-color:var(--tbl-head-border);
-}
-    `.trim();
-
-    const style = document.createElement('style');
-    style.id = CSS_ID;
-    style.textContent = css;
-    document.head.appendChild(style);
+  // CSS principal
+  if (!document.querySelector('link[data-gc="bw.css"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.setAttribute("data-gc", "bw.css");
+    link.href = abs("assets/bw/bw.css");
+    head.appendChild(link);
   }
 
-  /* =========================
-     Normalizador de rutas internas a BASE
-     ========================= */
-  function normalizeLinks() {
-    const sel = 'nav a.nav-item[href], .brand[href], .card a[href]';
-    document.querySelectorAll(sel).forEach(a => {
-      const href = a.getAttribute('href');
-      if (!href || href.startsWith('#') || /^(https?:)?\/\//i.test(href)) return;
-      // Limpia ./ o ../ al principio y fuerza a BASE
-      let clean = href.replace(/^\.?\//, '');
-      clean = clean.replace(/^(\.\.\/)+/, '');
-      a.setAttribute('href', BASE + clean);
-    });
-
-    // Normaliza logo (img + source) del brand si existe
-    const logoImg = document.querySelector('#brandLink img');
-    if (logoImg) {
-      let src = logoImg.getAttribute('src') || 'images/logogestioncenter.png';
-      if (!/^(https?:)?\/\//i.test(src)) {
-        src = src.replace(/^\.?\//, '').replace(/^(\.\.\/)+/,'');
-        logoImg.setAttribute('src', BASE + src);
+  // Encabezados de tablas (estándar global invertido)
+  if (!document.querySelector('style[data-gc="thead-std"]')) {
+    const st = document.createElement("style");
+    st.setAttribute("data-gc", "thead-std");
+    st.textContent = `
+      main table thead th{
+        background:#000; color:#fff !important;
       }
+    `;
+    head.appendChild(st);
+  }
+
+  // Ocultar mientras valida (si la página no lo hizo)
+  if (!document.documentElement.style.visibility)
+    document.documentElement.style.visibility = "hidden";
+
+  const watchdog = setTimeout(() => {
+    document.documentElement.style.visibility = "visible";
+  }, 2500);
+
+  // Guard
+  try {
+    await import(abs("assets/guard.js"));
+  } catch (e) {
+    console.warn("[gc-shell] guard no cargó, fallback visible:", e);
+    if (typeof window.gcLogout !== "function") {
+      window.gcLogout = () => { location.href = abs("login.html"); };
     }
-    const logoSrc = document.querySelector('#brandLink source');
-    if (logoSrc) {
-      let s = logoSrc.getAttribute('srcset') || 'images/logogestioncenter.webp';
-      s = s.replace(/^\.?\//, '').replace(/^(\.\.\/)+/,'');
-      logoSrc.setAttribute('srcset', BASE + s);
+    document.documentElement.style.visibility = "visible";
+  } finally {
+    clearTimeout(watchdog);
+  }
+}
+
+// ---------- Helpers ----------
+function setActive(navEl) {
+  const items = [...navEl.querySelectorAll(".nav-item")];
+  const current = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  let active = items[0];
+  items.forEach(a => {
+    const href = (a.getAttribute("href") || "")
+      .split("#")[0].split("/").pop().toLowerCase();
+    if (href && href === current) active = a;
+    a.classList.toggle("active", a === active);
+    a.toggleAttribute("aria-current", a === active ? "page" : false);
+  });
+}
+
+function buildSidebar(CFG) {
+  const b = CFG.brand || {};
+  const navHTML = (CFG.nav || []).map(entry => {
+    if (entry.type === "link") {
+      return `<a class="nav-item" href="${abs(entry.href)}" title="${entry.label}">
+        ${entry.icon || ""} <span class="label">${entry.label}</span></a>`;
     }
-  }
+    const items = (entry.items || [])
+      .map(it => `<a class="nav-item" href="${abs(it.href)}" title="${it.label}">
+        ${it.icon || ""} <span class="label">${it.label}</span></a>`).join("");
+    return `<section class="nav-group" data-key="${entry.id}">
+      <button class="nav-head" aria-expanded="true" title="${entry.title}">
+        <span class="chev">▾</span> <span class="txt">${entry.title}</span>
+      </button>
+      <div class="nav-body"><div class="nav-body-inner">${items}</div></div>
+    </section>`;
+  }).join("");
 
-  /* =========================
-     UI behaviors (nav activo, colapsables, compacto, rol)
-     ========================= */
-  function setActiveNav() {
-    const items = [...document.querySelectorAll('nav .nav-item')];
-    if (!items.length) return;
-    const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    let active = items[0];
-    items.forEach(a => {
-      const href = (a.getAttribute('href')||'').split('#')[0].split('/').pop().toLowerCase();
-      if (href && href === current) active = a;
-      a.classList.toggle('active', a === active);
-      a.toggleAttribute('aria-current', a === active ? 'page' : false);
+  return `
+  <aside id="gc-aside">
+    <a class="brand" href="${abs(b.homeHref || "index.html")}" id="brandLink" aria-label="Inicio" title="Inicio">
+      <picture>
+        <source srcset="${abs(b.logoWebp || "images/logo1.webp")}" type="image/webp"/>
+        <img id="brandLogo" src="${abs(b.logoPng || "images/logogestioncenter.png")}" alt="Gestión Center" loading="lazy" decoding="async"/>
+      </picture>
+    </a>
+    <button class="sidebar-toggle" id="btnSidebarToggle" aria-pressed="false" title="Compactar / Expandir">
+      <span class="icon">⇆</span><span class="lbl">Cambiar ancho</span>
+    </button>
+    <nav id="gc-nav" role="navigation" aria-label="Navegación principal">
+      ${navHTML}
+    </nav>
+    <div class="spacer"></div>
+    <div class="role-card" id="roleCard" title="Rango del usuario">
+      <div class="role-dot" id="roleDot"></div>
+      <div class="role-text">
+        <strong id="roleName">Invitado</strong>
+        <span class="role-badge" id="roleBadge" style="margin-left:6px">Invitado</span><br/>
+        <small id="roleDesc">Acceso limitado</small>
+      </div>
+    </div>
+    <button class="logout" onclick="gcLogout()">Salir</button>
+  </aside>`;
+}
+
+function wireSidebar(root) {
+  const nav = root.querySelector("#gc-nav");
+  setActive(nav);
+  window.addEventListener("popstate", () => setActive(nav));
+
+  // Colapsables con memoria
+  nav.querySelectorAll(".nav-group").forEach(g => {
+    const key = g.dataset.key; const head = g.querySelector(".nav-head");
+    const saved = localStorage.getItem(key);
+    if (saved === "0") { g.classList.add("is-collapsed"); head.setAttribute("aria-expanded","false"); }
+    head.addEventListener("click", (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      const col = g.classList.toggle("is-collapsed");
+      head.setAttribute("aria-expanded", col ? "false" : "true");
+      localStorage.setItem(key, col ? "0" : "1");
     });
+  });
+
+  // Compacto
+  const btn = root.querySelector("#btnSidebarToggle");
+  const compactKey = "gc-sidebar-compact";
+  function setCompactState(on) {
+    document.body.classList.toggle("sidebar-compact", !!on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    localStorage.setItem(compactKey, on ? "1" : "0");
   }
+  btn.addEventListener("click", () => setCompactState(!document.body.classList.contains("sidebar-compact")));
+  setCompactState(localStorage.getItem(compactKey) === "1");
+}
 
-  function initCollapsibles() {
-    document.querySelectorAll('.nav-group').forEach(g=>{
-      const key = g.dataset.key || 'grp-' + Math.random().toString(36).slice(2);
-      g.dataset.key = key;
-      const head = g.querySelector('.nav-head');
-      if (!head) return;
-      const saved = localStorage.getItem(key);
-      if (saved === '0') g.classList.add('is-collapsed');
-      head.setAttribute('aria-expanded', g.classList.contains('is-collapsed') ? 'false' : 'true');
-      head.addEventListener('click', (ev)=>{
-        ev.preventDefault(); ev.stopPropagation();
-        const isCollapsed = g.classList.toggle('is-collapsed');
-        head.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
-        localStorage.setItem(key, isCollapsed ? '0' : '1');
-      });
-    });
+// ---------- Web Component ----------
+class GCShell extends HTMLElement {
+  async connectedCallback() {
+    await ensureGuardAndHead();
+    const CFG = await loadConfig();
+
+    const heroOff  = this.getAttribute("hero") === "off";
+    const heroTitle = this.getAttribute("hero-title") || (CFG.heroDefault?.title || "");
+    const heroSub   = this.getAttribute("hero-subtitle") || (CFG.heroDefault?.subtitle || "");
+
+    const userContent = this.innerHTML;
+
+    this.innerHTML = `
+      ${buildSidebar(CFG)}
+      <main>
+        ${heroOff ? "" : `
+          <section class="hero">
+            <h1>${heroTitle}</h1>
+            <p>${heroSub}</p>
+          </section>`}
+        ${userContent}
+      </main>
+    `;
+
+    wireSidebar(this);
+
+    // Role (gris simple)
+    const roleDot  = this.querySelector("#roleDot");
+    const roleName = this.querySelector("#roleName");
+    const roleDesc = this.querySelector("#roleDesc");
+    const roleBadge= this.querySelector("#roleBadge");
+    const ls = (localStorage.getItem("gc-role") || "Invitado");
+    roleDot.style.background = "#737373";
+    roleName.textContent = ls;
+    roleDesc.textContent = (ls === "Invitado" ? "Acceso limitado" : "");
+    roleBadge.textContent = ls;
+
+    // Mostrar la página (por si el guard tardó)
+    try { document.documentElement.style.visibility = "visible"; } catch {}
   }
+}
 
-  function initCompact() {
-    const btn = document.getElementById('btnSidebarToggle');
-    const key = 'gc-sidebar-compact';
-    const setState = (on) => {
-      document.body.classList.toggle('sidebar-compact', !!on);
-      if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      localStorage.setItem(key, on ? '1' : '0');
-    };
-    if (btn) btn.addEventListener('click', ()=> setState(!document.body.classList.contains('sidebar-compact')));
-    setState(localStorage.getItem(key) === '1');
-  }
-
-  function initRole() {
-    const ROLE = {
-      'owner':      {name:'Owner',     desc:'Control total'},
-      'admin':      {name:'Admin',     desc:'Administración'},
-      'supervisor': {name:'Supervisor',desc:'Lidera TLs'},
-      'team leader':{name:'Team Leader',desc:'Lidera equipo'},
-      'analista':   {name:'Analista',  desc:'Calidad / Datos'},
-      'calidad':    {name:'Calidad',   desc:'Auditoría'},
-      'operador':   {name:'Operador',  desc:'Ventas / Gestión'},
-      'invitado':   {name:'Invitado',  desc:'Acceso limitado'}
-    };
-    const roleDot  = document.getElementById('roleDot');
-    const roleName = document.getElementById('roleName');
-    const roleDesc = document.getElementById('roleDesc');
-    const roleBadge= document.getElementById('roleBadge');
-
-    const qp = new URLSearchParams(location.search).get('role');
-    const w  = (window.gcRole||'').toString().trim();
-    const ls = (localStorage.getItem('gc-role')||'').trim();
-    const raw= (qp||w||ls||'Invitado').toLowerCase();
-    const key= Object.keys(ROLE).find(k => raw.includes(k)) || 'invitado';
-    const cfg= ROLE[key];
-
-    if (roleDot)  roleDot.style.background = '#737373';
-    if (roleName) roleName.textContent = cfg.name;
-    if (roleDesc) roleDesc.textContent = cfg.desc;
-    if (roleBadge)roleBadge.textContent = cfg.name;
-    localStorage.setItem('gc-role', cfg.name);
-  }
-
-  /* =========================
-     Init
-     ========================= */
-  ensureFont();
-  ensureStyles();
-
-  // Normaliza rutas pronto (por si el usuario hace click muy rápido)
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', normalizeLinks, {once:true});
-  } else {
-    normalizeLinks();
-  }
-
-  function boot() {
-    setActiveNav();
-    initCollapsibles();
-    initCompact();
-    initRole();
-    window.addEventListener('popstate', setActiveNav);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, {once:true});
-  } else {
-    boot();
-  }
-
-  // Exponer utilidades por si se necesita re-aplicar
-  window.gcShell = {
-    BASE, ABS,
-    normalizeLinks,
-    refresh: () => { normalizeLinks(); setActiveNav(); }
-  };
-})();
+customElements.define("gc-shell", GCShell);
