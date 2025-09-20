@@ -13,7 +13,7 @@
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
 
-    <!-- ✅ Bootloader: evita blanco y carga guard con BASE absoluto -->
+    <!-- Bootloader: evita blanco y carga guard con BASE absoluto -->
     <script type="module">
       // Watchdog anti-pantalla-blanca
       window.__guardWatchdog = setTimeout(() => {
@@ -27,7 +27,6 @@
       const BASE = isGh ? `/${repo}/` : '/';
       const abs = (p) => new URL(p.replace(/^\//,''), location.origin + BASE).href;
 
-      // Importa el guard desde BASE/assets/guard.js
       try {
         await import(abs('assets/guard.js'));
       } catch (e) {
@@ -66,85 +65,60 @@
       *{box-sizing:border-box}
       html,body{height:100%}
       body{
-        margin:0;
-        font-family:var(--font);
-        background:var(--white);
-        color:var(--gray-900);
-        -webkit-font-smoothing:antialiased;
-        -moz-osx-font-smoothing:grayscale;
+        margin:0; font-family:var(--font);
+        background:var(--white); color:var(--gray-900);
+        -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
       }
 
       /* ===== Sidebar ===== */
       aside{
         position:fixed; inset:0 auto 0 0; z-index:20;
         width:var(--sidebar-w);
-        background:var(--black);
-        color:var(--white);
+        background:var(--black); color:var(--white);
         border-right:1px solid var(--gray-300);
         display:flex; flex-direction:column; gap:12px;
-        padding:12px;
-        overflow:auto;
+        padding:12px; overflow:auto;
       }
       .brand{
         display:flex; align-items:center; justify-content:center;
-        border:1px solid var(--gray-300);
-        border-radius:var(--radius);
-        padding:10px;
-        text-decoration:none;
-        background:var(--gray-900);
+        border:1px solid var(--gray-300); border-radius:var(--radius);
+        padding:10px; text-decoration:none; background:var(--gray-900);
       }
       .brand img{width:160px; height:auto; display:block}
 
       .sidebar-toggle{
-        width:100%;
-        border:1px solid var(--gray-300);
-        background:transparent;
-        color:var(--white);
-        border-radius:10px;
-        padding:10px 12px;
-        font-weight:700;
-        cursor:pointer;
-
-        /* ✅ legibilidad y separación */
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:8px;
-        min-height:44px;
-        line-height:1.1;
-        white-space:nowrap;
+        width:100%; border:1px solid var(--gray-300);
+        background:transparent; color:var(--white);
+        border-radius:10px; padding:10px 12px; font-weight:700; cursor:pointer;
+        display:flex; align-items:center; justify-content:center; gap:8px;
+        min-height:44px; line-height:1.1; white-space:nowrap;
       }
       .sidebar-toggle .icon{ font-size:16px }
 
       nav{display:flex; flex-direction:column; gap:10px}
 
       .nav-group{
-        border:1px solid var(--gray-300);
-        border-radius:12px;           /* ✅ card redondeado */
-        overflow:hidden;
-        background:#0f0f0f;
+        border:1px solid var(--gray-300); border-radius:12px;
+        overflow:hidden; background:#0f0f0f;
       }
       .nav-head{
         width:100%; background:transparent; color:var(--white);
         text-align:left; padding:10px 12px; border:0; cursor:pointer;
         font-weight:700; display:flex; align-items:center; gap:8px;
       }
-      .nav-body{display:block; padding:6px} /* ✅ aire para que se note el radio */
+      .nav-body{ display:block; padding:6px }
+      .nav-group.is-collapsed .nav-body{ display:none }   /* <- colapsable OK */
 
       .nav-item{
         display:flex; align-items:center; gap:10px;
         color:var(--white); text-decoration:none;
-        padding:12px 12px;
-        border-radius:10px;            /* ✅ items redondeados */
-        margin:4px;                    /* ✅ separado del borde */
-        background:transparent;
+        padding:12px 12px; border-radius:10px;
+        margin:4px; background:transparent;
       }
-      .nav-item:hover{background:#141414}
+      .nav-item:hover{ background:#141414 }
       .nav-item.active{
-        background:var(--white);
-        color:var(--gray-900);
-        border-left:3px solid var(--gray-900);
-        border-radius:10px;            /* ✅ activo redondeado */
+        background:var(--white); color:var(--gray-900);
+        border-left:3px solid var(--gray-900); border-radius:10px;
       }
 
       .spacer{flex:1}
@@ -163,22 +137,18 @@
       }
 
       /* ===== Main ===== */
-      main{margin-left:var(--sidebar-w); padding:20px}
+      main{ margin-left:var(--sidebar-w); padding:20px }
       .hero{
-        border:1px solid var(--gray-300);
-        border-radius:var(--radius);
-        padding:14px;
-        background:var(--gray-100);
+        border:1px solid var(--gray-300); border-radius:var(--radius);
+        padding:14px; background:var(--gray-100);
       }
       .hero h1{margin:0 0 6px; font-size:22px}
       .hero p{margin:0; color:var(--gray-700); font-size:14px}
 
       .grid{display:grid; gap:12px; margin-top:14px; grid-template-columns:repeat(2, minmax(280px, 1fr))}
       .card{
-        border:1px solid var(--gray-300);
-        border-radius:var(--radius);
-        padding:12px;
-        background:var(--white);
+        border:1px solid var(--gray-300); border-radius:var(--radius);
+        padding:12px; background:var(--white);
       }
       .card h3{margin:0 0 8px; font-size:15px}
       .card a{
@@ -186,7 +156,7 @@
         color:var(--gray-900); text-decoration:none; padding:8px 0; border-top:1px solid var(--gray-200)
       }
       .card a:first-of-type{border-top:0}
-      .card a:hover{background:var(--gray-100)}
+      .card a:hover{ background:var(--gray-100) }
 
       /* ===== Compacto ===== */
       body.sidebar-compact aside{ width:var(--sidebar-w-compact) }
@@ -196,6 +166,21 @@
       body.sidebar-compact .nav-item .label,
       body.sidebar-compact .sidebar-toggle .lbl,
       body.sidebar-compact .role-text{ display:none }
+
+      /* ✅ ajustes visuales compactos para que NO se mezclen */
+      body.sidebar-compact .nav-head{ justify-content:center; padding:8px }
+      body.sidebar-compact .nav-body{ padding:4px 2px }
+      body.sidebar-compact .nav-item{
+        margin:6px; padding:10px 0;
+        justify-content:center; min-height:40px;
+        border-radius:12px;
+      }
+      body.sidebar-compact .nav-item.active{
+        border-left:none;          /* no borde que deforma */
+        background:var(--white);
+        color:var(--gray-900);
+        outline:2px solid var(--white); /* halo blanco sutil */
+      }
 
       /* ===== Responsive ===== */
       @media (max-width:1080px){
@@ -207,7 +192,11 @@
       }
 
       /* Foco accesible (alto contraste) */
-      .nav-item:focus-visible, .nav-head:focus-visible, .sidebar-toggle:focus-visible, .logout:focus-visible, .brand:focus-visible{
+      .nav-item:focus-visible,
+      .nav-head:focus-visible,
+      .sidebar-toggle:focus-visible,
+      .logout:focus-visible,
+      .brand:focus-visible{
         outline:2px solid var(--white); outline-offset:2px;
       }
     </style>
@@ -218,7 +207,7 @@
       <a class="brand" href="./index.html" id="brandLink" aria-label="Inicio" title="Inicio">
         <picture>
           <source srcset="./images/logogestioncenter.webp" type="image/webp"/>
-          <img id="brandLogo" src="./images/logogestioncenter.png" alt="Gestión Center" loading="lazy" decoding="async"/>
+        <img id="brandLogo" src="./images/logogestioncenter.png" alt="Gestión Center" loading="lazy" decoding="async"/>
         </picture>
       </a>
 
@@ -231,7 +220,7 @@
 
         <!-- REPORTES -->
         <section class="nav-group" data-key="grp-reportes">
-          <button class="nav-head" title="Reportes">
+          <button class="nav-head" title="Reportes" aria-expanded="true">
             <span class="chev">▾</span> <span class="txt">Reportes</span>
           </button>
           <div class="nav-body">
@@ -242,7 +231,7 @@
 
         <!-- OPERACIONES -->
         <section class="nav-group" data-key="grp-operaciones">
-          <button class="nav-head" title="Operaciones">
+          <button class="nav-head" title="Operaciones" aria-expanded="true">
             <span class="chev">▾</span> <span class="txt">Operaciones</span>
           </button>
           <div class="nav-body">
@@ -253,7 +242,7 @@
 
         <!-- COBERTURA -->
         <section class="nav-group" data-key="grp-cobertura">
-          <button class="nav-head" title="Cobertura">
+          <button class="nav-head" title="Cobertura" aria-expanded="true">
             <span class="chev">▾</span> <span class="txt">Cobertura</span>
           </button>
           <div class="nav-body">
@@ -264,7 +253,7 @@
 
         <!-- UTILIDADES -->
         <section class="nav-group" data-key="grp-utils">
-          <button class="nav-head" title="Utilidades">
+          <button class="nav-head" title="Utilidades" aria-expanded="true">
             <span class="chev">▾</span> <span class="txt">Utilidades</span>
           </button>
           <div class="nav-body">
@@ -336,14 +325,23 @@
       setActive();
       window.addEventListener('popstate', setActive);
 
-      // ===== Grupos colapsables (memoria localStorage) =====
+      // ===== Grupos colapsables (memoria + aria) =====
       document.querySelectorAll('.nav-group').forEach(g=>{
-        const key=g.dataset.key, head=g.querySelector('.nav-head');
-        const saved=localStorage.getItem(key);
-        if(saved==='0') g.classList.add('is-collapsed');
-        head.addEventListener('click', ()=>{
-          g.classList.toggle('is-collapsed');
-          localStorage.setItem(key, g.classList.contains('is-collapsed')?'0':'1');
+        const key = g.dataset.key || 'grp-' + Math.random().toString(36).slice(2);
+        const head = g.querySelector('.nav-head');
+
+        // restaurar estado
+        const saved = localStorage.getItem(key);
+        if (saved === '0') g.classList.add('is-collapsed');
+        head.setAttribute('aria-expanded', g.classList.contains('is-collapsed') ? 'false' : 'true');
+
+        // click seguro
+        head.addEventListener('click', (ev)=>{
+          ev.preventDefault();
+          ev.stopPropagation();
+          const isNowCollapsed = g.classList.toggle('is-collapsed');
+          head.setAttribute('aria-expanded', isNowCollapsed ? 'false' : 'true');
+          localStorage.setItem(key, isNowCollapsed ? '0' : '1');
         });
       });
 
@@ -358,7 +356,7 @@
       btnToggle.addEventListener('click', ()=> setCompactState(!document.body.classList.contains('sidebar-compact')));
       setCompactState(localStorage.getItem(compactKey)==='1');
 
-      // ===== Role UI en escala de grises (sin colores) =====
+      // ===== Role UI (BN) =====
       const ROLE_STYLE={
         'owner':{name:'Owner',desc:'Control total'},
         'admin':{name:'Admin',desc:'Administración'},
