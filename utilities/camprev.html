@@ -12,7 +12,15 @@
 
     <!-- 🔒 Ocultar hasta validar sesión -->
     <style>html{visibility:hidden}</style>
-    <script type="module" src="./assets/guard.js"></script>
+    <!-- Fallback: si guard.js no carga, mostramos el HTML para no quedar en azul -->
+    <script>
+      (function(){
+        const t = setTimeout(()=>{ document.documentElement.style.visibility='visible'; }, 1200);
+        window.__gcVisTimer = t; // para limpiar desde guard.js si quiere
+      })();
+    </script>
+    <!-- ✅ Ruta ABSOLUTA al guard -->
+    <script type="module" src="/assets/guard.js"></script>
 
     <style>
       /* =========================
@@ -208,21 +216,21 @@
       <nav role="navigation" aria-label="Navegación principal">
         <div class="nav-indicator" aria-hidden="true"></div>
 
-        <a href="./index.html" class="nav-item">🏠 <span>Inicio</span></a>
-        <a href="plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
+        <a href="/index.html" class="nav-item">🏠 <span>Inicio</span></a>
+        <a href="/plandetrabajo.html" class="nav-item">✅ <span>Plan de trabajo</span></a>
         <!-- 🔁 Ruta actualizada -->
-        <a href="./Gestion-Center/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
+        <a href="/Gestion-Center/operations/distribucion.html" class="nav-item">📋 <span>Distribución</span></a>
 
-        <a href="biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
-        <a href="cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
-        <a href="camprev.html" class="nav-item active" aria-current="page">👥 <span>Selector de Apoyo Ver 2.0</span></a>
-        <a href="postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
-        <a href="opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
-        <a href="pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
+        <a href="/biops.html" class="nav-item">🔗 <span>BI de OPs + Links</span></a>
+        <a href="/cobertura.html" class="nav-item">🌎 <span>Cobertura</span></a>
+        <a href="/utilities/camprev.html" class="nav-item active" aria-current="page">👥 <span>Selector de Apoyo Ver 2.0</span></a>
+        <a href="/postsale.html" class="nav-item">🚚 <span>Post-Sale New Report</span></a>
+        <a href="/opo11.html" class="nav-item">🧰 <span>New Report CC Perú</span></a>
+        <a href="/pintado.html" class="nav-item">🧮 <span>Queues Heatmap</span></a>
         <a href="#contacto" class="nav-item">📬 <span>Contacto</span></a>
-        <a href="newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
-        <a href="tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
-        <a href="login.html" class="nav-item">🧪 <span>Test</span></a>
+        <a href="/newcobertura.html" class="nav-item">🧭 <span>New Cobertura 1.1</span></a>
+        <a href="/tablita.html" class="nav-item">📄 <span>Tablita :3</span></a>
+        <a href="/login.html" class="nav-item">🧪 <span>Test</span></a>
       </nav>
       <div class="spacer"></div>
       <button class="logout" onclick="gcLogout()">Salir</button>
@@ -402,9 +410,9 @@ PEROP1AM-39726
       async function loadData(){
         try{
           const [distrib,camp]=await Promise.all([
-            loadJSON('datadistribucion.json'),
-            // 🔁 Archivo y ruta actualizados
-            loadJSON('Gestion-Center/utilities/datacamprev.json')
+            // ✅ rutas absolutas
+            loadJSON('/datadistribucion.json'),
+            loadJSON('/Gestion-Center/utilities/datacamprev.json')
           ]);
           rawDistrib=distrib; rawCamp=camp;
           dataFinal=rawCamp.reduce((acc,row)=>{
@@ -422,7 +430,12 @@ PEROP1AM-39726
           restoreState();
           applyFiltersAndRender();
           toast('✅ Datos cargados');
-        }catch(e){ console.error(e); toast('❌ No se pudieron cargar los JSON'); }
+        }catch(e){
+          console.error(e);
+          toast('❌ No se pudieron cargar los JSON');
+          // Mostrar la página en caso de error de carga
+          try{ document.documentElement.style.visibility='visible'; }catch(_){}
+        }
       }
 
       // ========= Filtros =========
@@ -565,7 +578,6 @@ PEROP1AM-39726
         const col = th?.dataset?.col;
         if(!col) return;
 
-        // Estado previo de esa columna
         const idx = sortState.findIndex(s => s.col === col);
         let nextMode = 1; // primer click => descendente
         if (idx !== -1){
@@ -577,7 +589,6 @@ PEROP1AM-39726
             applyFiltersAndRender();
             return;
           }
-          // quitar versión previa para reinsertar con nueva prioridad
           sortState.splice(idx, 1);
         }
 
@@ -663,6 +674,7 @@ PEROP1AM-39726
       // Seguridad: gcLogout debe estar expuesto por guard.js
       if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido en guard.js'); }
       // guard.js hará: document.documentElement.style.visibility='visible' al validar sesión.
+      try{ if(window.__gcVisTimer){ clearTimeout(window.__gcVisTimer); } }catch(_){}
     </script>
   </body>
 </html>
