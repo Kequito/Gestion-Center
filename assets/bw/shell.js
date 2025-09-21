@@ -263,3 +263,61 @@ class GCShell extends HTMLElement {
 }
 
 customElements.define("gc-shell", GCShell);
+
+// ---------- Web Component ----------
+class GCShell extends HTMLElement {
+  async connectedCallback() {
+    await ensureGuardAndHead();
+    const CFG = await loadConfig();
+
+    const heroOff   = this.getAttribute("hero") === "off";
+    const noAside   = this.hasAttribute("no-aside");   // 👈 nuevo
+    const heroTitle = this.getAttribute("hero-title") || (CFG.heroDefault?.title || "");
+    const heroSub   = this.getAttribute("hero-subtitle") || (CFG.heroDefault?.subtitle || "");
+
+    const userContent = this.innerHTML;
+
+    // Si no-aside, inyecta override de estilo para quitar márgenes del main
+    if (noAside && !document.querySelector('style[data-gc="no-aside-ov"]')) {
+      const st = document.createElement("style");
+      st.setAttribute("data-gc", "no-aside-ov");
+      st.textContent = `
+        main{ margin-left:0 !important; padding:24px 22px 40px; }
+      `;
+      document.head.appendChild(st);
+    }
+
+    this.innerHTML = `
+      ${noAside ? "" : buildSidebar(CFG)}
+      <main>
+        ${heroOff || noAside ? "" : `
+          <section class="hero">
+            <h1>${heroTitle}</h1>
+            <p>${heroSub}</p>
+          </section>`}
+        ${userContent}
+      </main>
+    `;
+
+    if (!noAside) wireSidebar(this);
+
+    // Role (gris simple)
+    const roleDot  = this.querySelector("#roleDot");
+    const roleName = this.querySelector("#roleName");
+    const roleDesc = this.querySelector("#roleDesc");
+    const roleBadge= this.querySelector("#roleBadge");
+    if (roleDot && roleName && roleDesc && roleBadge){
+      const ls = (localStorage.getItem("gc-role") || "Invitado");
+      roleDot.style.background = "#737373";
+      roleName.textContent = ls;
+      roleDesc.textContent = (ls === "Invitado" ? "Acceso limitado" : "");
+      roleBadge.textContent = ls;
+    }
+
+    // Mostrar la página (por si el guard tardó)
+    try { document.documentElement.style.visibility = "visible"; } catch {}
+  }
+}
+
+customElements.define("gc-shell", GCShell);
+
