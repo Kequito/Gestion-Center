@@ -31,7 +31,7 @@
     #nr .page-title{ display:flex; align-items:center; gap:12px; font-weight:700; font-size:22px; margin:0 0 6px }
     #nr .subtitle{ margin:0 0 10px; color:var(--gray-700); font-size:14px; display:flex; align-items:center; gap:10px }
 
-    /* Badge Firebase */
+    /* Badge Firebase / estado */
     #nr .badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--gray-300); background:var(--gray-100); color:var(--gray-900) }
     #nr .badge.ok{ background:var(--gray-200) }  #nr .badge.warn{ background:var(--gray-300) }
 
@@ -39,7 +39,7 @@
     #nr .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; color:var(--gray-700) }
 
     /* Toolbar (estética base) */
-    #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px }
+    #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; align-items:center }
     #nr .toolbar button,
     #nr .toolbar a.button,
     #nr .history-actions button{
@@ -73,6 +73,7 @@
       width:100%; min-height:150px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       padding:12px; border:1px solid var(--gray-300); background:var(--white); color:var(--gray-900); border-radius:12px; box-sizing:border-box
     }
+    #nr textarea[readonly]{ background:#fafafa; color:#555; }
 
     /* Tabla principal */
     #nr table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%;
@@ -126,6 +127,10 @@
     /* Toast */
     #toast{ position:fixed; bottom:18px; right:20px; background:var(--black); color:#fff;
       padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000 }
+
+    /* Bloqueo */
+    #lockInfo{ display:flex; align-items:center; gap:8px; font-size:12px; }
+    #lockInfo .holder{ font-weight:700 }
   </style>
 </head>
 <body>
@@ -134,21 +139,32 @@
     <section id="nr">
       <!-- TÍTULO SUPERIOR ÚNICO -->
       <div class="page-title">🧰 New Report CC Perú</div>
-      <p class="subtitle"><span id="fbBadge" class="badge">Conectando…</span></p>
+      <p class="subtitle">
+        <span id="fbBadge" class="badge">Conectando…</span>
+        <span id="lockInfo" class="badge warn" style="display:none;"></span>
+      </p>
 
       <div class="datetime" id="fechaHora"></div>
 
       <div class="toolbar">
-        <button onclick="procesar('numerico')">📦 Vista Numérica</button>
-        <button onclick="procesar('porcentaje')">📈 Vista Porcentual</button>
-        <button onclick="procesar('mixto')">🔁 Vista Mixta</button>
-        <button class="btn-danger" onclick="borrarTodo()">🧹 Borrar</button>
-        <button onclick="restablecerOrden()">🧭 Restablecer Orden</button>
+        <!-- Vista compartida (solo Supervisor/Admin) -->
+        <button id="btnVistaNum"     title="Vista Numérica">📦 Vista Numérica</button>
+        <button id="btnVistaPct"     title="Vista Porcentual">📈 Vista Porcentual</button>
+        <button id="btnVistaMixta"   title="Vista Mixta">🔁 Vista Mixta</button>
+
+        <!-- Edición compartida -->
+        <button id="btnTakeLock"     title="Tomar control de edición">🔒 Tomar control</button>
+        <button id="btnReleaseLock"  title="Liberar control" disabled>🔓 Liberar</button>
+        <button id="btnPushData"     title="Guardar/compartir datos pegados" disabled>⬆️ Compartir datos</button>
+
+        <!-- Otros -->
+        <button class="btn-danger" id="btnBorrarTodo">🧹 Borrar</button>
+        <button id="btnRestOrden">🧭 Restablecer Orden</button>
         <!-- NUEVO BOTÓN: Fuente (Panel) -->
         <a class="button" href="https://panel.2wcall.com/stats/queue/index?QueueSearch%5Bcountries%5D=&QueueSearch%5Bdate_type%5D=partner_created_at&QueueSearch%5Bdate_range%5D=20%2F09%2F2025+0%3A00+-+20%2F09%2F2025+23%3A59&QueueSearch%5Bpartner_id%5D=1" target="_blank" rel="noopener">🔗 Fuente (Panel)</a>
       </div>
 
-      <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…"></textarea>
+      <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…" readonly></textarea>
 
       <table id="tablaReporte">
         <thead><tr id="encabezadoTabla"></tr></thead>
@@ -157,23 +173,21 @@
       </table>
 
       <div class="history-actions" style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px;">
-        <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
-        <button class="btn-danger" onclick="borrarHistorial()">🗑️ Borrar historial</button>
-        <!-- (Eliminado Exportar histórico CSV) -->
+        <button id="btnRegistrar" disabled>📌 Registrar avance ahora</button>
+        <button class="btn-danger" id="btnBorrarHist">🗑️ Borrar historial</button>
       </div>
 
       <!-- Filtros -->
       <div class="filters">
         <div class="filter-group">
           <label for="filtroPais">🌎 País:</label>
-          <select id="filtroPais" onchange="onFiltroChange()">
-            <option value="todos">🌍 Todos</option>
-          </select>
+          <select id="filtroPais"></select>
+          <button class="clear-btn" id="btnAllCountries">Todos</button>
         </div>
 
         <div class="filter-group">
           <label for="presetRango">🗓️ Rango:</label>
-          <select id="presetRango" onchange="onPresetChange()">
+          <select id="presetRango">
             <option value="dia">Día específico</option>
             <option value="hoy">Hoy</option>
             <option value="ayer">Ayer</option>
@@ -183,8 +197,8 @@
 
         <div class="filter-group">
           <label for="filtroFecha">📅 Fecha:</label>
-          <input type="date" id="filtroFecha" onchange="onFiltroChange()"/>
-          <button class="clear-btn" onclick="limpiarFecha()">Todos</button>
+          <input type="date" id="filtroFecha"/>
+          <button class="clear-btn" id="btnClearFecha">Todos</button>
         </div>
       </div>
 
@@ -216,7 +230,7 @@
 
   <!-- ===== Lógica específica de la página ===== -->
   <script type="module">
-    // Espera robusta
+    // ==== util de espera ====
     async function waitForEl(sel, timeout=8000){
       const t0=performance.now();
       while(performance.now()-t0 < timeout){
@@ -229,51 +243,29 @@
     await customElements.whenDefined('gc-shell');
     await waitForEl('#encabezadoTabla');
 
-    // Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    // ==== Firebase (mismas versiones que usa el guard: v10.12.2) ====
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, onSnapshot, runTransaction, serverTimestamp, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
-      authDomain: "gestioncenterdata.firebaseapp.com",
-      projectId: "gestioncenterdata",
-      storageBucket: "gestioncenterdata.appspot.com",
-      messagingSenderId: "628401314464",
-      appId: "1:628401314464:web:0671233dfd801ee43587c5",
-      measurementId: "G-NBFZYTN094"
-    };
-
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
+    const auth = getAuth();               // reutiliza la app ya inicializada por guard.js
+    const db   = getFirestore();
 
     const fbBadge = document.getElementById('fbBadge');
-    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
+    const lockInfoEl = document.getElementById('lockInfo');
+    const setBadge = (txt, cls='') => { fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; };
 
-    let authSettled = false;
-    const authWatchdog = setTimeout(()=>{
-      if (!authSettled) {
-        console.warn('[GC] Auth watchdog timeout → habilitado sin auth (temporal)');
-        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
-        setBadge('Conectado ✓','ok');
-        renderTablaHistorico();
-      }
-    }, 6000);
-
-    /* ===== Utils ===== */
+    /* ===== Preferencias locales ===== */
     const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais',
           PREF_FFECHA='gc_filtro_fecha_iso', PREF_PRESET='gc_preset_rango';
     const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
     const readPref=(k,d=null)=>{ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{ return d;} };
 
+    /* ===== Helpers de tiempo y formato ===== */
     const pad2=n=>String(n).padStart(2,'0');
     const formatDDMMYYYY=d=>`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
     const formatISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-
     function ddmmyyyyToISO(s){ if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
       const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; }
-
     function toHora24(str){
       if(!str) return "";
       let s=str.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[\.]/g,'');
@@ -291,32 +283,216 @@
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    let vistaActual=readPref(PREF_VISTA,'numerico'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
+    /* ===== Estado global de tabla ===== */
+    const inputEl = document.getElementById('inputData');
+    const btnTakeLock   = document.getElementById('btnTakeLock');
+    const btnRelease    = document.getElementById('btnReleaseLock');
+    const btnPushData   = document.getElementById('btnPushData');
 
-    // Banderas
-    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
+    const btnVistaNum   = document.getElementById('btnVistaNum');
+    const btnVistaPct   = document.getElementById('btnVistaPct');
+    const btnVistaMixta = document.getElementById('btnVistaMixta');
 
-    function mostrarToast(msg){
+    const btnRegistrar  = document.getElementById('btnRegistrar');
+    const btnBorrarHist = document.getElementById('btnBorrarHist');
+    const btnBorrarTodo = document.getElementById('btnBorrarTodo');
+    const btnRestOrden  = document.getElementById('btnRestOrden');
+
+    const nrDocRef = doc(db,'nr_state','global');
+
+    const LOCK_TTL_SEC = 120;
+    let heartbeatTimer = null;
+    let holdLock = false;
+    let myRank = 'invitado';
+    let canEdit = false;        // Supervisor/Admin
+    let canDelete = false;      // Supervisor/Admin (por requerimiento)
+    let lastSnapshotDataRaw = '';   // para evitar parpadeos cuando soy editor
+    let vistaActual = readPref(PREF_VISTA,'numerico');
+
+    // Roles permitidos
+    const ALLOWED_EDIT_ROLES = new Set(['supervisor','admin']);  // viewMode, dataRaw, guardar histórico
+    const ALLOWED_DELETE_ROLES = new Set(['supervisor','admin']); // eliminar registro / borrar todo
+
+    async function getRank(){
+      const u = auth.currentUser;
+      if(!u) return 'invitado';
+      const t = await u.getIdTokenResult(true);
+      return String(t.claims?.rank || 'invitado').toLowerCase();
+    }
+
+    function applyRoleUI(){
+      // Vista (solo supervisor/admin)
+      [btnVistaNum, btnVistaPct, btnVistaMixta].forEach(b => b.disabled = !canEdit);
+
+      // Edición compartida
+      btnTakeLock.disabled = !canEdit || holdLock;      // tomar control
+      btnRelease.disabled  = !holdLock;                 // liberar
+      btnPushData.disabled = !holdLock;                 // compartir datos
+      inputEl.readOnly     = !holdLock;                 // área de pegado
+
+      // Histórico
+      btnRegistrar.disabled  = !canEdit;                // guardar histórico
+      btnBorrarHist.disabled = !canDelete;              // borrar histórico completo
+      btnBorrarTodo.disabled = !canDelete;              // (alias UI para borrar todo local)
+    }
+
+    function showToast(msg){
       const t=document.getElementById("toast");
       t.textContent=msg; t.style.display="block"; t.style.opacity=1;
       setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600);
       setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200);
     }
 
-    const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
+    function setLockInfo(lock){
+      if(!lock){
+        lockInfoEl.style.display='none';
+        return;
+      }
+      const { holderEmail, since, ttlSec } = lock;
+      const ttl = ttlSec || LOCK_TTL_SEC;
+      const at  = (since && since.toDate ? since.toDate() : null);
+      const hhmm = at ? `${pad2(at.getHours())}:${pad2(at.getMinutes())}` : '—';
+      lockInfoEl.textContent = holderEmail
+        ? `🔒 En edición por ${holderEmail} desde ${hhmm}`
+        : '🔒 En edición';
+      lockInfoEl.style.display='inline-flex';
+    }
 
+    async function acquireLock(){
+      if(!canEdit){ showToast("No tienes permisos para editar."); return; }
+      const u = auth.currentUser;
+      if(!u){ showToast("Sesión inválida."); return; }
+      try{
+        await runTransaction(db, async (tx)=>{
+          const snap = await tx.get(nrDocRef);
+          const now = Date.now();
+          let data = snap.exists() ? snap.data() : {};
+          const lock = data.lock;
+          let canTake = false;
+          if(!lock) canTake = true;
+          else {
+            const sinceMs = lock.since?.toMillis ? lock.since.toMillis() : 0;
+            const ttl = (lock.ttlSec || LOCK_TTL_SEC) * 1000;
+            if (now - sinceMs > ttl) canTake = true;
+            // si ya soy el holder, también me permito renovar
+            if (lock.holderUid === u.uid) canTake = true;
+          }
+          if(!canTake) throw new Error("Otro usuario está editando actualmente.");
+          const newLock = {
+            holderUid: u.uid,
+            holderEmail: u.email || '(sin email)',
+            since: serverTimestamp(),
+            ttlSec: LOCK_TTL_SEC
+          };
+          tx.set(nrDocRef, { lock: newLock }, { merge:true });
+        });
+
+        holdLock = true;
+        applyRoleUI();
+        startHeartbeat();
+        showToast("Control de edición adquirido ✅");
+      }catch(e){
+        console.warn(e);
+        showToast(e.message || "No se pudo tomar el control.");
+      }
+    }
+
+    async function releaseLock(){
+      if(!holdLock) return;
+      const u = auth.currentUser;
+      if(!u) return;
+      try{
+        await runTransaction(db, async (tx)=>{
+          const snap = await tx.get(nrDocRef);
+          if(!snap.exists()) return;
+          const data = snap.data() || {};
+          const lock = data.lock;
+          if(lock?.holderUid === u.uid){
+            tx.update(nrDocRef, { lock: null });
+          }
+        });
+      }catch(e){ console.warn(e); }
+      finally{
+        holdLock = false;
+        stopHeartbeat();
+        applyRoleUI();
+        showToast("Control liberado.");
+      }
+    }
+
+    function startHeartbeat(){
+      stopHeartbeat();
+      heartbeatTimer = setInterval(async ()=>{
+        try{
+          const u = auth.currentUser;
+          if(!u || !holdLock) return;
+          // Renueva solo si sigo siendo el holder
+          const snap = await getDoc(nrDocRef);
+          const lock = snap.exists() ? (snap.data().lock || null) : null;
+          if(lock?.holderUid !== u.uid){  // perdí el lock
+            holdLock = false;
+            applyRoleUI();
+            stopHeartbeat();
+            return;
+          }
+          await updateDoc(nrDocRef, { 'lock.since': serverTimestamp() });
+        }catch(e){ console.warn('[heartbeat]', e); }
+      }, 30000); // 30s
+    }
+    function stopHeartbeat(){ if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer=null; } }
+    window.addEventListener('beforeunload', ()=>{ if(holdLock){ navigator.sendBeacon?.('', ''); } });
+
+    async function pushSharedData(){
+      if(!holdLock){ showToast("Toma el control para poder compartir datos."); return; }
+      const raw = inputEl.value || '';
+      const u = auth.currentUser;
+      try{
+        await updateDoc(nrDocRef, {
+          dataRaw: raw,
+          updatedAt: serverTimestamp(),
+          updatedBy: { uid: u.uid, email: u.email || '(sin email)', displayName: u.displayName || '' }
+        });
+        lastSnapshotDataRaw = raw;
+        showToast("Datos compartidos ✅");
+      }catch(e){
+        console.warn(e);
+        showToast("No se pudo actualizar el estado compartido.");
+      }
+    }
+
+    async function setSharedView(mode){
+      if(!canEdit){ showToast("No tienes permisos para cambiar la vista."); return; }
+      try{
+        await updateDoc(nrDocRef, { viewMode: mode, updatedAt: serverTimestamp() });
+        savePref(PREF_VISTA, mode);
+      }catch(e){
+        console.warn(e);
+        showToast("No se pudo cambiar la vista compartida.");
+      }
+    }
+
+    /* ====== Render de tabla (se mantiene tu lógica) ====== */
+    let dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
+    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
+
+    function mostrarToast(msg){ showToast(msg); }
     function borrarTodo(){
-      document.getElementById("inputData").value="";
+      inputEl.value="";
       document.querySelector("#tablaReporte tbody").innerHTML="";
       document.querySelector("#encabezadoTabla").innerHTML="";
       document.querySelector("#filaTotales").innerHTML="";
       dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{});
     }
+    function pctSafe(v,t){ if(!t) return "0.0%"; return ((v/t)*100).toFixed(1)+"%"; }
+    const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
 
     function procesar(vista){
-      vistaActual=vista; savePref(PREF_VISTA,vista); estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
-      const input=document.getElementById("inputData").value.trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
+      vistaActual=vista; savePref(PREF_VISTA,vista);
+      estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
+
+      const input=(inputEl.value||"").trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
       const filas=input.split("\n"), headersRaw=filas[0].split("\t").map(h=>h.trim()), headersLC=headersRaw.map(h=>h.toLowerCase());
+      const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
       const idx=(names)=> (Array.isArray(names)?names:[names]).reduce((r,n)=> r>=0?r:(headersRaw.indexOf(n)>=0?headersRaw.indexOf(n):headersLC.indexOf(n.toLowerCase())), -1);
       const IDX={ country:idx(COLMAP.country), total:idx(COLMAP.total), news:idx(COLMAP.news), recall:idx(COLMAP.recall), noAnswer:idx(COLMAP.noAnswer), approved:idx(COLMAP.approved), reject:idx(COLMAP.reject), trash:idx(COLMAP.trash) };
       if(IDX.country===-1||IDX.total===-1){ mostrarToast("⚠️ Falta Country/Total."); return; }
@@ -329,11 +505,9 @@
         dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall); dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
       }
       dataOriginal=Object.entries(dataGlobal);
-      renderTabla(); mostrarToast("✅ Datos procesados");
+      renderTabla();
+      mostrarToast("✅ Datos procesados");
     }
-
-    function pctSafe(v,t){ if(!t) return "0.0%"; return ((v/t)*100).toFixed(1)+"%"; }
-    const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
 
     function renderTabla(){
       const enc=document.getElementById("encabezadoTabla"), cuerpo=document.querySelector("#tablaReporte tbody"), tfoot=document.getElementById("filaTotales");
@@ -382,7 +556,6 @@
         tfoot.innerHTML=foot;
       }
     }
-
     function cambiarOrdenColumna(col){ estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1; if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0; columnaOrdenActual=estadoOrdenColumna[col]===0?null:col; savePref(PREF_ORDEN,estadoOrdenColumna); renderTabla(); }
     function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); renderTabla(); }
     function getValorOrdenable(d,col){ const t=d.total||0; const base={"Leads":d.total,"New":d.news,"% New":t?(d.news/t)*100:0,"Recall":d.recall,"% Recall":t?(d.recall/t)*100:0,"No Answer":d.noAnswer,"% No Answer":t?(d.noAnswer/t)*100:0,"Approve":d.approved,"% Approve":t?(d.approved/t)*100:0,"Reject":d.reject,"% Reject":t?(d.reject/t)*100:0,"Trash":d.trash,"% Trash":t?(d.trash/t)*100:0}; return base[col]||0; }
@@ -392,7 +565,24 @@
     const filtroPaisEl=document.getElementById("filtroPais");
     const filtroFechaEl=document.getElementById("filtroFecha");
     const presetEl=document.getElementById("presetRango");
+    const btnAllCountries = document.getElementById("btnAllCountries");
+    const btnClearFecha   = document.getElementById("btnClearFecha");
 
+    // Países options
+    async function ensurePaisesOptions(){
+      filtroPaisEl.innerHTML = ''; // limpio
+      const optAll = document.createElement('option');
+      optAll.value = 'todos'; optAll.textContent = '🌍 Todos';
+      filtroPaisEl.appendChild(optAll);
+
+      try{
+        const snap=await getDocs(collection(db,'historico'));
+        const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
+        [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;filtroPaisEl.appendChild(o); });
+      }catch(e){ console.warn('[GC] ensurePaisesOptions:', e); }
+    }
+
+    // Rango
     function rangeFromPreset(preset, dateISO){
       const now=new Date();
       const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
@@ -435,26 +625,108 @@
         return normalizeRows(rows);
       } catch (e) {
         console.warn('[GC] fetchHistoricoCloud fallback:', e);
-        if (e.code === 'failed-precondition') {
-          let q2 = base;
-          if (startTs != null && endTs != null){
-            q2 = query(base, where('ts','>=',startTs), where('ts','<', endTs));
-          }
-          const snap = await getDocs(q2);
-          let rows = [];
-          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
-          if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
-          return normalizeRows(rows);
-        }
-        throw e;
+        const snap = await getDocs(base);
+        let rows = [];
+        snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
+        if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
+        return normalizeRows(rows);
       }
     }
 
-    // (temporal) habilitar botón siempre
-    document.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('btnRegistrar')?.removeAttribute('disabled'); });
+    async function renderTablaHistorico(){
+      await ensurePaisesOptions();
 
+      // Prefs (default 'hoy')
+      const prefPais = readPref(PREF_FPAIS,'todos');
+      if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
+      const prefFecha = readPref(PREF_FFECHA,'');
+      const prefPreset= readPref(PREF_PRESET,'hoy');
+      presetEl.value = prefPreset;
+      if(prefFecha) filtroFechaEl.value = prefFecha;
+      filtroFechaEl.disabled = (presetEl.value !== 'dia');
+
+      const {start, end} = rangeFromPreset(presetEl.value, filtroFechaEl.value || '');
+      try{
+        cloudHistorico=await fetchHistoricoCloud(filtroPaisEl.value || 'todos', start, end);
+      }catch(e){
+        console.error('[GC] Fetch histórico:', e);
+        showToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
+        cloudHistorico=[];
+      }
+
+      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
+      cloudHistorico.forEach(r=>{
+        const pct = Number(r.pctApprove||0);
+        const cls = colorPct(pct);
+        const disabled = (!canDelete || !r._id) ? 'disabled' : '';
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
+          <td>${r.hora||""}</td>
+          <td>${r.fecha||""}</td>
+          <td>${r.pais||""}</td>
+          <td>${r.leads||0}</td>
+          <td>${r.news||0}</td>
+          <td>${r.recall||0}</td>
+          <td>${r.noAnswer||0}</td>
+          <td>${r.approve||0}</td>
+          <td class="${cls}">${pct.toFixed(1)}%</td>
+          <td>${r.reject||0}</td>
+          <td>${r.trash||0}</td>
+          <td>
+            <button class="btn-danger" ${disabled}
+              onclick="eliminarRegistro('${r._id||''}')"
+              title="Eliminar este registro">
+              🗑️ Eliminar
+            </button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      renderQuickMetrics();
+      renderGrafico();
+    }
+
+    const calcMedian = (arr)=>{ if(!arr.length) return 0; const v=[...arr].sort((a,b)=>a-b); const m=Math.floor(v.length/2); return v.length%2?v[m]:(v[m-1]+v[m])/2; };
+    function renderQuickMetrics(){
+      const box=document.getElementById('quickMetrics');
+      if(!cloudHistorico.length){ box.style.display='none'; return; }
+      const vals=cloudHistorico.map(r=>parseFloat(r.pctApprove||0)).filter(n=>!isNaN(n));
+      if(!vals.length){ box.style.display='none'; return; }
+      document.getElementById('mMin').textContent=`${Math.min(...vals).toFixed(1)}%`;
+      document.getElementById('mMed').textContent=`${calcMedian(vals).toFixed(1)}%`;
+      document.getElementById('mMax').textContent=`${Math.max(...vals).toFixed(1)}%`;
+      let deltaTxt='–', cls='';
+      if(vals.length>=2){
+        const last=vals[vals.length-1], prev=vals[vals.length-2];
+        const d=(last-prev).toFixed(1);
+        const arrow = (d>=0? '↑':'↓');
+        cls = d>=0? 'delta up':'delta down';
+        deltaTxt = `${arrow} ${Math.abs(d)} pp`;
+      }
+      const mDelta=document.getElementById('mDelta');
+      mDelta.className='value ' + cls;
+      mDelta.textContent=deltaTxt;
+      box.style.display='flex';
+    }
+
+    function renderGrafico(){
+      const ctx=document.getElementById('graficoAvance').getContext('2d');
+      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
+      const grayPal=['#111','#333','#555','#777','#999','#bbb'];
+      const datasets=Object.keys(agr).map((k,i)=>({
+        label:k, data:agr[k], fill:false, tension:.2,
+        borderColor: grayPal[i % grayPal.length],
+        backgroundColor: grayPal[i % grayPal.length],
+        pointRadius: 2
+      }));
+      if(window.graficoAvance) window.graficoAvance.destroy();
+      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
+    }
+
+    // ===== Acciones histórico (respetando permisos) =====
     async function registrarAvance(){
-      if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
+      if(!canEdit){ showToast("No tienes permisos para registrar avance."); return; }
+      if(!Object.keys(dataGlobal).length){ showToast("ℹ️ Procesa/pega datos antes de registrar."); return; }
       const now=new Date();
       const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
       const fecha=formatDDMMYYYY(now), fechaISO=formatISO(now), ts=now.getTime();
@@ -472,177 +744,117 @@
       }
       try{
         await Promise.all(writes);
-        mostrarToast("✅ Avance registrado en la nube.");
+        showToast("✅ Avance registrado en la nube.");
         await renderTablaHistorico();
         renderGrafico();
       }catch(e){
         console.error('[GC] Firestore write error:', e);
-        mostrarToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
+        showToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
       }
     }
 
     async function borrarHistorial(){
+      if(!canDelete){ showToast("No tienes permisos para borrar el historial."); return; }
       if(!confirm("¿Borrar TODO el historial de la nube?")) return;
       try{
         const snap=await getDocs(collection(db,'historico'));
         const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
-        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
-      }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
+        await Promise.all(ops); showToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
+      }catch(e){ console.error(e); showToast("❌ No se pudo borrar: " + (e.code||e.message)); }
     }
 
     async function eliminarRegistro(id){
-      if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
+      if(!canDelete){ showToast("No tienes permisos para eliminar registros."); return; }
+      if(!id){ showToast("⚠️ No se encontró el ID del registro."); return; }
       const ok = confirm("¿Seguro que deseas eliminar este registro?");
       if(!ok) return;
       try{
         await deleteDoc(doc(db, 'historico', id));
-        mostrarToast("🗑️ Registro eliminado.");
+        showToast("🗑️ Registro eliminado.");
         await renderTablaHistorico();
         renderGrafico();
       }catch(e){
         console.error(e);
-        mostrarToast("❌ No se pudo eliminar: " + (e.code || e.message));
+        showToast("❌ No se pudo eliminar: " + (e.code || e.message));
       }
     }
+    window.eliminarRegistro = eliminarRegistro; // para botones en la tabla
 
-    async function ensurePaisesOptions(){
-      if(filtroPaisEl.options.length>1) return;
-      try{
-        const snap=await getDocs(collection(db,'historico'));
-        const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
-        [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;filtroPaisEl.appendChild(o); });
-      }catch(e){ console.warn('[GC] ensurePaisesOptions:', e); }
-    }
+    // ===== Filtros UI =====
+    filtroPaisEl.addEventListener('change', ()=>{ savePref(PREF_FPAIS, filtroPaisEl.value); renderTablaHistorico(); });
+    presetEl.addEventListener('change', ()=>{ const p=presetEl.value; savePref(PREF_PRESET,p); filtroFechaEl.disabled=(p!=='dia'); renderTablaHistorico(); });
+    filtroFechaEl.addEventListener('change', ()=>{ savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); });
+    btnAllCountries.addEventListener('click', ()=>{ filtroPaisEl.value='todos'; savePref(PREF_FPAIS,'todos'); renderTablaHistorico(); });
+    btnClearFecha.addEventListener('click', ()=>{ filtroFechaEl.value=''; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); });
 
-    function calcMedian(arr){
-      if(!arr.length) return 0;
-      const v=[...arr].sort((a,b)=>a-b);
-      const m=Math.floor(v.length/2);
-      return v.length%2?v[m]:(v[m-1]+v[m])/2;
-    }
+    // ===== Vista compartida (botones) =====
+    btnVistaNum.addEventListener('click',   ()=> setSharedView('numerico'));
+    btnVistaPct.addEventListener('click',   ()=> setSharedView('porcentaje'));
+    btnVistaMixta.addEventListener('click', ()=> setSharedView('mixto'));
 
-    function renderQuickMetrics(){
-      const box=document.getElementById('quickMetrics');
-      if(!cloudHistorico.length){ box.style.display='none'; return; }
-      const vals=cloudHistorico.map(r=>parseFloat(r.pctApprove||0)).filter(n=>!isNaN(n));
-      if(!vals.length){ box.style.display='none'; return; }
-      const min=Math.min(...vals).toFixed(1);
-      const med=calcMedian(vals).toFixed(1);
-      const max=Math.max(...vals).toFixed(1);
+    // ===== Edición compartida (lock + push) =====
+    btnTakeLock.addEventListener('click', acquireLock);
+    btnRelease.addEventListener('click',  releaseLock);
+    btnPushData.addEventListener('click', pushSharedData);
 
-      document.getElementById('mMin').textContent=`${min}%`;
-      document.getElementById('mMed').textContent=`${med}%`;
-      document.getElementById('mMax').textContent=`${max}%`;
+    // ===== Otros botones =====
+    btnBorrarTodo.addEventListener('click', borrarTodo);
+    btnRestOrden.addEventListener('click', restablecerOrden);
+    btnRegistrar.addEventListener('click', registrarAvance);
+    btnBorrarHist.addEventListener('click', borrarHistorial);
 
-      let deltaTxt='–', cls='';
-      if(vals.length>=2){
-        const last=vals[vals.length-1], prev=vals[vals.length-2];
-        const d=(last-prev).toFixed(1);
-        const arrow = (d>=0? '↑':'↓');
-        cls = d>=0? 'delta up':'delta down';
-        deltaTxt = `${arrow} ${Math.abs(d)} pp`;
-      }
-      const mDelta=document.getElementById('mDelta');
-      mDelta.className='value ' + cls;
-      mDelta.textContent=deltaTxt;
-
-      box.style.display='flex';
-    }
-
-    async function renderTablaHistorico(){
-      await ensurePaisesOptions();
-      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
-
-      // Prefs  (🔴 default cambiado a 'hoy')
-      const prefPais=readPref(PREF_FPAIS,'todos');
-      const prefFecha=readPref(PREF_FFECHA,'');
-      const prefPreset=readPref(PREF_PRESET,'hoy');  /* <- antes 'dia' */
-      if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
-      presetEl.value = prefPreset;
-      if(prefFecha) filtroFechaEl.value = prefFecha;
-
-      const preset = presetEl.value;
-      const dateISO = filtroFechaEl.value || '';
-      const {start, end} = rangeFromPreset(preset, dateISO);
-
-      try{
-        cloudHistorico=await fetchHistoricoCloud(filtroPaisEl.value, start, end);
-      }catch(e){
-        console.error('[GC] Fetch histórico:', e);
-        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
-        cloudHistorico=[];
-      }
-
-      cloudHistorico.forEach(r=>{
-        const pct = Number(r.pctApprove||0);
-        const cls = colorPct(pct);
-        const tr=document.createElement("tr");
-        tr.innerHTML=`
-          <td>${r.hora||""}</td>
-          <td>${r.fecha||""}</td>
-          <td>${r.pais||""}</td>
-          <td>${r.leads||0}</td>
-          <td>${r.news||0}</td>
-          <td>${r.recall||0}</td>
-          <td>${r.noAnswer||0}</td>
-          <td>${r.approve||0}</td>
-          <td class="${cls}">${pct.toFixed(1)}%</td>
-          <td>${r.reject||0}</td>
-          <td>${r.trash||0}</td>
-          <td>
-            <button class="btn-danger" ${r._id ? '' : 'disabled'}
-              onclick="eliminarRegistro('${r._id||''}')" title="Eliminar este registro">
-              🗑️ Eliminar
-            </button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-
-      renderQuickMetrics();
-      renderGrafico();
-    }
-
-    function onFiltroChange(){ savePref(PREF_FPAIS, filtroPaisEl.value); savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); }
-    function onPresetChange(){ const preset=presetEl.value; savePref(PREF_PRESET, preset); filtroFechaEl.disabled = (preset !== 'dia'); renderTablaHistorico(); }
-    function limpiarFecha(){ filtroFechaEl.value=""; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); }
-
-    function renderGrafico(){
-      const ctx=document.getElementById('graficoAvance').getContext('2d');
-      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
-      const grayPal=['#111','#333','#555','#777','#999','#bbb'];
-      const datasets=Object.keys(agr).map((k,i)=>({
-        label:k, data:agr[k], fill:false, tension:.2,
-        borderColor: grayPal[i % grayPal.length],
-        backgroundColor: grayPal[i % grayPal.length],
-        pointRadius: 2
-      }));
-      if(window.graficoAvance) window.graficoAvance.destroy();
-      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
-    }
-
-    // Exponer
-    window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
-    window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
-    window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
-    window.eliminarRegistro=eliminarRegistro;
-
-    // Auth
-    onAuthStateChanged(auth, ()=>{
-      authSettled = true;
-      clearTimeout(authWatchdog);
-      document.getElementById('btnRegistrar')?.removeAttribute('disabled');
-      setBadge('Conectado ✓','ok');
-      renderTablaHistorico();
-    });
-    signInAnonymously(auth).catch(e=>{ console.error('[GC] signInAnonymously error:', e); });
-
-    // Prefs iniciales (🔴 default cambiado a 'hoy')
+    // ===== Render inicial de preferencias de rango/fecha =====
     document.addEventListener('DOMContentLoaded', ()=>{
-      const prefPreset=readPref(PREF_PRESET,'hoy');  /* <- antes 'dia' */
+      const prefPreset=readPref(PREF_PRESET,'hoy');
       document.getElementById('presetRango').value=prefPreset;
       document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
       const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
     });
+
+    // ===== Suscripción al estado compartido (onSnapshot) =====
+    onSnapshot(nrDocRef, (snap)=>{
+      const data = snap.exists() ? snap.data() : {};
+      const { dataRaw = '', viewMode = 'numerico', lock = null } = data;
+
+      // Mostrar lock holder
+      setLockInfo(lock);
+
+      // Si no tengo el lock, reflejo dataRaw del doc en el textarea
+      if(!holdLock){
+        inputEl.value = dataRaw;
+        lastSnapshotDataRaw = dataRaw;
+      }else{
+        // Si tengo lock pero alguien me lo quitó (raro) o cambió el doc,
+        // no pisamos el textarea si mi contenido coincide con el último push.
+        // (si el usuario editó localmente, respetamos su texto)
+      }
+
+      // Actualizo vista y renderizo
+      vistaActual = viewMode || 'numerico';
+      savePref(PREF_VISTA, vistaActual);
+      if((inputEl.value||'').trim()){
+        try{ procesar(vistaActual); }catch(e){ /* si aún no hay suficiente estructura, ignore */ }
+      }
+      setBadge('Conectado ✓','ok');
+    }, (err)=>{
+      console.warn('[nr_state] onSnapshot:', err);
+      setBadge('Error de sync','warn');
+    });
+
+    // ===== Validar sesión, roles y preparar UI =====
+    auth.onAuthStateChanged(async (user)=>{
+      if(!user){
+        setBadge('Sin sesión','warn');
+        return;
+      }
+      myRank = await getRank();
+      canEdit   = ALLOWED_EDIT_ROLES.has(myRank);
+      canDelete = ALLOWED_DELETE_ROLES.has(myRank);
+      applyRoleUI();
+      setBadge('Conectado ✓','ok');
+      await renderTablaHistorico();
+    });
+
   </script>
 </body>
 </html>
