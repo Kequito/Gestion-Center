@@ -8,17 +8,48 @@
     <!-- Página pública: permitir ver sin sesión -->
     <script>window.GC_PUBLIC_PAGE = true;</script>
 
-    <!-- Carga el shell con BASE robusto (GitHub Pages o dominio propio) -->
+    <!-- Ocultar hasta que shell/guard habiliten -->
+    <style>html{visibility:hidden}</style>
+
     <script type="module">
+      // ===== Loader robusto para shell + guard (con BASE de GitHub Pages o dominio propio)
       const isGh  = location.hostname.endsWith('github.io');
       const parts = location.pathname.split('/').filter(Boolean);
       const repo  = isGh ? (parts[0] || '') : '';
-      const base  = isGh ? `/${repo}/` : '/';
-      import(new URL('assets/bw/shell.js', location.origin + base).href);
-    </script>
+      const BASE  = (isGh ? `/${repo}/` : '/');
 
-    <!-- Ocultar hasta que guard.js/shell habiliten -->
-    <style>html{visibility:hidden}</style>
+      // Exponer BASE al ecosistema por si alguien lo necesita
+      window.__GC_BASE__ = location.origin + BASE;
+
+      // Helper para rutas absolutas seguras
+      const abs = (p) => new URL(p.replace(/^\//, ''), window.__GC_BASE__).href;
+
+      // Failsafe: si nada revela la página, muéstrala igual
+      const watchdog = setTimeout(() => {
+        if (getComputedStyle(document.documentElement).visibility === 'hidden') {
+          document.documentElement.style.visibility = 'visible';
+          console.warn('[login] failsafe: html visible por watchdog');
+        }
+      }, 2500);
+
+      // Cargar shell y guard en paralelo (si uno falla, el otro puede revelar)
+      try {
+        await Promise.all([
+          import(abs('assets/bw/shell.js')),
+          import(abs('assets/guard.js')).catch(e => {
+            console.warn('[login] guard.js no cargó, continuo solo con shell:', e);
+          })
+        ]);
+      } catch (e) {
+        console.error('[login] error cargando shell/guard:', e);
+      } finally {
+        clearTimeout(watchdog);
+        // Si shell/guard no revelaron todavía, revelar aquí
+        if (getComputedStyle(document.documentElement).visibility === 'hidden') {
+          document.documentElement.style.visibility = 'visible';
+        }
+      }
+    </script>
 
     <!-- Estilos locales del card (usa tokens del ecosistema) -->
     <style>
@@ -111,7 +142,8 @@
 
     <!-- Login sin sidebar ni hero -->
     <gc-shell no-aside hero="off">
-      <main class="login-wrap">
+      <!-- OJO: NO usamos <main> aquí; el shell inyecta su propio <main> -->
+      <section class="login-wrap">
         <article class="login-card reveal">
           <h2>Inicia sesión</h2>
           <p>Usa tu cuenta corporativa o Google.</p>
@@ -146,10 +178,10 @@
             <div id="msg" class="msg" role="alert" aria-live="polite"></div>
           </form>
         </article>
-      </main>
+      </section>
     </gc-shell>
 
-    <!-- Reveal suave -->
+    <!-- Reveal + mostrar/ocultar contraseña -->
     <script type="module">
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
@@ -160,7 +192,6 @@
       } else {
         document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
       }
-      // Mostrar/ocultar contraseña
       const pass = document.getElementById('pass');
       const tgl  = document.getElementById('togglePass');
       tgl?.addEventListener('click', ()=>{
@@ -190,40 +221,6 @@
         appId: "1:628401314464:web:0671233dfd801ee43587c5",
         measurementId: "G-NBFZYTN094"
       };
-
-      // Preferir BASE del shell (window.__GC_BASE__), con fallback robusto
-      const PREFERRED_REPO = "Gestion-Center";
-      function isValidAbsoluteBase(u){
-        try{ const url = new URL(u); return url.origin===location.origin && !/\.html($|\/)/i.test(url.pathname);}
-        catch{ return false;}
-      }
-      function computeBase(){
-        if (isValidAbsoluteBase(window.__GC_BASE__)) return window.__GC_BASE__.endsWith('/')?window.__GC_BASE__:window.__GC_BASE__+'/';
-        const host = location.hostname, segs = location.pathname.split('/').filter(Boolean);
-        if (host.endsWith('github.io')){
-          const first = segs[0] || "";
-          if (first && !/\.html?$/i.test(first)) return `${location.origin}/${first}/`;
-          return `${location.origin}/${PREFERRED_REPO}/`;
-        }
-        return `${location.origin}/`;
-      }
-      function defaultHome(){ return computeBase(); }
-      function sanitizeTarget(to){
-        if(!to) return defaultHome();
-        let dest; try{ dest = new URL(to, location.origin); }catch{return defaultHome();}
-        if(dest.origin !== location.origin) return defaultHome();
-        const baseUrl = new URL(defaultHome());
-        const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
-        if(!dest.pathname.startsWith(basePath)) return defaultHome();
-        return dest.href;
-      }
-      function goHome(){
-        const stored = localStorage.getItem("redirectAfterLogin");
-        const qTo = new URLSearchParams(location.search).get("to");
-        const dest = sanitizeTarget(stored || qTo || defaultHome());
-        try { localStorage.removeItem("redirectAfterLogin"); } catch {}
-        location.replace(dest);
-      }
 
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
@@ -352,9 +349,42 @@
         if(ev.key==="Enter"){ ev.preventDefault(); window.loginEmail(); }
       });
 
+      // ===== Navegación segura hacia Home (usa BASE del shell si existe) =====
+      const PREFERRED_REPO = "Gestion-Center";
+      function isValidAbsoluteBase(u){
+        try{ const url = new URL(u); return url.origin===location.origin && !/\.html($|\/)/i.test(url.pathname);}
+        catch{ return false;}
+      }
+      function computeBase(){
+        if (isValidAbsoluteBase(window.__GC_BASE__)) return window.__GC_BASE__.endsWith('/')?window.__GC_BASE__:window.__GC_BASE__+'/';
+        const host = location.hostname, segs = location.pathname.split('/').filter(Boolean);
+        if (host.endsWith('github.io')){
+          const first = segs[0] || "";
+          if (first && !/\.html?$/i.test(first)) return `${location.origin}/${first}/`;
+          return `${location.origin}/${PREFERRED_REPO}/`;
+        }
+        return `${location.origin}/`;
+      }
+      function defaultHome(){ return computeBase(); }
+      function sanitizeTarget(to){
+        if(!to) return defaultHome();
+        let dest; try{ dest = new URL(to, location.origin); }catch{return defaultHome();}
+        if(dest.origin !== location.origin) return defaultHome();
+        const baseUrl = new URL(defaultHome());
+        const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
+        if(!dest.pathname.startsWith(basePath)) return defaultHome();
+        return dest.href;
+      }
+      function goHome(){
+        const stored = localStorage.getItem("redirectAfterLogin");
+        const qTo = new URLSearchParams(location.search).get("to");
+        const dest = sanitizeTarget(stored || qTo || defaultHome());
+        try { localStorage.removeItem("redirectAfterLogin"); } catch {}
+        location.replace(dest);
+      }
+
       // Ya logueado → home
       onAuthStateChanged(auth, (user)=>{ if(user){ goHome(); } });
-
       // debug
       window._logout = ()=>signOut(auth);
     </script>
