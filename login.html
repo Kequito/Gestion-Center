@@ -10,10 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- Página pública -->
+    <!-- Página pública para que el guard no exija sesión -->
     <script>window.GC_PUBLIC_PAGE = true;</script>
 
-    <!-- Ocultar hasta que guard.js decida -->
+    <!-- ⚠️ Plan B de BASE (rápido): ajusta o elimina cuando configures custom domain a la raíz del repo -->
+    <meta name="gc-base" content="/Gestion-Center/">
+
+    <!-- Ocultar hasta que guard.js decida (anti-parpadeo) -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
@@ -30,7 +33,7 @@
       body{
         margin:0; font-family:var(--font-body);
         display:grid; place-items:center; padding:24px;
-        background: var(--white); color: var(--gray-900);
+        background:#fff; color:#111;
       }
 
       .login-wrap{ width:100%; display:grid; place-items:center; }
@@ -60,14 +63,16 @@
       .btn{
         width:100%; height:48px; border-radius:14px; border:0; cursor:pointer;
         font-weight:700; display:inline-flex; align-items:center; justify-content:center;
+        transition:opacity .2s ease;
       }
+      .btn[disabled]{opacity:.6; cursor:default;}
       .btn.primary{ background:#fff; color:#000; }
       .btn.primary:hover{ background:#f3f3f3; }
       .btn.ghost{ background:#222; color:#fff; border:1px solid #444; }
       .btn.ghost:hover{ background:#333; }
 
       .meta{display:flex; justify-content:space-between; gap:14px; margin-top:8px; flex-wrap:wrap;}
-      .link{color:#fff; text-decoration:none;}
+      .link{color:#fff; text-decoration:none; cursor:pointer;}
       .link:hover{text-decoration:underline;}
 
       .msg{margin-top:10px;font-size:14px}
@@ -79,29 +84,29 @@
   <body class="gc-login bw">
     <gc-shell no-aside hero="off">
       <main class="login-wrap">
-        <article class="login-card">
-          <h2>Inicia sesión</h2>
-          <p>Usa tu cuenta corporativa o Google.</p>
+        <article class="login-card" role="dialog" aria-labelledby="title" aria-describedby="desc">
+          <h2 id="title">Inicia sesión</h2>
+          <p id="desc">Usa tu cuenta corporativa o Google.</p>
 
-          <form id="form" onsubmit="return false;" class="stack">
+          <form id="form" onsubmit="return false;" class="stack" autocomplete="on">
             <div class="field">
               <label for="email">Email</label>
-              <input id="email" type="email" placeholder="tucorreo@empresa.com" required/>
+              <input id="email" type="email" placeholder="tucorreo@empresa.com" required autocomplete="email" />
             </div>
 
             <div class="field">
               <label for="pass">Contraseña</label>
-              <input id="pass" type="password" placeholder="••••••••" required/>
+              <input id="pass" type="password" placeholder="••••••••" required autocomplete="current-password" />
             </div>
 
             <div class="actions">
-              <button id="btnEmail" class="btn primary" onclick="loginEmail()">Entrar con Email</button>
-              <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">Entrar con Google</button>
+              <button id="btnEmail" type="button" class="btn primary">Entrar con Email</button>
+              <button id="btnGoogle" type="button" class="btn ghost">Entrar con Google</button>
             </div>
 
             <div class="meta">
-              <a class="link" onclick="signUp()">Crear cuenta (prueba)</a>
-              <a class="link" onclick="resetPass()">¿Olvidaste tu contraseña?</a>
+              <a class="link" id="lnkSignUp">Crear cuenta (prueba)</a>
+              <a class="link" id="lnkReset">¿Olvidaste tu contraseña?</a>
             </div>
 
             <div id="msg" class="msg" role="alert" aria-live="polite"></div>
@@ -110,16 +115,44 @@
       </main>
     </gc-shell>
 
-    <!-- Script Firebase igual que antes -->
+    <!-- Autenticación + redirección robusta -->
     <script type="module">
       import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
         getAuth, onAuthStateChanged, signInWithEmailAndPassword,
         createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup,
-        signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail
+        setPersistence, browserLocalPersistence, sendPasswordResetEmail
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+      /* -------------------------
+         BASE helpers (match guard)
+         ------------------------- */
+      function readMetaBase(){
+        const m = document.querySelector('meta[name="gc-base"]');
+        return m?.content || "";
+      }
+      function computeBase(){
+        // 1) Usa la que expuso guard.js, si existe
+        const hinted = window.__GC_BASE__;
+        if (hinted) return hinted.endsWith("/") ? hinted : hinted + "/";
+
+        // 2) Usa meta gc-base como plan B (relativa a origin)
+        const meta = readMetaBase();
+        if (meta){
+          const abs = new URL(meta.replace(/^\//,""), location.origin).href;
+          return abs.endsWith("/") ? abs : abs + "/";
+        }
+
+        // 3) Fallback: origen + "/"
+        return location.origin + "/";
+      }
+      const BASE = computeBase();
+      const abs  = (p)=> new URL(String(p||"").replace(/^\//,""), BASE).href;
+
+      /* -------------------------
+         Firebase
+         ------------------------- */
       const firebaseConfig = {
         apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
         authDomain: "gestioncenterdata.firebaseapp.com",
@@ -135,12 +168,28 @@
       const db   = getFirestore(app);
       try { await setPersistence(auth, browserLocalPersistence); } catch(e) {}
 
+      /* -------------------------
+         DOM helpers
+         ------------------------- */
       const $ = (id)=>document.getElementById(id);
+      const emailEl = $("email");
+      const passEl  = $("pass");
+      const btnEmail = $("btnEmail");
+      const btnGoogle = $("btnGoogle");
+      const lnkSignUp = $("lnkSignUp");
+      const lnkReset  = $("lnkReset");
       const msgEl = $("msg");
 
       function showMsg(text, type="err"){
         msgEl.textContent = text || "";
         msgEl.className = "msg " + (type === "ok" ? "ok" : "err");
+      }
+      function setBusy(b){
+        [btnEmail, btnGoogle, lnkSignUp, lnkReset].forEach(el=>{
+          if(!el) return;
+          if (el.tagName === "BUTTON") el.disabled = !!b;
+          el.style.pointerEvents = b ? "none" : "auto";
+        });
       }
 
       async function ensureUserDoc(user){
@@ -155,48 +204,119 @@
         }
       }
 
-      window.loginEmail = async ()=>{
-        const email = $("email").value.trim();
-        const pass  = $("pass").value.trim();
+      function nextUrlAfterLogin(){
+        try{
+          const target = localStorage.getItem("redirectAfterLogin");
+          if (target){
+            localStorage.removeItem("redirectAfterLogin");
+            return target; // absoluto guardado por guard.js
+          }
+        }catch{}
+        // fallback: index absoluto en la BASE
+        return abs("index.html");
+      }
+
+      /* -------------------------
+         Acciones
+         ------------------------- */
+      async function loginEmail(){
+        const email = (emailEl.value||"").trim();
+        const pass  = (passEl.value||"").trim();
         if(!email || !pass){ showMsg("Completa email y contraseña."); return; }
+        setBusy(true);
+        showMsg("");
         try{
           const { user } = await signInWithEmailAndPassword(auth, email, pass);
           await ensureUserDoc(user);
-          location.href = "./";
-        }catch(e){ showMsg(e.message); }
-      };
+          location.href = nextUrlAfterLogin();
+        }catch(e){
+          showMsg(prettyAuthError(e));
+        }finally{
+          setBusy(false);
+        }
+      }
 
-      window.loginGoogle = async ()=>{
+      async function loginGoogle(){
+        setBusy(true);
+        showMsg("");
         try{
           const provider = new GoogleAuthProvider();
           const { user } = await signInWithPopup(auth, provider);
           await ensureUserDoc(user);
-          location.href = "./";
-        }catch(e){ showMsg(e.message); }
-      };
+          location.href = nextUrlAfterLogin();
+        }catch(e){
+          showMsg(prettyAuthError(e));
+        }finally{
+          setBusy(false);
+        }
+      }
 
-      window.signUp = async ()=>{
-        const email = $("email").value.trim();
-        const pass  = $("pass").value.trim();
+      async function signUp(){
+        const email = (emailEl.value||"").trim();
+        const pass  = (passEl.value||"").trim();
         if(!email || !pass){ showMsg("Completa email y contraseña."); return; }
+        setBusy(true);
+        showMsg("");
         try{
           const { user } = await createUserWithEmailAndPassword(auth, email, pass);
           await ensureUserDoc(user);
           showMsg("Cuenta creada", "ok");
-          location.href = "./";
-        }catch(e){ showMsg(e.message); }
-      };
+          location.href = nextUrlAfterLogin();
+        }catch(e){
+          showMsg(prettyAuthError(e));
+        }finally{
+          setBusy(false);
+        }
+      }
 
-      window.resetPass = async ()=>{
-        const email = $("email").value.trim();
+      async function resetPass(){
+        const email = (emailEl.value||"").trim();
         if(!email){ showMsg("Ingresa tu email."); return; }
+        setBusy(true);
+        showMsg("");
         try{
           await sendPasswordResetEmail(auth, email);
           showMsg("Correo de recuperación enviado", "ok");
-        }catch(e){ showMsg(e.message); }
-      };
+        }catch(e){
+          showMsg(prettyAuthError(e));
+        }finally{
+          setBusy(false);
+        }
+      }
 
-      onAuthStateChanged(auth, (user)=>{ if(user){ location.href="./"; } });
+      // UX: Enter sobre password dispara login email
+      document.getElementById("form").addEventListener("keydown", (ev)=>{
+        if(ev.key === "Enter"){ ev.preventDefault(); loginEmail(); }
+      });
+
+      btnEmail.addEventListener("click", loginEmail);
+      btnGoogle.addEventListener("click", loginGoogle);
+      lnkSignUp.addEventListener("click", signUp);
+      lnkReset.addEventListener("click", resetPass);
+
+      onAuthStateChanged(auth, (user)=>{
+        // Si ya hay sesión y alguien abrió /login, reenvía al destino
+        if(user){
+          location.href = nextUrlAfterLogin();
+        }
+      });
+
+      /* -------------------------
+         Errores legibles
+         ------------------------- */
+      function prettyAuthError(e){
+        const code = e?.code || "";
+        const map = {
+          "auth/invalid-credential": "Credenciales inválidas.",
+          "auth/invalid-email": "Email inválido.",
+          "auth/user-disabled": "Usuario deshabilitado.",
+          "auth/user-not-found": "Usuario no encontrado.",
+          "auth/wrong-password": "Contraseña incorrecta.",
+          "auth/popup-closed-by-user": "Se cerró la ventana de Google.",
+          "auth/popup-blocked": "El navegador bloqueó el popup. Habilítalo e intenta de nuevo."
+        };
+        return map[code] || (e?.message || "Error de autenticación.");
+      }
     </script>
   </body>
 </html>
