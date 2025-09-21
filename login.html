@@ -170,7 +170,7 @@
 
     <!-- ====== AUTH (Firebase) ====== -->
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
         getAuth, onAuthStateChanged, signInWithEmailAndPassword,
         createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup,
@@ -189,20 +189,79 @@
         measurementId: "G-NBFZYTN094"
       };
 
-      // Init
-      const app = initializeApp(firebaseConfig);
+      // ===== BASE ROBUSTA (usa guard.js si está ok; si no, fallback seguro) =====
+      const PREFERRED_REPO = "Gestion-Center";
+
+      function isValidAbsoluteBase(u){
+        try{
+          const url = new URL(u);
+          // Debe ser misma origin y NO terminar/contener .html en el pathname base
+          if(url.origin !== location.origin) return false;
+          if(/\.html($|\/)/i.test(url.pathname)) return false;
+          return true;
+        }catch{ return false; }
+      }
+
+      function computeBase(){
+        // 1) Usa la BASE de guard.js si es válida
+        if (isValidAbsoluteBase(window.__GC_BASE__)) {
+          return window.__GC_BASE__.endsWith('/') ? window.__GC_BASE__ : (window.__GC_BASE__ + '/');
+        }
+        // 2) Fallback por entorno
+        const host = location.hostname;
+        const segs = location.pathname.split('/').filter(Boolean);
+        if (host.endsWith('github.io')){
+          const first = segs[0] || "";
+          if (first && !/\.html?$/i.test(first)) {
+            return `${location.origin}/${first}/`;
+          }
+          // Si el primer segmento es un archivo (.html), usa el repo preferido
+          return `${location.origin}/${PREFERRED_REPO}/`;
+        }
+        // Dominio propio → raíz (o ajusta aquí si usas subcarpeta)
+        return `${location.origin}/`;
+      }
+
+      function defaultHome(){
+        // Siempre devolver absoluta
+        return computeBase();
+      }
+
+      function sanitizeTarget(to){
+        if(!to) return defaultHome();
+        let dest;
+        try{ dest = new URL(to, location.origin); }catch{ return defaultHome(); }
+        if(dest.origin !== location.origin) return defaultHome();
+
+        const baseUrl = new URL(defaultHome());
+        const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
+
+        // Restringe a la base del proyecto
+        if(!dest.pathname.startsWith(basePath)) return defaultHome();
+        return dest.href;
+      }
+
+      function goHome(){
+        const stored = localStorage.getItem("redirectAfterLogin");
+        const qTo = new URLSearchParams(location.search).get("to");
+        const dest = sanitizeTarget(stored || qTo || defaultHome());
+        try { localStorage.removeItem("redirectAfterLogin"); } catch {}
+        location.replace(dest);
+      }
+
+      // ===== INIT FIREBASE (evita doble init si guard.js ya inicializó) =====
+      const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db   = getFirestore(app);
       try { await setPersistence(auth, browserLocalPersistence); } catch(e) {}
 
-      // DOM
+      // ===== DOM / UX =====
       const $ = (id)=>document.getElementById(id);
       const msgEl = $("msg");
       const btnEmail  = $("btnEmail");
       const btnGoogle = $("btnGoogle");
       const form = $("form");
 
-      // UX
       function setLoading(el, loading=true){
         if(!el) return;
         if(loading){
@@ -222,39 +281,7 @@
         msgEl.className = "msg " + (type === "ok" ? "ok" : "err");
       }
 
-      // 🔧 FIX BASE PARA GITHUB PAGES DE PROYECTO
-      function getBase(){
-        const segments = location.pathname.split("/").filter(Boolean);
-        // user.github.io/<PROYECTO>/...  -> base = /<PROYECTO>/
-        if (location.hostname.endsWith(".github.io") && segments.length){
-          return `/${segments[0]}/`;   // ✅ 'Gestion-Center'
-        }
-        // servidores locales / dominios propios en subcarpeta
-        return segments.length ? `/${segments[0]}/` : "/";
-      }
-      // 🏠 HOME por carpeta (no index.html)
-      function defaultHome(){ 
-        return getBase();  // ✅ https://kequito.github.io/Gestion-Center/
-      }
-      function sanitizeTarget(to){
-        if(!to) return defaultHome();
-        try{
-          const u = new URL(to, location.origin);
-          if(u.origin !== location.origin) return defaultHome();
-          const base = getBase();
-          if(!u.pathname.startsWith(base)) return defaultHome();
-          return u.href;
-        }catch{ return defaultHome(); }
-      }
-      function goHome(){
-        const stored = localStorage.getItem("redirectAfterLogin");
-        const qTo = new URLSearchParams(location.search).get("to");
-        const dest = sanitizeTarget(stored || qTo || defaultHome());
-        try { localStorage.removeItem("redirectAfterLogin"); } catch {}
-        location.replace(dest);
-      }
-
-      // Firestore bootstrap
+      // ===== Firestore bootstrap =====
       async function ensureUserDoc(user){
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
@@ -283,7 +310,7 @@
       };
       const mapError = (e)=>ERR_MAP[e?.code] || e?.message || "Ocurrió un error. Intenta de nuevo.";
 
-      // Actions
+      // ===== Actions =====
       window.loginEmail = async ()=>{
         showMsg("");
         const email = $("email").value.trim();
@@ -342,9 +369,8 @@
         if(ev.key==="Enter"){ ev.preventDefault(); loginEmail(); }
       });
 
-      // Si ya hay sesión → ir a home
+      // Si ya hay sesión → ir a home (con base robusta)
       onAuthStateChanged(auth, (user)=>{ if(user){ goHome(); } });
-
       // (debug) logout por consola
       window._logout = ()=>signOut(auth);
     </script>
