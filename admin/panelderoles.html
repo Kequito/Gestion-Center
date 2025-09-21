@@ -79,7 +79,7 @@
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
     const auth = getAuth();
-    const fn   = getFunctions(); // usará tu región por defecto; si necesitas una región específica: getFunctions(undefined, "us-central1")
+    const fn   = getFunctions(); // si necesitas región específica: getFunctions(undefined, "us-central1")
 
     const $ = (sel)=>document.querySelector(sel);
 
