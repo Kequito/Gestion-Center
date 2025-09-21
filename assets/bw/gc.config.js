@@ -61,7 +61,7 @@ export const GC_CONFIG = {
       title: "Admin",
       roles: ["admin"], // ← visible solo si el claim rank === "admin"
       items: [
-        { href: "admin/admin.html", icon: "🛡️", label: "Panel de roles", roles: ["admin"] },
+        { href: "admin/panelderoles.html", icon: "🛡️", label: "Panel de roles", roles: ["admin"] },
       ],
     },
   ],
