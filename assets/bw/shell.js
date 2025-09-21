@@ -138,14 +138,15 @@ async function loadConfig() {
             { label: "Selector de Apoyo 2.0", icon: "👥", href: "utilities/camprev.html" },
           ],
         },
-        // ⬇️ NUEVO: sección Admin visible solo para admins
+        // ⬇️ sección Admin visible solo para admins
         {
           type: "group",
           id: "grp-admin",
           title: "Admin",
           roles: ["admin"],
           items: [
-            { label: "Panel de roles", icon: "🛡️", href: "admin/admin.html", roles: ["admin"] }
+            // 🔁 ruta actualizada
+            { label: "Panel de roles", icon: "🛡️", href: "admin/panelderoles.html", roles: ["admin"] }
           ],
         },
       ],
