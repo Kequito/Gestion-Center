@@ -10,113 +10,93 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- Página pública (mostrar login sin sesión) -->
+    <!-- Página pública -->
     <script>window.GC_PUBLIC_PAGE = true;</script>
 
     <!-- Ocultar hasta que guard.js decida -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
-    <!-- Estilos base del card (tipografía y layout del formulario) -->
+    <!-- Estilos base -->
     <style>
       :root{
-        --radius:16px; --radius-sm:12px; --radius-xs:10px;
-        --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
-        --elev-1:0 6px 20px rgba(0,0,0,.25);
+        --radius:16px; --radius-sm:12px;
+        --font-title:'Outfit', system-ui, sans-serif;
+        --font-body:'Lexend', system-ui, sans-serif;
+        --t-slow:.6s;
       }
       *{box-sizing:border-box}
       html,body{height:100%}
       body{
         margin:0; font-family:var(--font-body);
-        overflow-x:hidden; display:grid; place-items:center; padding:24px;
-      }
-      #bg-grid{
-        position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
-        background:
-          linear-gradient(#0001 1px, transparent 1px) 0 0 / 28px 28px,
-          linear-gradient(90deg, #0001 1px, transparent 1px) 0 0 / 28px 28px;
+        display:grid; place-items:center; padding:24px;
+        background: var(--white); color: var(--gray-900);
       }
 
-      /* ====== LOGIN CARD ====== */
       .login-wrap{ width:100%; display:grid; place-items:center; }
       .login-card{
         width:100%; max-width:520px;
         border-radius:22px; padding:28px;
+        background:#000;          /* Fondo negro */
+        color:#fff;               /* Texto blanco */
+        border:2px solid #000;    /* Borde negro */
       }
-      .login-card h2{ margin:0 0 10px; font:700 24px/1.1 var(--font-title) }
-      .login-card p{ margin:0 0 18px }
+      .login-card h2{ margin:0 0 10px; font:700 24px/1.1 var(--font-title); color:#fff; }
+      .login-card p{ margin:0 0 18px; color:#ddd; }
 
       .stack{display:flex; flex-direction:column; gap:14px;}
       .field{display:flex; flex-direction:column; gap:8px;}
-      label{font-size:14px; letter-spacing:.2px}
+      label{font-size:14px; color:#fff;}
 
       input{
-        width:100%; height:48px; padding:12px 14px; border-radius:12px;
-        outline:none; transition:border-color .15s ease, box-shadow .15s ease;
+        width:100%; height:48px; padding:12px 14px;
+        border-radius:12px; border:1px solid #444;
+        background:#111; color:#fff;
       }
-      input::placeholder{opacity:.75}
+      input::placeholder{color:#aaa;}
+      input:focus{border-color:#fff; outline:none;}
 
       .actions{display:flex; flex-direction:column; gap:12px; margin-top:6px;}
       .btn{
         width:100%; height:48px; border-radius:14px; border:0; cursor:pointer;
-        font-weight:700; letter-spacing:.2px; display:inline-flex; align-items:center; justify-content:center; gap:10px;
-        transition:transform .12s ease, filter .15s ease, opacity .15s ease;
+        font-weight:700; display:inline-flex; align-items:center; justify-content:center;
       }
-      .btn:active{ transform:translateY(1px) }
-      .btn[disabled]{opacity:.65; cursor:not-allowed}
+      .btn.primary{ background:#fff; color:#000; }
+      .btn.primary:hover{ background:#f3f3f3; }
+      .btn.ghost{ background:#222; color:#fff; border:1px solid #444; }
+      .btn.ghost:hover{ background:#333; }
 
-      .meta{
-        display:flex; justify-content:space-between; gap:14px; margin-top:8px; flex-wrap:wrap;
-      }
-      .link{cursor:pointer; text-decoration:none}
-      .link:hover{text-decoration:underline}
+      .meta{display:flex; justify-content:space-between; gap:14px; margin-top:8px; flex-wrap:wrap;}
+      .link{color:#fff; text-decoration:none;}
+      .link:hover{text-decoration:underline;}
 
       .msg{margin-top:10px;font-size:14px}
       .msg.err{color:#f87171}
       .msg.ok{color:#22c55e}
-
-      @media (prefers-reduced-motion:no-preference){
-        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
-        .reveal.show{opacity:1; transform:none}
-      }
-
-      .spinner{width:16px;height:16px;border-radius:999px;border:2px solid currentColor;border-top-color:transparent;animation:spin .8s linear infinite}
-      @keyframes spin{to{transform:rotate(360deg)}}
     </style>
   </head>
 
-  <!-- 👇 BW activado -->
   <body class="gc-login bw">
-    <div id="bg-grid" aria-hidden="true"></div>
-
-    <!-- Shell del ecosistema (sin sidebar ni hero) -->
     <gc-shell no-aside hero="off">
       <main class="login-wrap">
-        <article class="login-card reveal">
+        <article class="login-card">
           <h2>Inicia sesión</h2>
           <p>Usa tu cuenta corporativa o Google.</p>
 
           <form id="form" onsubmit="return false;" class="stack">
             <div class="field">
               <label for="email">Email</label>
-              <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="email" required/>
+              <input id="email" type="email" placeholder="tucorreo@empresa.com" required/>
             </div>
 
             <div class="field">
               <label for="pass">Contraseña</label>
-              <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required/>
+              <input id="pass" type="password" placeholder="••••••••" required/>
             </div>
 
             <div class="actions">
-              <button id="btnEmail" class="btn primary" onclick="loginEmail()">
-                <span>Entrar con Email</span>
-              </button>
-
-              <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">
-                <span>Entrar con Google</span>
-              </button>
+              <button id="btnEmail" class="btn primary" onclick="loginEmail()">Entrar con Email</button>
+              <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">Entrar con Google</button>
             </div>
 
             <div class="meta">
@@ -130,74 +110,7 @@
       </main>
     </gc-shell>
 
-    <!-- ===== Overrides de TEMA para integrarlo visualmente al BW =====
-         (usa variables definidas en assets/bw/bw.css; este bloque debe estar
-          después de los estilos base para tomar precedencia) -->
-    <style>
-      /* Fondo general BW */
-      body.gc-login.bw{
-        background: var(--white) !important;
-        color: var(--gray-900);
-      }
-
-      /* Tarjeta BW */
-      .login-card{
-        background: var(--white);
-        border: 1px solid var(--gray-300);
-        color: var(--gray-900);
-        box-shadow: none;
-      }
-      .login-card h2{ color: var(--gray-900); }
-      .login-card p{ color: var(--gray-700); }
-
-      /* Inputs BW */
-      .login-card input{
-        background: var(--white);
-        color: var(--gray-900);
-        border: 1px solid var(--gray-300);
-      }
-      .login-card input::placeholder{ color: var(--gray-500); }
-      .login-card input:focus{
-        border-color: var(--gray-900);
-        box-shadow: 0 0 0 2px rgba(0,0,0,.08);
-      }
-
-      /* Botones BW */
-      .btn.primary{
-        background: var(--gray-900);
-        color: #fff;
-        border: 1px solid var(--gray-900);
-      }
-      .btn.primary:hover{ filter:brightness(1.05); }
-      .btn.ghost{
-        background: #1a1a1a;
-        color: #fff;
-        border: 1px solid var(--gray-300);
-      }
-      .btn.ghost:hover{ filter:brightness(1.05); }
-
-      /* Links meta */
-      .link{ color: var(--gray-900); }
-      .link:hover{ text-decoration: underline; }
-
-      /* Opcional: ocultar grid sutil en BW */
-      #bg-grid{ display:none; }
-    </style>
-
-    <!-- Reveal suave -->
-    <script type="module">
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if(!reduced && 'IntersectionObserver' in window){
-        const io = new IntersectionObserver((entries)=>{
-          for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } }
-        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
-        document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-      } else {
-        document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
-      }
-    </script>
-
-    <!-- ====== AUTH (Firebase) ====== -->
+    <!-- Script Firebase igual que antes -->
     <script type="module">
       import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
@@ -207,7 +120,6 @@
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      // ===== CONFIG =====
       const firebaseConfig = {
         apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
         authDomain: "gestioncenterdata.firebaseapp.com",
@@ -218,48 +130,6 @@
         measurementId: "G-NBFZYTN094"
       };
 
-      // Navegación segura hacia Home (respeta BASE del shell/BW)
-      const PREFERRED_REPO = "Gestion-Center";
-      function isValidAbsoluteBase(u){
-        try{
-          const url = new URL(u);
-          if(url.origin !== location.origin) return false;
-          if(/\.html($|\/)/i.test(url.pathname)) return false;
-          return true;
-        }catch{ return false; }
-      }
-      function computeBase(){
-        if (isValidAbsoluteBase(window.__GC_BASE__)) {
-          return window.__GC_BASE__.endsWith('/') ? window.__GC_BASE__ : (window.__GC_BASE__ + '/');
-        }
-        const host = location.hostname;
-        const segs = location.pathname.split('/').filter(Boolean);
-        if (host.endsWith('github.io')){
-          const first = segs[0] || "";
-          if (first && !/\.html?$/i.test(first)) return `${location.origin}/${first}/`;
-          return `${location.origin}/${PREFERRED_REPO}/`;
-        }
-        return `${location.origin}/`;
-      }
-      function defaultHome(){ return computeBase(); }
-      function sanitizeTarget(to){
-        if(!to) return defaultHome();
-        let dest; try{ dest = new URL(to, location.origin); }catch{ return defaultHome(); }
-        if(dest.origin !== location.origin) return defaultHome();
-        const baseUrl = new URL(defaultHome());
-        const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
-        if(!dest.pathname.startsWith(basePath)) return defaultHome();
-        return dest.href;
-      }
-      function goHome(){
-        const stored = localStorage.getItem("redirectAfterLogin");
-        const qTo = new URLSearchParams(location.search).get("to");
-        const dest = sanitizeTarget(stored || qTo || defaultHome());
-        try { localStorage.removeItem("redirectAfterLogin"); } catch {}
-        location.replace(dest);
-      }
-
-      // INIT Firebase (evita doble init si guard.js ya lo hizo)
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db   = getFirestore(app);
@@ -267,24 +137,7 @@
 
       const $ = (id)=>document.getElementById(id);
       const msgEl = $("msg");
-      const btnEmail  = $("btnEmail");
-      const btnGoogle = $("btnGoogle");
-      const form = $("form");
 
-      function setLoading(el, loading=true){
-        if(!el) return;
-        if(loading){
-          el.setAttribute("disabled","true");
-          if(!el.querySelector(".spinner")){
-            const sp = document.createElement("span");
-            sp.className = "spinner";
-            el.prepend(sp);
-          }
-        }else{
-          el.removeAttribute("disabled");
-          el.querySelector(".spinner")?.remove();
-        }
-      }
       function showMsg(text, type="err"){
         msgEl.textContent = text || "";
         msgEl.className = "msg " + (type === "ok" ? "ok" : "err");
@@ -297,89 +150,53 @@
           await setDoc(ref, {
             email: user.email || null,
             displayName: user.displayName || "",
-            createdAt: serverTimestamp(),
-            perop: "", teamId: ""
+            createdAt: serverTimestamp()
           });
         }
       }
 
-      const ERR_MAP = {
-        "auth/invalid-email": "El email no es válido.",
-        "auth/missing-password": "Ingresa tu contraseña.",
-        "auth/invalid-credential": "Credenciales inválidas.",
-        "auth/user-disabled": "Tu usuario está deshabilitado.",
-        "auth/user-not-found": "No existe una cuenta con ese email.",
-        "auth/wrong-password": "Contraseña incorrecta.",
-        "auth/popup-closed-by-user": "Se cerró la ventana de Google.",
-        "auth/too-many-requests": "Demasiados intentos. Intenta más tarde.",
-        "auth/email-already-in-use": "Ese email ya está registrado.",
-        "auth/weak-password": "La contraseña es muy débil (mín. 6)."
-      };
-      const mapError = (e)=>ERR_MAP[e?.code] || e?.message || "Ocurrió un error. Intenta de nuevo.";
-
-      // Actions
       window.loginEmail = async ()=>{
-        showMsg("");
         const email = $("email").value.trim();
         const pass  = $("pass").value.trim();
-        if(!email || !pass) { showMsg("Completa email y contraseña."); return; }
-        setLoading(btnEmail, true);
+        if(!email || !pass){ showMsg("Completa email y contraseña."); return; }
         try{
           const { user } = await signInWithEmailAndPassword(auth, email, pass);
           await ensureUserDoc(user);
-          goHome();
-        }catch(e){ showMsg(mapError(e)); }
-        finally{ setLoading(btnEmail, false); }
+          location.href = "./";
+        }catch(e){ showMsg(e.message); }
       };
 
       window.loginGoogle = async ()=>{
-        showMsg("");
-        setLoading(btnGoogle, true);
         try{
           const provider = new GoogleAuthProvider();
           const { user } = await signInWithPopup(auth, provider);
           await ensureUserDoc(user);
-          goHome();
-        }catch(e){ showMsg(mapError(e)); }
-        finally{ setLoading(btnGoogle, false); }
+          location.href = "./";
+        }catch(e){ showMsg(e.message); }
       };
 
       window.signUp = async ()=>{
-        showMsg("");
         const email = $("email").value.trim();
         const pass  = $("pass").value.trim();
-        if(!email || !pass) { showMsg("Completa email y contraseña."); return; }
-        setLoading(btnEmail, true);
+        if(!email || !pass){ showMsg("Completa email y contraseña."); return; }
         try{
           const { user } = await createUserWithEmailAndPassword(auth, email, pass);
           await ensureUserDoc(user);
-          showMsg("Cuenta creada. Redirigiendo…", "ok");
-          goHome();
-        }catch(e){ showMsg(mapError(e)); }
-        finally{ setLoading(btnEmail, false); }
+          showMsg("Cuenta creada", "ok");
+          location.href = "./";
+        }catch(e){ showMsg(e.message); }
       };
 
       window.resetPass = async ()=>{
-        showMsg("");
         const email = $("email").value.trim();
-        if(!email){ showMsg("Ingresa tu email para enviar el enlace de recuperación."); return; }
-        setLoading(btnEmail, true);
+        if(!email){ showMsg("Ingresa tu email."); return; }
         try{
           await sendPasswordResetEmail(auth, email);
-          showMsg("Te enviamos un enlace para restablecer la contraseña.", "ok");
-        }catch(e){ showMsg(mapError(e)); }
-        finally{ setLoading(btnEmail, false); }
+          showMsg("Correo de recuperación enviado", "ok");
+        }catch(e){ showMsg(e.message); }
       };
 
-      // Enter para enviar
-      form.addEventListener("keydown",(ev)=>{
-        if(ev.key==="Enter"){ ev.preventDefault(); loginEmail(); }
-      });
-
-      // Si ya hay sesión → ir a home
-      onAuthStateChanged(auth, (user)=>{ if(user){ goHome(); } });
-      // debug
-      window._logout = ()=>signOut(auth);
+      onAuthStateChanged(auth, (user)=>{ if(user){ location.href="./"; } });
     </script>
   </body>
 </html>
