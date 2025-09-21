@@ -3,37 +3,192 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Panel Admin</title>
+  <title>Panel Admin — Gestión Center</title>
+
+  <!-- MUY IMPORTANTE para que shell/guard calculen rutas absolutas -->
   <meta name="gc-base" content="/Gestion-Center/">
-  <script type="module" src="./assets/guard.js"></script>
-  <script type="module" src="./assets/bw/shell.js"></script>
-  <link rel="stylesheet" href="./assets/bw/bw.css">
+
+  <!-- Ecosistema GC -->
+  <script type="module" src="../assets/guard.js"></script>
+  <script type="module" src="../assets/bw/shell.js"></script>
+  <link rel="stylesheet" href="../assets/bw/bw.css">
+
   <style>html{visibility:hidden}</style>
 </head>
 <body>
-  <gc-shell hero-title="Panel de administración" hero-subtitle="Gestiona roles y accesos">
-    <section class="card">
-      <h2>🛡️ Asignación de roles</h2>
-      <p>Esta página está limitada a <strong>administradores</strong>. Aquí colocaremos el formulario para asignar rangos.</p>
-      <p style="margin-top:8px;opacity:.8">Próximo paso: conectar con la Cloud Function <code>setUserRank</code> para asignar <em>admin / supervisor / tl / invitado</em>.</p>
+  <gc-shell hero-title="Panel de administración" hero-subtitle="Gestiona roles y utilidades de acceso">
+    <section class="grid-2">
+      <!-- Estado del admin -->
+      <article class="card">
+        <h2>👤 Tu estado</h2>
+        <p style="margin-top:8px">
+          <strong>Email:</strong> <span id="meEmail">—</span><br>
+          <strong>UID:</strong> <span id="meUid">—</span><button id="btnCopyUid" class="btn sm" style="margin-left:6px">Copiar</button><br>
+          <strong>Rango:</strong> <span id="meRank" class="badge">—</span>
+        </p>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btnRefresh" class="btn">Refrescar claims</button>
+          <button id="btnLogout" class="btn danger">Cerrar sesión aquí</button>
+        </div>
+        <p id="meMsg" class="muted" style="margin-top:10px"></p>
+      </article>
+
+      <!-- Asignar rol -->
+      <article class="card">
+        <h2>🛡️ Asignar / actualizar rol</h2>
+        <p class="muted" style="margin-top:4px">
+          Puedes ingresar un <strong>UID</strong> o un <strong>email</strong> de Firebase.
+        </p>
+        <div class="form" style="margin-top:10px">
+          <label>UID o email</label>
+          <input id="targetId" placeholder="uid_123... o correo@empresa.com" autocomplete="off"/>
+
+          <label>Rol</label>
+          <select id="targetRole">
+            <option value="admin">Admin</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="tl">Team Leader</option>
+            <option value="invitado">Invitado</option>
+          </select>
+          <div style="margin-top:10px">
+            <button id="btnAssign" class="btn primary">Asignar rol</button>
+          </div>
+          <p id="assignMsg" class="muted" style="margin-top:8px"></p>
+        </div>
+        <details style="margin-top:10px">
+          <summary>¿Qué hace esto?</summary>
+          <p class="muted">
+            Llama a una Cloud Function (Callable) que usa el Admin SDK para escribir el claim <code>rank</code>
+            del usuario destino (<em>admin | supervisor | tl | invitado</em>). Luego debes pedirle a esa persona
+            que recargue su sesión para ver el nuevo rol.
+          </p>
+        </details>
+      </article>
     </section>
+
+    <!-- (Futuro) Listado de usuarios / auditoría -->
+    <!-- <section class="card">
+      <h2>📋 Usuarios (vista rápida)</h2>
+      <p class="muted">Aquí podemos renderizar un listado paginado cuando tengamos la función <code>admin-listUsers</code>.</p>
+      <div id="usersTable"></div>
+    </section> -->
   </gc-shell>
 
   <script type="module">
     import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
     const auth = getAuth();
+    const fn   = getFunctions(); // usará tu región por defecto; si necesitas una región específica: getFunctions(undefined, "us-central1")
+
+    const $ = (sel)=>document.querySelector(sel);
+
+    const meEmail = $("#meEmail");
+    const meUid   = $("#meUid");
+    const meRank  = $("#meRank");
+    const meMsg   = $("#meMsg");
+
+    const btnCopyUid = $("#btnCopyUid");
+    const btnRefresh = $("#btnRefresh");
+    const btnLogout  = $("#btnLogout");
+
+    const targetId   = $("#targetId");
+    const targetRole = $("#targetRole");
+    const btnAssign  = $("#btnAssign");
+    const assignMsg  = $("#assignMsg");
+
+    function badgeColor(rank){
+      const r = String(rank||"").toLowerCase();
+      if (r==="admin") return "#ef4444";
+      if (r==="supervisor") return "#a855f7";
+      if (r==="tl") return "#3b82f6";
+      return "#22c55e"; // invitado / sin rol
+    }
+
     async function requireAdmin(){
-      const user = auth.currentUser;
-      if (!user) return; // el guard ya se encargó de mandar a login si no hay sesión
-      const t = await user.getIdTokenResult(true);
-      if (t.claims?.rank !== "admin") {
-        // sin permiso -> vuelve al home
+      // guard.js ya bloquea no autenticados; aquí validamos claim admin
+      const u = auth.currentUser;
+      if (!u){
+        // si algo raro pasa, redirige a login
+        const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
+        location.replace(new URL("login.html", base).href);
+        return false;
+      }
+      const t = await u.getIdTokenResult(true);
+      const isAdmin = t.claims?.rank === "admin";
+      if (!isAdmin){
         const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
         location.replace(new URL("index.html", base).href);
-        return;
+        return false;
       }
+      // pintar estado
+      meEmail.textContent = u.email || "(sin email)";
+      meUid.textContent   = u.uid;
+      meRank.textContent  = t.claims?.rank || "invitado";
+      meRank.style.background = badgeColor(t.claims?.rank);
       document.documentElement.style.visibility = "visible";
+      return true;
     }
+
+    // Utilidades
+    btnCopyUid.addEventListener("click", async ()=>{
+      try { await navigator.clipboard.writeText(meUid.textContent); meMsg.textContent = "UID copiado ✅"; }
+      catch { meMsg.textContent = "No se pudo copiar el UID"; }
+      setTimeout(()=>meMsg.textContent="", 1500);
+    });
+
+    btnRefresh.addEventListener("click", async ()=>{
+      try {
+        const t = await auth.currentUser.getIdTokenResult(true);
+        meRank.textContent = t.claims?.rank || "invitado";
+        meRank.style.background = badgeColor(t.claims?.rank);
+        meMsg.textContent = "Claims actualizados ✅";
+      } catch(e){
+        meMsg.textContent = "No se pudieron refrescar los claims";
+        console.warn(e);
+      }
+      setTimeout(()=>meMsg.textContent="", 2000);
+    });
+
+    btnLogout.addEventListener("click", async ()=>{
+      try { await auth.signOut(); }
+      finally {
+        const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
+        location.href = new URL("login.html", base).href;
+      }
+    });
+
+    // ====== Asignar rol (Callable) ======
+    // Espera que tengas una Function deployada, por ejemplo:
+    // exports["admin-setUserRank"] = functions.https.onCall(async (data, ctx) => { ... })
+    btnAssign.addEventListener("click", async ()=>{
+      assignMsg.textContent = "";
+      const id   = (targetId.value || "").trim();
+      const role = (targetRole.value || "").trim().toLowerCase();
+
+      if (!id){ assignMsg.textContent = "Ingresa un UID o un email."; return; }
+      if (!["admin","supervisor","tl","invitado"].includes(role)){
+        assignMsg.textContent = "Rol inválido."; return;
+      }
+
+      try{
+        const callable = httpsCallable(fn, "admin-setUserRank");
+        const resp = await callable({ id, role }); // el backend aceptará UID o email
+        assignMsg.textContent = `OK ✅ ${resp?.data?.message || "Rol actualizado"}`;
+      }catch(err){
+        console.warn(err);
+        // Errores comunes cuando la function no existe o no está autorizada
+        if (String(err)?.includes("function not found")){
+          assignMsg.textContent = "La Function admin-setUserRank no está desplegada.";
+        } else if (err?.code === "permission-denied"){
+          assignMsg.textContent = "No autorizado para ejecutar la Function.";
+        } else {
+          assignMsg.textContent = err?.message || "Error llamando a la Function.";
+        }
+      }
+    });
+
+    // Kickoff
     requireAdmin();
   </script>
 </body>
