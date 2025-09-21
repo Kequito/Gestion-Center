@@ -1,15 +1,63 @@
 // assets/bw/shell.js
 /* ===========================================================
    GC Shell (BW) — sidebar + header + estilos base + guard
-   Carga config dinámica con fallback para no romper la UI
+   BASE robusta + nav absoluto + activo correcto
    =========================================================== */
 
 // ---------- BASE robusto ----------
-const isGh  = location.hostname.endsWith("github.io");
-const parts = location.pathname.split("/").filter(Boolean);
-const repo  = isGh ? (parts[0] || "") : "";
-const BASE  = isGh ? `/${repo}/` : "/";
-const abs   = (p) => new URL(p.replace(/^\//, ""), location.origin + BASE).href;
+const PREFERRED_REPO = "Gestion-Center";
+
+function readMetaBase(){
+  const m = document.querySelector('meta[name="gc-base"]');
+  return m?.content || "";
+}
+function ensureSlash(u){ return u.endsWith("/") ? u : (u + "/"); }
+function isValidAbsoluteBase(u){
+  try{
+    const url = new URL(u);
+    if (url.origin !== location.origin) return false;
+    if (/\.html($|\/)/i.test(url.pathname)) return false;
+    return true;
+  }catch{ return false; }
+}
+
+function computeBase(){
+  // 0) Override expuesto por otras piezas (guard, login)
+  const hinted = window.__GC_BASE__;
+  if (hinted && isValidAbsoluteBase(hinted)) return ensureSlash(hinted);
+
+  // 1) meta gc-base como plan B (relativa a origin)
+  const meta = readMetaBase();
+  if (meta){
+    const abs = new URL(meta.replace(/^\//,""), location.origin).href;
+    if (isValidAbsoluteBase(abs)) return ensureSlash(abs);
+  }
+
+  // 2) Detección por entorno
+  const host  = location.hostname;
+  const segs  = location.pathname.split("/").filter(Boolean);
+
+  if (host.endsWith("github.io")){
+    const repo = segs[0] || "";
+    if (repo && !/\.html?$/i.test(repo)) return `${location.origin}/${repo}/`;
+    return `${location.origin}/${PREFERRED_REPO}/`;
+  }
+
+  // Dominio propio: si estamos ya dentro de /Gestion-Center/, respétalo
+  const idx = segs.indexOf(PREFERRED_REPO);
+  if (idx !== -1){
+    const basePath = `/${segs.slice(0, idx + 1).join("/")}/`;
+    return `${location.origin}${basePath}`;
+  }
+
+  // Fallback a subcarpeta preferida (útil mientras no mapees el dominio a la raíz del repo)
+  return `${location.origin}/${PREFERRED_REPO}/`;
+}
+
+const BASE = computeBase();
+const abs  = (p) => new URL(String(p||"").replace(/^\//,""), BASE).href;
+
+// Exponer para otros módulos
 window.__GC_BASE__ = BASE;
 
 // ---------- Cargar configuración dinámica con fallback ----------
@@ -131,17 +179,40 @@ async function ensureGuardAndHead() {
 }
 
 // ---------- Helpers ----------
+function normalizePathname(p){
+  // quita dobles slash, normaliza index.html y slash final
+  let out = (p || "/").replace(/\/{2,}/g, "/");
+  if (out.endsWith("/index.html")) out = out.slice(0, -"/index.html".length) + "/";
+  return out;
+}
+
 function setActive(navEl) {
   const items = [...navEl.querySelectorAll(".nav-item")];
-  const current = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  let active = items[0];
+  const current = normalizePathname(location.pathname);
+
+  let active = null;
   items.forEach(a => {
-    const href = (a.getAttribute("href") || "")
-      .split("#")[0].split("/").pop().toLowerCase();
-    if (href && href === current) active = a;
-    a.classList.toggle("active", a === active);
-    a.toggleAttribute("aria-current", a === active ? "page" : false);
+    const href = a.getAttribute("href") || a.href || "";
+    // Siempre resolvemos absoluto y comparamos pathname normalizados
+    const ap = normalizePathname(new URL(href, location.href).pathname);
+    const match = (ap === current);
+    if (match) active = a;
+    a.classList.toggle("active", match);
+    a.toggleAttribute("aria-current", match ? "page" : false);
   });
+
+  // Si nada coincidió exactamente (ej. deep-link), intenta por "base filename"
+  if (!active){
+    const currFile = current.split("/").pop() || "index.html";
+    items.forEach(a=>{
+      const ap = normalizePathname(new URL(a.getAttribute("href") || a.href || "", location.href).pathname);
+      const file = ap.split("/").pop() || "index.html";
+      const match = (file === currFile);
+      a.classList.toggle("active", match);
+      a.toggleAttribute("aria-current", match ? "page" : false);
+      if (match && !active) active = a;
+    });
+  }
 }
 
 function buildSidebar(CFG) {
@@ -226,7 +297,7 @@ class GCShell extends HTMLElement {
     const CFG = await loadConfig();
 
     const heroOff   = this.getAttribute("hero") === "off";
-    const noAside   = this.hasAttribute("no-aside");   // 👈 soporte login sin sidebar
+    const noAside   = this.hasAttribute("no-aside");   // soporte login sin sidebar
     const heroTitle = this.getAttribute("hero-title") || (CFG.heroDefault?.title || "");
     const heroSub   = this.getAttribute("hero-subtitle") || (CFG.heroDefault?.subtitle || "");
 
