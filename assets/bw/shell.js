@@ -21,7 +21,6 @@ async function loadConfig() {
     return cfg;
   } catch (e) {
     console.warn("[gc-shell] gc.config.js no disponible, uso fallback:", e);
-    // 👇 Fallback seguro (tu navegación por defecto)
     return {
       brand: {
         homeHref: "index.html",
@@ -220,64 +219,20 @@ function wireSidebar(root) {
   setCompactState(localStorage.getItem(compactKey) === "1");
 }
 
-// ---------- Web Component ----------
-class GCShell extends HTMLElement {
-  async connectedCallback() {
-    await ensureGuardAndHead();
-    const CFG = await loadConfig();
-
-    const heroOff  = this.getAttribute("hero") === "off";
-    const heroTitle = this.getAttribute("hero-title") || (CFG.heroDefault?.title || "");
-    const heroSub   = this.getAttribute("hero-subtitle") || (CFG.heroDefault?.subtitle || "");
-
-    const userContent = this.innerHTML;
-
-    this.innerHTML = `
-      ${buildSidebar(CFG)}
-      <main>
-        ${heroOff ? "" : `
-          <section class="hero">
-            <h1>${heroTitle}</h1>
-            <p>${heroSub}</p>
-          </section>`}
-        ${userContent}
-      </main>
-    `;
-
-    wireSidebar(this);
-
-    // Role (gris simple)
-    const roleDot  = this.querySelector("#roleDot");
-    const roleName = this.querySelector("#roleName");
-    const roleDesc = this.querySelector("#roleDesc");
-    const roleBadge= this.querySelector("#roleBadge");
-    const ls = (localStorage.getItem("gc-role") || "Invitado");
-    roleDot.style.background = "#737373";
-    roleName.textContent = ls;
-    roleDesc.textContent = (ls === "Invitado" ? "Acceso limitado" : "");
-    roleBadge.textContent = ls;
-
-    // Mostrar la página (por si el guard tardó)
-    try { document.documentElement.style.visibility = "visible"; } catch {}
-  }
-}
-
-customElements.define("gc-shell", GCShell);
-
-// ---------- Web Component ----------
+// ---------- Web Component (única definición, soporte no-aside) ----------
 class GCShell extends HTMLElement {
   async connectedCallback() {
     await ensureGuardAndHead();
     const CFG = await loadConfig();
 
     const heroOff   = this.getAttribute("hero") === "off";
-    const noAside   = this.hasAttribute("no-aside");   // 👈 nuevo
+    const noAside   = this.hasAttribute("no-aside");   // 👈 soporte login sin sidebar
     const heroTitle = this.getAttribute("hero-title") || (CFG.heroDefault?.title || "");
     const heroSub   = this.getAttribute("hero-subtitle") || (CFG.heroDefault?.subtitle || "");
 
     const userContent = this.innerHTML;
 
-    // Si no-aside, inyecta override de estilo para quitar márgenes del main
+    // Si no-aside, override de main
     if (noAside && !document.querySelector('style[data-gc="no-aside-ov"]')) {
       const st = document.createElement("style");
       st.setAttribute("data-gc", "no-aside-ov");
@@ -314,10 +269,7 @@ class GCShell extends HTMLElement {
       roleBadge.textContent = ls;
     }
 
-    // Mostrar la página (por si el guard tardó)
     try { document.documentElement.style.visibility = "visible"; } catch {}
   }
 }
-
 customElements.define("gc-shell", GCShell);
-
