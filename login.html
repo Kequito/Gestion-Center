@@ -127,7 +127,7 @@
         <form id="form" onsubmit="return false;" class="stack">
           <div class="field">
             <label for="email">Email</label>
-            <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="email" required/>
+            <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="username" required/>
           </div>
 
           <div class="field">
@@ -195,7 +195,6 @@
       function isValidAbsoluteBase(u){
         try{
           const url = new URL(u);
-          // Debe ser misma origin y NO terminar/contener .html en el pathname base
           if(url.origin !== location.origin) return false;
           if(/\.html($|\/)/i.test(url.pathname)) return false;
           return true;
@@ -215,17 +214,12 @@
           if (first && !/\.html?$/i.test(first)) {
             return `${location.origin}/${first}/`;
           }
-          // Si el primer segmento es un archivo (.html), usa el repo preferido
           return `${location.origin}/${PREFERRED_REPO}/`;
         }
-        // Dominio propio → raíz (o ajusta aquí si usas subcarpeta)
         return `${location.origin}/`;
       }
 
-      function defaultHome(){
-        // Siempre devolver absoluta
-        return computeBase();
-      }
+      function defaultHome(){ return computeBase(); }
 
       function sanitizeTarget(to){
         if(!to) return defaultHome();
@@ -236,7 +230,6 @@
         const baseUrl = new URL(defaultHome());
         const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
 
-        // Restringe a la base del proyecto
         if(!dest.pathname.startsWith(basePath)) return defaultHome();
         return dest.href;
       }
@@ -261,6 +254,9 @@
       const btnEmail  = $("btnEmail");
       const btnGoogle = $("btnGoogle");
       const form = $("form");
+
+      // Foco inicial en email (accesibilidad)
+      document.getElementById('email')?.focus();
 
       function setLoading(el, loading=true){
         if(!el) return;
@@ -306,14 +302,24 @@
         "auth/popup-closed-by-user": "Se cerró la ventana de Google.",
         "auth/too-many-requests": "Demasiados intentos. Intenta más tarde.",
         "auth/email-already-in-use": "Ese email ya está registrado.",
-        "auth/weak-password": "La contraseña es muy débil (mín. 6)."
+        "auth/weak-password": "La contraseña es muy débil (mín. 6).",
+        "auth/network-request-failed": "Problemas de red. Revisa tu conexión.",
+        "auth/popup-blocked": "El navegador bloqueó la ventana de Google."
       };
       const mapError = (e)=>ERR_MAP[e?.code] || e?.message || "Ocurrió un error. Intenta de nuevo.";
 
-      // ===== Actions =====
-      window.loginEmail = async ()=>{
+      // ===== Gate anti-doble submit =====
+      let _busy = false;
+      const gate = (fn) => {
+        if (_busy) return;
+        _busy = true;
+        return Promise.resolve(fn()).finally(()=>{ _busy = false; });
+      };
+
+      // ===== Actions (implementaciones internas) =====
+      async function loginEmailImpl(){
         showMsg("");
-        const email = $("email").value.trim();
+        const email = $("email").value.trim().toLowerCase(); // normalizar
         const pass  = $("pass").value.trim();
         if(!email || !pass) { showMsg("Completa email y contraseña."); return; }
         setLoading(btnEmail, true);
@@ -323,9 +329,9 @@
           goHome();
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnEmail, false); }
-      };
+      }
 
-      window.loginGoogle = async ()=>{
+      async function loginGoogleImpl(){
         showMsg("");
         setLoading(btnGoogle, true);
         try{
@@ -335,11 +341,11 @@
           goHome();
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnGoogle, false); }
-      };
+      }
 
-      window.signUp = async ()=>{
+      async function signUpImpl(){
         showMsg("");
-        const email = $("email").value.trim();
+        const email = $("email").value.trim().toLowerCase(); // normalizar
         const pass  = $("pass").value.trim();
         if(!email || !pass) { showMsg("Completa email y contraseña."); return; }
         setLoading(btnEmail, true);
@@ -350,11 +356,11 @@
           goHome();
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnEmail, false); }
-      };
+      }
 
-      window.resetPass = async ()=>{
+      async function resetPassImpl(){
         showMsg("");
-        const email = $("email").value.trim();
+        const email = $("email").value.trim().toLowerCase(); // normalizar
         if(!email){ showMsg("Ingresa tu email para enviar el enlace de recuperación."); return; }
         setLoading(btnEmail, true);
         try{
@@ -362,11 +368,17 @@
           showMsg("Te enviamos un enlace para restablecer la contraseña.", "ok");
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnEmail, false); }
-      };
+      }
+
+      // ===== Exponer APIs con gate =====
+      window.loginEmail  = ()=> gate(loginEmailImpl);
+      window.loginGoogle = ()=> gate(loginGoogleImpl);
+      window.signUp      = ()=> gate(signUpImpl);
+      window.resetPass   = ()=> gate(resetPassImpl);
 
       // Enter para enviar
       form.addEventListener("keydown",(ev)=>{
-        if(ev.key==="Enter"){ ev.preventDefault(); loginEmail(); }
+        if(ev.key==="Enter"){ ev.preventDefault(); window.loginEmail(); }
       });
 
       // Si ya hay sesión → ir a home (con base robusta)
