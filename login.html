@@ -17,6 +17,7 @@
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
+    <!-- Estilos base del card (tipografía y layout del formulario) -->
     <style>
       :root{
         --radius:16px; --radius-sm:12px; --radius-xs:10px;
@@ -25,50 +26,37 @@
         --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
         --elev-1:0 6px 20px rgba(0,0,0,.25);
       }
-      [data-theme="dark"]{
-        --bg-app:#070b1a;
-        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
-        --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
-        --primary:#5b8bff; --accent:#7ae3ff;
-      }
       *{box-sizing:border-box}
       html,body{height:100%}
       body{
-        margin:0; font-family:var(--font-body); color:var(--txt);
+        margin:0; font-family:var(--font-body);
         overflow-x:hidden; display:grid; place-items:center; padding:24px;
       }
       #bg-grid{
         position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
         background:
-          linear-gradient(color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
-          linear-gradient(90deg, color-mix(in oklab, var(--txt) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
+          linear-gradient(#0001 1px, transparent 1px) 0 0 / 28px 28px,
+          linear-gradient(90deg, #0001 1px, transparent 1px) 0 0 / 28px 28px;
       }
 
       /* ====== LOGIN CARD ====== */
       .login-wrap{ width:100%; display:grid; place-items:center; }
       .login-card{
         width:100%; max-width:520px;
-        background:var(--bg-card); border:1px solid var(--stroke);
-        border-radius:22px; padding:28px; box-shadow:var(--elev-1);
+        border-radius:22px; padding:28px;
       }
       .login-card h2{ margin:0 0 10px; font:700 24px/1.1 var(--font-title) }
-      .login-card p{ margin:0 0 18px; color:var(--txt-muted) }
+      .login-card p{ margin:0 0 18px }
 
       .stack{display:flex; flex-direction:column; gap:14px;}
       .field{display:flex; flex-direction:column; gap:8px;}
-      label{color:#cbd5e1; font-size:14px; letter-spacing:.2px}
+      label{font-size:14px; letter-spacing:.2px}
 
       input{
-        width:100%; height:48px;
-        padding:12px 14px; border-radius:12px;
-        border:1px solid #314057; background:#0b1220; color:var(--txt);
+        width:100%; height:48px; padding:12px 14px; border-radius:12px;
         outline:none; transition:border-color .15s ease, box-shadow .15s ease;
       }
-      input::placeholder{color:#6b7b93}
-      input:focus{
-        border-color:color-mix(in oklab, var(--accent) 70%, white);
-        box-shadow:0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent);
-      }
+      input::placeholder{opacity:.75}
 
       .actions{display:flex; flex-direction:column; gap:12px; margin-top:6px;}
       .btn{
@@ -77,23 +65,12 @@
         transition:transform .12s ease, filter .15s ease, opacity .15s ease;
       }
       .btn:active{ transform:translateY(1px) }
-      .btn.primary{
-        color:#0b1022;
-        background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 55%, white));
-        border:1px solid color-mix(in oklab, var(--accent) 60%, white);
-      }
-      .btn.primary:hover{ filter:brightness(1.03) }
-      .btn.ghost{
-        color:#e5e7eb; background:#0b1220; border:1px solid #334155;
-      }
-      .btn.ghost:hover{ filter:brightness(1.05) }
       .btn[disabled]{opacity:.65; cursor:not-allowed}
 
       .meta{
-        display:flex; justify-content:space-between; gap:14px; margin-top:8px;
-        flex-wrap:wrap;
+        display:flex; justify-content:space-between; gap:14px; margin-top:8px; flex-wrap:wrap;
       }
-      .link{color:#93c5fd; cursor:pointer; text-decoration:none}
+      .link{cursor:pointer; text-decoration:none}
       .link:hover{text-decoration:underline}
 
       .msg{margin-top:10px;font-size:14px}
@@ -105,14 +82,16 @@
         .reveal.show{opacity:1; transform:none}
       }
 
-      .spinner{width:16px;height:16px;border-radius:999px;border:2px solid #0b1022;border-top-color:transparent;animation:spin .8s linear infinite}
-      .btn.ghost .spinner{border-color:#e5e7eb;border-top-color:transparent}
+      .spinner{width:16px;height:16px;border-radius:999px;border:2px solid currentColor;border-top-color:transparent;animation:spin .8s linear infinite}
       @keyframes spin{to{transform:rotate(360deg)}}
     </style>
   </head>
-  <body class="gc-login">
+
+  <!-- 👇 BW activado -->
+  <body class="gc-login bw">
     <div id="bg-grid" aria-hidden="true"></div>
 
+    <!-- Shell del ecosistema (sin sidebar ni hero) -->
     <gc-shell no-aside hero="off">
       <main class="login-wrap">
         <article class="login-card reveal">
@@ -151,19 +130,62 @@
       </main>
     </gc-shell>
 
-    <!-- Override para asegurar fondo oscuro -->
+    <!-- ===== Overrides de TEMA para integrarlo visualmente al BW =====
+         (usa variables definidas en assets/bw/bw.css; este bloque debe estar
+          después de los estilos base para tomar precedencia) -->
     <style>
-      body.gc-login{
-        background:
-          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
-          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
-          var(--bg-app) !important;
-        color: var(--txt);
+      /* Fondo general BW */
+      body.gc-login.bw{
+        background: var(--white) !important;
+        color: var(--gray-900);
       }
+
+      /* Tarjeta BW */
+      .login-card{
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-900);
+        box-shadow: none;
+      }
+      .login-card h2{ color: var(--gray-900); }
+      .login-card p{ color: var(--gray-700); }
+
+      /* Inputs BW */
+      .login-card input{
+        background: var(--white);
+        color: var(--gray-900);
+        border: 1px solid var(--gray-300);
+      }
+      .login-card input::placeholder{ color: var(--gray-500); }
+      .login-card input:focus{
+        border-color: var(--gray-900);
+        box-shadow: 0 0 0 2px rgba(0,0,0,.08);
+      }
+
+      /* Botones BW */
+      .btn.primary{
+        background: var(--gray-900);
+        color: #fff;
+        border: 1px solid var(--gray-900);
+      }
+      .btn.primary:hover{ filter:brightness(1.05); }
+      .btn.ghost{
+        background: #1a1a1a;
+        color: #fff;
+        border: 1px solid var(--gray-300);
+      }
+      .btn.ghost:hover{ filter:brightness(1.05); }
+
+      /* Links meta */
+      .link{ color: var(--gray-900); }
+      .link:hover{ text-decoration: underline; }
+
+      /* Opcional: ocultar grid sutil en BW */
+      #bg-grid{ display:none; }
     </style>
 
+    <!-- Reveal suave -->
     <script type="module">
-      // Reveal suave
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
         const io = new IntersectionObserver((entries)=>{
@@ -196,8 +218,8 @@
         measurementId: "G-NBFZYTN094"
       };
 
+      // Navegación segura hacia Home (respeta BASE del shell/BW)
       const PREFERRED_REPO = "Gestion-Center";
-
       function isValidAbsoluteBase(u){
         try{
           const url = new URL(u);
@@ -206,7 +228,6 @@
           return true;
         }catch{ return false; }
       }
-
       function computeBase(){
         if (isValidAbsoluteBase(window.__GC_BASE__)) {
           return window.__GC_BASE__.endsWith('/') ? window.__GC_BASE__ : (window.__GC_BASE__ + '/');
@@ -215,31 +236,21 @@
         const segs = location.pathname.split('/').filter(Boolean);
         if (host.endsWith('github.io')){
           const first = segs[0] || "";
-          if (first && !/\.html?$/i.test(first)) {
-            return `${location.origin}/${first}/`;
-          }
+          if (first && !/\.html?$/i.test(first)) return `${location.origin}/${first}/`;
           return `${location.origin}/${PREFERRED_REPO}/`;
         }
         return `${location.origin}/`;
       }
-
-      function defaultHome(){
-        return computeBase();
-      }
-
+      function defaultHome(){ return computeBase(); }
       function sanitizeTarget(to){
         if(!to) return defaultHome();
-        let dest;
-        try{ dest = new URL(to, location.origin); }catch{ return defaultHome(); }
+        let dest; try{ dest = new URL(to, location.origin); }catch{ return defaultHome(); }
         if(dest.origin !== location.origin) return defaultHome();
-
         const baseUrl = new URL(defaultHome());
         const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
-
         if(!dest.pathname.startsWith(basePath)) return defaultHome();
         return dest.href;
       }
-
       function goHome(){
         const stored = localStorage.getItem("redirectAfterLogin");
         const qTo = new URLSearchParams(location.search).get("to");
@@ -248,6 +259,7 @@
         location.replace(dest);
       }
 
+      // INIT Firebase (evita doble init si guard.js ya lo hizo)
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db   = getFirestore(app);
@@ -305,6 +317,7 @@
       };
       const mapError = (e)=>ERR_MAP[e?.code] || e?.message || "Ocurrió un error. Intenta de nuevo.";
 
+      // Actions
       window.loginEmail = async ()=>{
         showMsg("");
         const email = $("email").value.trim();
@@ -358,11 +371,14 @@
         finally{ setLoading(btnEmail, false); }
       };
 
+      // Enter para enviar
       form.addEventListener("keydown",(ev)=>{
         if(ev.key==="Enter"){ ev.preventDefault(); loginEmail(); }
       });
 
+      // Si ya hay sesión → ir a home
       onAuthStateChanged(auth, (user)=>{ if(user){ goHome(); } });
+      // debug
       window._logout = ()=>signOut(auth);
     </script>
   </body>
