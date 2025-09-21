@@ -13,20 +13,19 @@
     <!-- Página pública para que el guard no exija sesión -->
     <script>window.GC_PUBLIC_PAGE = true;</script>
 
-    <!-- ⚠️ Plan B de BASE (rápido): ajusta o elimina cuando configures custom domain a la raíz del repo -->
+    <!-- Plan B de BASE (ajústalo a tu despliegue si hace falta) -->
     <meta name="gc-base" content="/Gestion-Center/">
 
     <!-- Ocultar hasta que guard.js decida (anti-parpadeo) -->
     <style>html{visibility:hidden}</style>
     <script type="module" src="./assets/guard.js"></script>
 
-    <!-- Estilos base -->
+    <!-- Estilos -->
     <style>
       :root{
         --radius:16px; --radius-sm:12px;
         --font-title:'Outfit', system-ui, sans-serif;
         --font-body:'Lexend', system-ui, sans-serif;
-        --t-slow:.6s;
       }
       *{box-sizing:border-box}
       html,body{height:100%}
@@ -59,23 +58,17 @@
       input::placeholder{color:#aaa;}
       input:focus{border-color:#fff; outline:none;}
 
-      .actions{display:flex; flex-direction:column; gap:12px; margin-top:6px;}
+      .actions{display:flex; flex-direction:column; gap:0; margin-top:6px;}
       .btn{
         width:100%; height:48px; border-radius:14px; border:0; cursor:pointer;
         font-weight:700; display:inline-flex; align-items:center; justify-content:center;
-        transition:opacity .2s ease;
+        transition:opacity .2s ease, filter .15s ease;
       }
       .btn[disabled]{opacity:.6; cursor:default;}
       .btn.primary{ background:#fff; color:#000; }
-      .btn.primary:hover{ background:#f3f3f3; }
-      .btn.ghost{ background:#222; color:#fff; border:1px solid #444; }
-      .btn.ghost:hover{ background:#333; }
+      .btn.primary:hover{ filter:brightness(1.02); }
 
-      .meta{display:flex; justify-content:space-between; gap:14px; margin-top:8px; flex-wrap:wrap;}
-      .link{color:#fff; text-decoration:none; cursor:pointer;}
-      .link:hover{text-decoration:underline;}
-
-      .msg{margin-top:10px;font-size:14px}
+      .msg{margin-top:12px;font-size:14px}
       .msg.err{color:#f87171}
       .msg.ok{color:#22c55e}
     </style>
@@ -86,7 +79,7 @@
       <main class="login-wrap">
         <article class="login-card" role="dialog" aria-labelledby="title" aria-describedby="desc">
           <h2 id="title">Inicia sesión</h2>
-          <p id="desc">Usa tu cuenta corporativa o Google.</p>
+          <p id="desc">Usa tu cuenta corporativa.</p>
 
           <form id="form" onsubmit="return false;" class="stack" autocomplete="on">
             <div class="field">
@@ -101,12 +94,6 @@
 
             <div class="actions">
               <button id="btnEmail" type="button" class="btn primary">Entrar con Email</button>
-              <button id="btnGoogle" type="button" class="btn ghost">Entrar con Google</button>
-            </div>
-
-            <div class="meta">
-              <a class="link" id="lnkSignUp">Crear cuenta (prueba)</a>
-              <a class="link" id="lnkReset">¿Olvidaste tu contraseña?</a>
             </div>
 
             <div id="msg" class="msg" role="alert" aria-live="polite"></div>
@@ -115,13 +102,12 @@
       </main>
     </gc-shell>
 
-    <!-- Autenticación + redirección robusta -->
+    <!-- Auth + redirect robusto (solo email/password) -->
     <script type="module">
       import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
         getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-        createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup,
-        setPersistence, browserLocalPersistence, sendPasswordResetEmail
+        setPersistence, browserLocalPersistence
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -133,18 +119,13 @@
         return m?.content || "";
       }
       function computeBase(){
-        // 1) Usa la que expuso guard.js, si existe
         const hinted = window.__GC_BASE__;
         if (hinted) return hinted.endsWith("/") ? hinted : hinted + "/";
-
-        // 2) Usa meta gc-base como plan B (relativa a origin)
         const meta = readMetaBase();
         if (meta){
           const abs = new URL(meta.replace(/^\//,""), location.origin).href;
           return abs.endsWith("/") ? abs : abs + "/";
         }
-
-        // 3) Fallback: origen + "/"
         return location.origin + "/";
       }
       const BASE = computeBase();
@@ -169,15 +150,12 @@
       try { await setPersistence(auth, browserLocalPersistence); } catch(e) {}
 
       /* -------------------------
-         DOM helpers
+         DOM
          ------------------------- */
       const $ = (id)=>document.getElementById(id);
       const emailEl = $("email");
       const passEl  = $("pass");
       const btnEmail = $("btnEmail");
-      const btnGoogle = $("btnGoogle");
-      const lnkSignUp = $("lnkSignUp");
-      const lnkReset  = $("lnkReset");
       const msgEl = $("msg");
 
       function showMsg(text, type="err"){
@@ -185,11 +163,7 @@
         msgEl.className = "msg " + (type === "ok" ? "ok" : "err");
       }
       function setBusy(b){
-        [btnEmail, btnGoogle, lnkSignUp, lnkReset].forEach(el=>{
-          if(!el) return;
-          if (el.tagName === "BUTTON") el.disabled = !!b;
-          el.style.pointerEvents = b ? "none" : "auto";
-        });
+        btnEmail.disabled = !!b;
       }
 
       async function ensureUserDoc(user){
@@ -212,7 +186,6 @@
             return target; // absoluto guardado por guard.js
           }
         }catch{}
-        // fallback: index absoluto en la BASE
         return abs("index.html");
       }
 
@@ -236,69 +209,14 @@
         }
       }
 
-      async function loginGoogle(){
-        setBusy(true);
-        showMsg("");
-        try{
-          const provider = new GoogleAuthProvider();
-          const { user } = await signInWithPopup(auth, provider);
-          await ensureUserDoc(user);
-          location.href = nextUrlAfterLogin();
-        }catch(e){
-          showMsg(prettyAuthError(e));
-        }finally{
-          setBusy(false);
-        }
-      }
-
-      async function signUp(){
-        const email = (emailEl.value||"").trim();
-        const pass  = (passEl.value||"").trim();
-        if(!email || !pass){ showMsg("Completa email y contraseña."); return; }
-        setBusy(true);
-        showMsg("");
-        try{
-          const { user } = await createUserWithEmailAndPassword(auth, email, pass);
-          await ensureUserDoc(user);
-          showMsg("Cuenta creada", "ok");
-          location.href = nextUrlAfterLogin();
-        }catch(e){
-          showMsg(prettyAuthError(e));
-        }finally{
-          setBusy(false);
-        }
-      }
-
-      async function resetPass(){
-        const email = (emailEl.value||"").trim();
-        if(!email){ showMsg("Ingresa tu email."); return; }
-        setBusy(true);
-        showMsg("");
-        try{
-          await sendPasswordResetEmail(auth, email);
-          showMsg("Correo de recuperación enviado", "ok");
-        }catch(e){
-          showMsg(prettyAuthError(e));
-        }finally{
-          setBusy(false);
-        }
-      }
-
-      // UX: Enter sobre password dispara login email
+      // Enter sobre password → login
       document.getElementById("form").addEventListener("keydown", (ev)=>{
         if(ev.key === "Enter"){ ev.preventDefault(); loginEmail(); }
       });
-
       btnEmail.addEventListener("click", loginEmail);
-      btnGoogle.addEventListener("click", loginGoogle);
-      lnkSignUp.addEventListener("click", signUp);
-      lnkReset.addEventListener("click", resetPass);
 
       onAuthStateChanged(auth, (user)=>{
-        // Si ya hay sesión y alguien abrió /login, reenvía al destino
-        if(user){
-          location.href = nextUrlAfterLogin();
-        }
+        if(user){ location.href = nextUrlAfterLogin(); }
       });
 
       /* -------------------------
@@ -311,9 +229,7 @@
           "auth/invalid-email": "Email inválido.",
           "auth/user-disabled": "Usuario deshabilitado.",
           "auth/user-not-found": "Usuario no encontrado.",
-          "auth/wrong-password": "Contraseña incorrecta.",
-          "auth/popup-closed-by-user": "Se cerró la ventana de Google.",
-          "auth/popup-blocked": "El navegador bloqueó el popup. Habilítalo e intenta de nuevo."
+          "auth/wrong-password": "Contraseña incorrecta."
         };
         return map[code] || (e?.message || "Error de autenticación.");
       }
