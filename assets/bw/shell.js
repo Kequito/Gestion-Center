@@ -3,6 +3,7 @@
    GC Shell (BW) — sidebar + header + estilos base + guard
    ✅ Enlaces de "Inicio" y logo forzados a:
       https://kequito.github.io/Gestion-Center/
+   ✅ RoleCard: muestra rango real (claim "rank") con color
    =========================================================== */
 
 // ---------- Constante HOME ABSOLUTA (pedido del usuario) ----------
@@ -234,6 +235,71 @@ function setActive(navEl) {
   }
 }
 
+// ---------- Role helpers (UI) ----------
+/**
+ * Normaliza el claim a uno de los 4 estados visuales.
+ * - admin        -> Admin (rojo)
+ * - supervisor   -> Supervisor (morado)
+ * - tl           -> Team Leader (azul)
+ * - viewer/op/undefined -> Invitado (verde)
+ */
+function normalizeRoleKey(raw){
+  const r = String(raw || "").toLowerCase();
+  if (r === "admin") return "admin";
+  if (r === "supervisor") return "supervisor";
+  if (r === "tl") return "tl";
+  return "invitado";
+}
+
+const ROLE_UI = {
+  admin:      { name: "Admin",       color: "#ef4444", desc: "Acceso total" },
+  supervisor: { name: "Supervisor",  color: "#a855f7", desc: "Gestión avanzada" },
+  tl:         { name: "Team Leader", color: "#3b82f6", desc: "Lidera un equipo" },
+  invitado:   { name: "Invitado",    color: "#22c55e", desc: "Acceso limitado" },
+};
+
+async function readRankClaim(){
+  try{
+    // Preferimos el auth expuesto por guard.js
+    let auth = window.gcAuth;
+    if (!auth){
+      const mod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+      auth = mod.getAuth();
+    }
+    if (!auth?.currentUser) return null;
+    const t = await auth.currentUser.getIdTokenResult(true);
+    return t?.claims?.rank ?? null;
+  }catch{ return null; }
+}
+
+function paintRoleCard(root, normalizedKey){
+  const roleDot   = root.querySelector("#roleDot");
+  const roleName  = root.querySelector("#roleName");
+  const roleDesc  = root.querySelector("#roleDesc");
+  const roleBadge = root.querySelector("#roleBadge");
+  const ui = ROLE_UI[normalizedKey] || ROLE_UI.invitado;
+
+  roleDot.style.background = ui.color;
+  roleName.textContent     = ui.name;
+  roleBadge.textContent    = ui.name;
+  roleDesc.textContent     = ui.desc;
+
+  // para estilos condicionales si quieres
+  const card = root.querySelector("#roleCard");
+  if (card){
+    card.dataset.role = normalizedKey;  // ej: data-role="admin"
+  }
+
+  // Guarda último valor como fallback
+  try{ localStorage.setItem("gc-role", ui.name); }catch{}
+}
+
+async function paintRoleFromAuth(root){
+  const rank = await readRankClaim();             // ej: "admin" | "supervisor" | "tl" | null
+  const key  = normalizeRoleKey(rank);            // -> "admin"/"supervisor"/"tl"/"invitado"
+  paintRoleCard(root, key);
+}
+
 function buildSidebar(CFG) {
   const b = CFG.brand || {};
   const navHTML = (CFG.nav || []).map(entry => {
@@ -350,17 +416,32 @@ class GCShell extends HTMLElement {
 
     if (!noAside) wireSidebar(this);
 
-    // Role (gris simple)
-    const roleDot  = this.querySelector("#roleDot");
-    const roleName = this.querySelector("#roleName");
-    const roleDesc = this.querySelector("#roleDesc");
-    const roleBadge= this.querySelector("#roleBadge");
-    if (roleDot && roleName && roleDesc && roleBadge){
-      const ls = (localStorage.getItem("gc-role") || "Invitado");
-      roleDot.style.background = "#737373";
-      roleName.textContent = ls;
-      roleDesc.textContent = (ls === "Invitado" ? "Acceso limitado" : "");
-      roleBadge.textContent = ls;
+    // ===== RoleCard: pintar con claim real / fallback LS =====
+    const roleDot   = this.querySelector("#roleDot");
+    const roleName  = this.querySelector("#roleName");
+    const roleDesc  = this.querySelector("#roleDesc");
+    const roleBadge = this.querySelector("#roleBadge");
+
+    // Fallback inmediato con último valor
+    try{
+      const last = localStorage.getItem("gc-role");
+      if (last && roleName && roleBadge){
+        // color por nombre (aprox), sólo por no dejar en gris si hay algo previo
+        const map = { Admin:"#ef4444", Supervisor:"#a855f7", "Team Leader":"#3b82f6", Invitado:"#22c55e" };
+        roleName.textContent = last;
+        roleBadge.textContent = last;
+        if (roleDot) roleDot.style.background = map[last] || "#737373";
+        if (roleDesc) roleDesc.textContent = (last === "Invitado" ? "Acceso limitado" : "");
+      }
+    }catch{}
+
+    // Pintar con dato real del token
+    try {
+      await paintRoleFromAuth(this);
+    } catch (e) {
+      console.warn("[gc-shell] No se pudo leer el claim de rol:", e);
+      // Si algo falla, al menos dejar "Invitado" en verde
+      paintRoleCard(this, "invitado");
     }
 
     try { document.documentElement.style.visibility = "visible"; } catch {}
