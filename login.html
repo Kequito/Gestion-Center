@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — Acceso</title>
 
-    <!-- Fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet"/>
-
-    <!-- Página pública (mostrar login sin sesión) -->
+    <!-- Página pública: permitir ver sin sesión -->
     <script>window.GC_PUBLIC_PAGE = true;</script>
 
-    <!-- Ocultar hasta que guard.js decida -->
-    <style>html{visibility:hidden}</style>
-    <script type="module" src="./assets/guard.js"></script>
+    <!-- Carga el shell con BASE robusto (GitHub Pages o dominio propio) -->
+    <script type="module">
+      const isGh  = location.hostname.endsWith('github.io');
+      const parts = location.pathname.split('/').filter(Boolean);
+      const repo  = isGh ? (parts[0] || '') : '';
+      const base  = isGh ? `/${repo}/` : '/';
+      import(new URL('assets/bw/shell.js', location.origin + base).href);
+    </script>
 
+    <!-- Ocultar hasta que guard.js/shell habiliten -->
+    <style>html{visibility:hidden}</style>
+
+    <!-- Estilos locales del card (usa tokens del ecosistema) -->
     <style>
       :root{
         --radius:16px; --radius-sm:12px; --radius-xs:10px;
@@ -31,16 +35,7 @@
         --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
         --primary:#5b8bff; --accent:#7ae3ff;
       }
-      *{box-sizing:border-box}
-      html,body{height:100%}
-      body{
-        margin:0; font-family:var(--font-body); color:var(--txt);
-        background:
-          radial-gradient(1100px 1100px at 10% -10%, color-mix(in oklab, var(--primary) 30%, transparent), transparent 60%),
-          radial-gradient(900px 900px at 90% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 55%),
-          var(--bg-app);
-        overflow-x:hidden; display:grid; place-items:center; padding:24px;
-      }
+      /* Fondo cuadriculado sutil (opcional) */
       #bg-grid{
         position:fixed; inset:0; z-index:-1; opacity:.07; pointer-events:none;
         background:
@@ -49,7 +44,7 @@
       }
 
       /* ====== LOGIN CARD ====== */
-      .login-wrap{ width:100%; display:grid; place-items:center; }
+      .login-wrap{ min-height:70dvh; display:grid; place-items:center; }
       .login-card{
         width:100%; max-width:520px;
         background:var(--bg-card); border:1px solid var(--stroke);
@@ -58,14 +53,11 @@
       .login-card h2{ margin:0 0 10px; font:700 24px/1.1 var(--font-title) }
       .login-card p{ margin:0 0 18px; color:var(--txt-muted) }
 
-      /* Jerarquía y espaciado */
       .stack{display:flex; flex-direction:column; gap:14px;}
       .field{display:flex; flex-direction:column; gap:8px;}
       label{color:#cbd5e1; font-size:14px; letter-spacing:.2px}
-
       input{
-        width:100%; height:48px;
-        padding:12px 14px; border-radius:12px;
+        width:100%; height:48px; padding:12px 14px; border-radius:12px;
         border:1px solid #314057; background:#0b1220; color:var(--txt);
         outline:none; transition:border-color .15s ease, box-shadow .15s ease;
       }
@@ -88,16 +80,11 @@
         border:1px solid color-mix(in oklab, var(--accent) 60%, white);
       }
       .btn.primary:hover{ filter:brightness(1.03) }
-      .btn.ghost{
-        color:#e5e7eb; background:#0b1220; border:1px solid #334155;
-      }
+      .btn.ghost{ color:#e5e7eb; background:#0b1220; border:1px solid #334155; }
       .btn.ghost:hover{ filter:brightness(1.05) }
       .btn[disabled]{opacity:.65; cursor:not-allowed}
 
-      .meta{
-        display:flex; justify-content:space-between; gap:14px; margin-top:8px;
-        flex-wrap:wrap;
-      }
+      .meta{ display:flex; justify-content:space-between; gap:14px; margin-top:8px; flex-wrap:wrap; }
       .link{color:#93c5fd; cursor:pointer; text-decoration:none}
       .link:hover{text-decoration:underline}
 
@@ -105,11 +92,15 @@
       .msg.err{color:#f87171}
       .msg.ok{color:#22c55e}
 
+      .showpass{
+        position:absolute; right:10px; top:50%; transform:translateY(-50%);
+        font-size:12px; color:#93c5fd; cursor:pointer; user-select:none;
+      }
+
       @media (prefers-reduced-motion:no-preference){
         .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
         .reveal.show{opacity:1; transform:none}
       }
-
       .spinner{width:16px;height:16px;border-radius:999px;border:2px solid #0b1022;border-top-color:transparent;animation:spin .8s linear infinite}
       .btn.ghost .spinner{border-color:#e5e7eb;border-top-color:transparent}
       @keyframes spin{to{transform:rotate(360deg)}}
@@ -118,46 +109,49 @@
   <body>
     <div id="bg-grid" aria-hidden="true"></div>
 
-    <!-- SOLO LOGIN -->
-    <main class="login-wrap">
-      <article class="login-card reveal">
-        <h2>Inicia sesión</h2>
-        <p>Usa tu cuenta corporativa o Google.</p>
+    <!-- Login sin sidebar ni hero -->
+    <gc-shell no-aside hero="off">
+      <main class="login-wrap">
+        <article class="login-card reveal">
+          <h2>Inicia sesión</h2>
+          <p>Usa tu cuenta corporativa o Google.</p>
 
-        <form id="form" onsubmit="return false;" class="stack">
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="username" required/>
-          </div>
+          <form id="form" onsubmit="return false;" class="stack">
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" type="email" placeholder="tucorreo@empresa.com" autocomplete="username" required/>
+            </div>
 
-          <div class="field">
-            <label for="pass">Contraseña</label>
-            <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required/>
-          </div>
+            <div class="field" style="position:relative">
+              <label for="pass">Contraseña</label>
+              <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required/>
+              <span id="togglePass" class="showpass">mostrar</span>
+            </div>
 
-          <div class="actions">
-            <button id="btnEmail" class="btn primary" onclick="loginEmail()">
-              <span>Entrar con Email</span>
-            </button>
+            <div class="actions">
+              <button id="btnEmail" class="btn primary" onclick="loginEmail()">
+                <span>Entrar con Email</span>
+              </button>
 
-            <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">
-              <span>Entrar con Google</span>
-            </button>
-          </div>
+              <button id="btnGoogle" type="button" class="btn ghost" onclick="loginGoogle()">
+                <span>Entrar con Google</span>
+              </button>
+            </div>
 
-          <div class="meta">
-            <a class="link" onclick="signUp()">Crear cuenta (prueba)</a>
-            <a class="link" onclick="resetPass()">¿Olvidaste tu contraseña?</a>
-          </div>
+            <div class="meta">
+              <a class="link" onclick="signUp()">Crear cuenta (prueba)</a>
+              <a class="link" onclick="resetPass()">¿Olvidaste tu contraseña?</a>
+            </div>
 
-          <div id="msg" class="msg" role="alert" aria-live="polite"></div>
-        </form>
-      </article>
-    </main>
+            <div id="msg" class="msg" role="alert" aria-live="polite"></div>
+          </form>
+        </article>
+      </main>
+    </gc-shell>
 
+    <!-- Reveal suave -->
     <script type="module">
-      // Reveal suave
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(!reduced && 'IntersectionObserver' in window){
         const io = new IntersectionObserver((entries)=>{
           for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); } }
@@ -166,6 +160,15 @@
       } else {
         document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show'));
       }
+      // Mostrar/ocultar contraseña
+      const pass = document.getElementById('pass');
+      const tgl  = document.getElementById('togglePass');
+      tgl?.addEventListener('click', ()=>{
+        const was = pass.type === 'password';
+        pass.type = was ? 'text' : 'password';
+        tgl.textContent = was ? 'ocultar' : 'mostrar';
+        pass.focus();
+      });
     </script>
 
     <!-- ====== AUTH (Firebase) ====== -->
@@ -178,7 +181,6 @@
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      // ===== CONFIG =====
       const firebaseConfig = {
         apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
         authDomain: "gestioncenterdata.firebaseapp.com",
@@ -189,51 +191,32 @@
         measurementId: "G-NBFZYTN094"
       };
 
-      // ===== BASE ROBUSTA (usa guard.js si está ok; si no, fallback seguro) =====
+      // Preferir BASE del shell (window.__GC_BASE__), con fallback robusto
       const PREFERRED_REPO = "Gestion-Center";
-
       function isValidAbsoluteBase(u){
-        try{
-          const url = new URL(u);
-          if(url.origin !== location.origin) return false;
-          if(/\.html($|\/)/i.test(url.pathname)) return false;
-          return true;
-        }catch{ return false; }
+        try{ const url = new URL(u); return url.origin===location.origin && !/\.html($|\/)/i.test(url.pathname);}
+        catch{ return false;}
       }
-
       function computeBase(){
-        // 1) Usa la BASE de guard.js si es válida
-        if (isValidAbsoluteBase(window.__GC_BASE__)) {
-          return window.__GC_BASE__.endsWith('/') ? window.__GC_BASE__ : (window.__GC_BASE__ + '/');
-        }
-        // 2) Fallback por entorno
-        const host = location.hostname;
-        const segs = location.pathname.split('/').filter(Boolean);
+        if (isValidAbsoluteBase(window.__GC_BASE__)) return window.__GC_BASE__.endsWith('/')?window.__GC_BASE__:window.__GC_BASE__+'/';
+        const host = location.hostname, segs = location.pathname.split('/').filter(Boolean);
         if (host.endsWith('github.io')){
           const first = segs[0] || "";
-          if (first && !/\.html?$/i.test(first)) {
-            return `${location.origin}/${first}/`;
-          }
+          if (first && !/\.html?$/i.test(first)) return `${location.origin}/${first}/`;
           return `${location.origin}/${PREFERRED_REPO}/`;
         }
         return `${location.origin}/`;
       }
-
       function defaultHome(){ return computeBase(); }
-
       function sanitizeTarget(to){
         if(!to) return defaultHome();
-        let dest;
-        try{ dest = new URL(to, location.origin); }catch{ return defaultHome(); }
+        let dest; try{ dest = new URL(to, location.origin); }catch{return defaultHome();}
         if(dest.origin !== location.origin) return defaultHome();
-
         const baseUrl = new URL(defaultHome());
         const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : (baseUrl.pathname + '/');
-
         if(!dest.pathname.startsWith(basePath)) return defaultHome();
         return dest.href;
       }
-
       function goHome(){
         const stored = localStorage.getItem("redirectAfterLogin");
         const qTo = new URLSearchParams(location.search).get("to");
@@ -242,20 +225,18 @@
         location.replace(dest);
       }
 
-      // ===== INIT FIREBASE (evita doble init si guard.js ya inicializó) =====
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db   = getFirestore(app);
       try { await setPersistence(auth, browserLocalPersistence); } catch(e) {}
 
-      // ===== DOM / UX =====
       const $ = (id)=>document.getElementById(id);
       const msgEl = $("msg");
       const btnEmail  = $("btnEmail");
       const btnGoogle = $("btnGoogle");
       const form = $("form");
 
-      // Foco inicial en email (accesibilidad)
+      // Foco inicial en email
       document.getElementById('email')?.focus();
 
       function setLoading(el, loading=true){
@@ -277,7 +258,6 @@
         msgEl.className = "msg " + (type === "ok" ? "ok" : "err");
       }
 
-      // ===== Firestore bootstrap =====
       async function ensureUserDoc(user){
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
@@ -291,7 +271,6 @@
         }
       }
 
-      // Errores → ES
       const ERR_MAP = {
         "auth/invalid-email": "El email no es válido.",
         "auth/missing-password": "Ingresa tu contraseña.",
@@ -308,18 +287,13 @@
       };
       const mapError = (e)=>ERR_MAP[e?.code] || e?.message || "Ocurrió un error. Intenta de nuevo.";
 
-      // ===== Gate anti-doble submit =====
+      // Gate anti-doble submit
       let _busy = false;
-      const gate = (fn) => {
-        if (_busy) return;
-        _busy = true;
-        return Promise.resolve(fn()).finally(()=>{ _busy = false; });
-      };
+      const gate = (fn) => { if(_busy) return; _busy = true; return Promise.resolve(fn()).finally(()=>{_busy=false;}); };
 
-      // ===== Actions (implementaciones internas) =====
       async function loginEmailImpl(){
         showMsg("");
-        const email = $("email").value.trim().toLowerCase(); // normalizar
+        const email = $("email").value.trim().toLowerCase();
         const pass  = $("pass").value.trim();
         if(!email || !pass) { showMsg("Completa email y contraseña."); return; }
         setLoading(btnEmail, true);
@@ -330,7 +304,6 @@
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnEmail, false); }
       }
-
       async function loginGoogleImpl(){
         showMsg("");
         setLoading(btnGoogle, true);
@@ -342,10 +315,9 @@
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnGoogle, false); }
       }
-
       async function signUpImpl(){
         showMsg("");
-        const email = $("email").value.trim().toLowerCase(); // normalizar
+        const email = $("email").value.trim().toLowerCase();
         const pass  = $("pass").value.trim();
         if(!email || !pass) { showMsg("Completa email y contraseña."); return; }
         setLoading(btnEmail, true);
@@ -357,10 +329,9 @@
         }catch(e){ showMsg(mapError(e)); }
         finally{ setLoading(btnEmail, false); }
       }
-
       async function resetPassImpl(){
         showMsg("");
-        const email = $("email").value.trim().toLowerCase(); // normalizar
+        const email = $("email").value.trim().toLowerCase();
         if(!email){ showMsg("Ingresa tu email para enviar el enlace de recuperación."); return; }
         setLoading(btnEmail, true);
         try{
@@ -370,20 +341,21 @@
         finally{ setLoading(btnEmail, false); }
       }
 
-      // ===== Exponer APIs con gate =====
+      // Exponer con gate
       window.loginEmail  = ()=> gate(loginEmailImpl);
       window.loginGoogle = ()=> gate(loginGoogleImpl);
       window.signUp      = ()=> gate(signUpImpl);
       window.resetPass   = ()=> gate(resetPassImpl);
 
-      // Enter para enviar
+      // Submit con Enter
       form.addEventListener("keydown",(ev)=>{
         if(ev.key==="Enter"){ ev.preventDefault(); window.loginEmail(); }
       });
 
-      // Si ya hay sesión → ir a home (con base robusta)
+      // Ya logueado → home
       onAuthStateChanged(auth, (user)=>{ if(user){ goHome(); } });
-      // (debug) logout por consola
+
+      // debug
       window._logout = ()=>signOut(auth);
     </script>
   </body>
