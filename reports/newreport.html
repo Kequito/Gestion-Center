@@ -159,7 +159,7 @@
       <div class="history-actions" style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px;">
         <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
         <button class="btn-danger" onclick="borrarHistorial()">🗑️ Borrar historial</button>
-        <!-- 🔻 Eliminado: Exportar histórico (CSV) -->
+        <!-- (Eliminado Exportar histórico CSV) -->
       </div>
 
       <!-- Filtros -->
@@ -553,10 +553,10 @@
       await ensurePaisesOptions();
       const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
 
-      // Prefs
+      // Prefs  (🔴 default cambiado a 'hoy')
       const prefPais=readPref(PREF_FPAIS,'todos');
       const prefFecha=readPref(PREF_FFECHA,'');
-      const prefPreset=readPref(PREF_PRESET,'dia');
+      const prefPreset=readPref(PREF_PRESET,'hoy');  /* <- antes 'dia' */
       if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
       presetEl.value = prefPreset;
       if(prefFecha) filtroFechaEl.value = prefFecha;
@@ -636,9 +636,9 @@
     });
     signInAnonymously(auth).catch(e=>{ console.error('[GC] signInAnonymously error:', e); });
 
-    // Prefs iniciales
+    // Prefs iniciales (🔴 default cambiado a 'hoy')
     document.addEventListener('DOMContentLoaded', ()=>{
-      const prefPreset=readPref(PREF_PRESET,'dia');
+      const prefPreset=readPref(PREF_PRESET,'hoy');  /* <- antes 'dia' */
       document.getElementById('presetRango').value=prefPreset;
       document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
       const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
