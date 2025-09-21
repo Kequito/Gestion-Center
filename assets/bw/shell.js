@@ -1,10 +1,14 @@
 // assets/bw/shell.js
 /* ===========================================================
    GC Shell (BW) — sidebar + header + estilos base + guard
-   BASE robusta + nav absoluto + activo correcto
+   ✅ Enlaces de "Inicio" y logo forzados a:
+      https://kequito.github.io/Gestion-Center/
    =========================================================== */
 
-// ---------- BASE robusto ----------
+// ---------- Constante HOME ABSOLUTA (pedido del usuario) ----------
+const HOME_ABS = "https://kequito.github.io/Gestion-Center/";
+
+// ---------- BASE robusto (para assets y demás páginas internas) ----------
 const PREFERRED_REPO = "Gestion-Center";
 
 function readMetaBase(){
@@ -50,7 +54,7 @@ function computeBase(){
     return `${location.origin}${basePath}`;
   }
 
-  // Fallback a subcarpeta preferida (útil mientras no mapees el dominio a la raíz del repo)
+  // Fallback a subcarpeta preferida
   return `${location.origin}/${PREFERRED_REPO}/`;
 }
 
@@ -66,12 +70,27 @@ async function loadConfig() {
     const mod = await import(abs("assets/bw/gc.config.js"));
     const cfg = mod?.GC_CONFIG || mod?.default;
     if (!cfg) throw new Error("GC_CONFIG vacío");
+
+    // 🔒 Forzar home/Inicio a HOME_ABS
+    if (!cfg.brand) cfg.brand = {};
+    cfg.brand.homeHref = HOME_ABS;
+
+    // Además, si existe un item "Inicio" de tipo link con href "index.html", lo forzamos
+    if (Array.isArray(cfg.nav)) {
+      cfg.nav = cfg.nav.map(entry => {
+        if (entry?.type === "link" && /inicio/i.test(entry.label || "")) {
+          return { ...entry, href: HOME_ABS };
+        }
+        return entry;
+      });
+    }
+
     return cfg;
   } catch (e) {
     console.warn("[gc-shell] gc.config.js no disponible, uso fallback:", e);
     return {
       brand: {
-        homeHref: "index.html",
+        homeHref: HOME_ABS, // ⬅️ forzado
         logoWebp: "images/logo1.webp",
         logoPng : "images/logogestioncenter.png",
       },
@@ -80,7 +99,8 @@ async function loadConfig() {
         subtitle: "Sesión verificada ✅ | Accesos rápidos y estado general.",
       },
       nav: [
-        { type: "link", id: "home", label: "Inicio", icon: "🏠", href: "index.html" },
+        // ⬇️ “Inicio” forzado a HOME_ABS
+        { type: "link", id: "home", label: "Inicio", icon: "🏠", href: HOME_ABS },
         {
           type: "group",
           id: "grp-reportes",
@@ -180,7 +200,6 @@ async function ensureGuardAndHead() {
 
 // ---------- Helpers ----------
 function normalizePathname(p){
-  // quita dobles slash, normaliza index.html y slash final
   let out = (p || "/").replace(/\/{2,}/g, "/");
   if (out.endsWith("/index.html")) out = out.slice(0, -"/index.html".length) + "/";
   return out;
@@ -192,16 +211,16 @@ function setActive(navEl) {
 
   let active = null;
   items.forEach(a => {
-    const href = a.getAttribute("href") || a.href || "";
-    // Siempre resolvemos absoluto y comparamos pathname normalizados
-    const ap = normalizePathname(new URL(href, location.href).pathname);
+    const hrefAttr = a.getAttribute("href") || a.href || "";
+    // Resolver absoluto (soporta HOME_ABS externo)
+    const ap = normalizePathname(new URL(hrefAttr, location.href).pathname);
     const match = (ap === current);
     if (match) active = a;
     a.classList.toggle("active", match);
     a.toggleAttribute("aria-current", match ? "page" : false);
   });
 
-  // Si nada coincidió exactamente (ej. deep-link), intenta por "base filename"
+  // Si no coincidió nada exacto, intentar por archivo base
   if (!active){
     const currFile = current.split("/").pop() || "index.html";
     items.forEach(a=>{
@@ -219,7 +238,9 @@ function buildSidebar(CFG) {
   const b = CFG.brand || {};
   const navHTML = (CFG.nav || []).map(entry => {
     if (entry.type === "link") {
-      return `<a class="nav-item" href="${abs(entry.href)}" title="${entry.label}">
+      // Si el label es Inicio, forzar HOME_ABS
+      const href = /inicio/i.test(entry.label || "") ? HOME_ABS : abs(entry.href);
+      return `<a class="nav-item" href="${href}" title="${entry.label}">
         ${entry.icon || ""} <span class="label">${entry.label}</span></a>`;
     }
     const items = (entry.items || [])
@@ -233,9 +254,12 @@ function buildSidebar(CFG) {
     </section>`;
   }).join("");
 
+  // 🔒 Logo/brand siempre a HOME_ABS
+  const brandHref = HOME_ABS;
+
   return `
   <aside id="gc-aside">
-    <a class="brand" href="${abs(b.homeHref || "index.html")}" id="brandLink" aria-label="Inicio" title="Inicio">
+    <a class="brand" href="${brandHref}" id="brandLink" aria-label="Inicio" title="Inicio">
       <picture>
         <source srcset="${abs(b.logoWebp || "images/logo1.webp")}" type="image/webp"/>
         <img id="brandLogo" src="${abs(b.logoPng || "images/logogestioncenter.png")}" alt="Gestión Center" loading="lazy" decoding="async"/>
@@ -290,20 +314,19 @@ function wireSidebar(root) {
   setCompactState(localStorage.getItem(compactKey) === "1");
 }
 
-// ---------- Web Component (única definición, soporte no-aside) ----------
+// ---------- Web Component ----------
 class GCShell extends HTMLElement {
   async connectedCallback() {
     await ensureGuardAndHead();
     const CFG = await loadConfig();
 
     const heroOff   = this.getAttribute("hero") === "off";
-    const noAside   = this.hasAttribute("no-aside");   // soporte login sin sidebar
+    const noAside   = this.hasAttribute("no-aside");
     const heroTitle = this.getAttribute("hero-title") || (CFG.heroDefault?.title || "");
     const heroSub   = this.getAttribute("hero-subtitle") || (CFG.heroDefault?.subtitle || "");
 
     const userContent = this.innerHTML;
 
-    // Si no-aside, override de main
     if (noAside && !document.querySelector('style[data-gc="no-aside-ov"]')) {
       const st = document.createElement("style");
       st.setAttribute("data-gc", "no-aside-ov");
