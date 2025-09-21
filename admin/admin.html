@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Panel Admin</title>
+  <meta name="gc-base" content="/Gestion-Center/">
+  <script type="module" src="./assets/guard.js"></script>
+  <script type="module" src="./assets/bw/shell.js"></script>
+  <link rel="stylesheet" href="./assets/bw/bw.css">
+  <style>html{visibility:hidden}</style>
+</head>
+<body>
+  <gc-shell hero-title="Panel de administración" hero-subtitle="Gestiona roles y accesos">
+    <section class="card">
+      <h2>🛡️ Asignación de roles</h2>
+      <p>Esta página está limitada a <strong>administradores</strong>. Aquí colocaremos el formulario para asignar rangos.</p>
+      <p style="margin-top:8px;opacity:.8">Próximo paso: conectar con la Cloud Function <code>setUserRank</code> para asignar <em>admin / supervisor / tl / invitado</em>.</p>
+    </section>
+  </gc-shell>
+
+  <script type="module">
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    const auth = getAuth();
+    async function requireAdmin(){
+      const user = auth.currentUser;
+      if (!user) return; // el guard ya se encargó de mandar a login si no hay sesión
+      const t = await user.getIdTokenResult(true);
+      if (t.claims?.rank !== "admin") {
+        // sin permiso -> vuelve al home
+        const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
+        location.replace(new URL("index.html", base).href);
+        return;
+      }
+      document.documentElement.style.visibility = "visible";
+    }
+    requireAdmin();
+  </script>
+</body>
+</html>
