@@ -4,6 +4,7 @@
    ✅ Enlaces de "Inicio" y logo forzados a:
       https://kequito.github.io/Gestion-Center/
    ✅ RoleCard: muestra rango real (claim "rank") con color
+   ✅ Sidebar con visibilidad por roles (roles: ["admin"], etc.)
    =========================================================== */
 
 // ---------- Constante HOME ABSOLUTA (pedido del usuario) ----------
@@ -135,6 +136,16 @@ async function loadConfig() {
           title: "Utilidades",
           items: [
             { label: "Selector de Apoyo 2.0", icon: "👥", href: "utilities/camprev.html" },
+          ],
+        },
+        // ⬇️ NUEVO: sección Admin visible solo para admins
+        {
+          type: "group",
+          id: "grp-admin",
+          title: "Admin",
+          roles: ["admin"],
+          items: [
+            { label: "Panel de roles", icon: "🛡️", href: "admin/admin.html", roles: ["admin"] }
           ],
         },
       ],
@@ -298,6 +309,22 @@ async function paintRoleFromAuth(root){
   const rank = await readRankClaim();             // ej: "admin" | "supervisor" | "tl" | null
   const key  = normalizeRoleKey(rank);            // -> "admin"/"supervisor"/"tl"/"invitado"
   paintRoleCard(root, key);
+  return key;
+}
+
+/* ====== VISIBILIDAD POR ROL EN EL SIDEBAR ====== */
+function isAllowedFor(roleKey, allowedList=[]) {
+  const roles = (allowedList || []).map(r => String(r||"").toLowerCase());
+  if (roles.length === 0) return true; // si no se especifica, visible para todos
+  return roles.includes(roleKey);
+}
+
+function applyRoleVisibility(root, roleKey) {
+  root.querySelectorAll("[data-roles]").forEach(el => {
+    const roles = (el.getAttribute("data-roles") || "")
+      .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+    el.style.display = isAllowedFor(roleKey, roles) ? "" : "none";
+  });
 }
 
 function buildSidebar(CFG) {
@@ -306,13 +333,25 @@ function buildSidebar(CFG) {
     if (entry.type === "link") {
       // Si el label es Inicio, forzar HOME_ABS
       const href = /inicio/i.test(entry.label || "") ? HOME_ABS : abs(entry.href);
-      return `<a class="nav-item" href="${href}" title="${entry.label}">
+      const roles = Array.isArray(entry.roles) ? entry.roles.join(",") : "";
+      const needsRoles = roles.length > 0 ? ` data-roles="${roles}" style="display:none"` : "";
+      return `<a class="nav-item" href="${href}" title="${entry.label}"${needsRoles}>
         ${entry.icon || ""} <span class="label">${entry.label}</span></a>`;
     }
+
+    // group
+    const roles = Array.isArray(entry.roles) ? entry.roles.join(",") : "";
+    const groupRolesAttr = roles.length > 0 ? ` data-roles="${roles}" style="display:none"` : "";
+
     const items = (entry.items || [])
-      .map(it => `<a class="nav-item" href="${abs(it.href)}" title="${it.label}">
-        ${it.icon || ""} <span class="label">${it.label}</span></a>`).join("");
-    return `<section class="nav-group" data-key="${entry.id}">
+      .map(it => {
+        const itemRoles = Array.isArray(it.roles) ? it.roles.join(",") : "";
+        const itemNeedsRoles = itemRoles.length > 0 ? ` data-roles="${itemRoles}" style="display:none"` : "";
+        return `<a class="nav-item" href="${abs(it.href)}" title="${it.label}"${itemNeedsRoles}>
+          ${it.icon || ""} <span class="label">${it.label}</span></a>`;
+      }).join("");
+
+    return `<section class="nav-group" data-key="${entry.id}"${groupRolesAttr}>
       <button class="nav-head" aria-expanded="true" title="${entry.title}">
         <span class="chev">▾</span> <span class="txt">${entry.title}</span>
       </button>
@@ -417,16 +456,14 @@ class GCShell extends HTMLElement {
     if (!noAside) wireSidebar(this);
 
     // ===== RoleCard: pintar con claim real / fallback LS =====
-    const roleDot   = this.querySelector("#roleDot");
-    const roleName  = this.querySelector("#roleName");
-    const roleDesc  = this.querySelector("#roleDesc");
-    const roleBadge = this.querySelector("#roleBadge");
-
     // Fallback inmediato con último valor
     try{
       const last = localStorage.getItem("gc-role");
+      const roleDot   = this.querySelector("#roleDot");
+      const roleName  = this.querySelector("#roleName");
+      const roleDesc  = this.querySelector("#roleDesc");
+      const roleBadge = this.querySelector("#roleBadge");
       if (last && roleName && roleBadge){
-        // color por nombre (aprox), sólo por no dejar en gris si hay algo previo
         const map = { Admin:"#ef4444", Supervisor:"#a855f7", "Team Leader":"#3b82f6", Invitado:"#22c55e" };
         roleName.textContent = last;
         roleBadge.textContent = last;
@@ -435,13 +472,15 @@ class GCShell extends HTMLElement {
       }
     }catch{}
 
-    // Pintar con dato real del token
+    // Pintar con dato real del token y aplicar visibilidad del menú según rol
     try {
-      await paintRoleFromAuth(this);
+      const roleKey = await paintRoleFromAuth(this); // "admin" | "supervisor" | "tl" | "invitado"
+      applyRoleVisibility(this, roleKey);
     } catch (e) {
       console.warn("[gc-shell] No se pudo leer el claim de rol:", e);
-      // Si algo falla, al menos dejar "Invitado" en verde
       paintRoleCard(this, "invitado");
+      // Por seguridad, deja ocultos los items que requieren rol
+      applyRoleVisibility(this, "invitado");
     }
 
     try { document.documentElement.style.visibility = "visible"; } catch {}
