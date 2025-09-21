@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>New Report — Gestión Center</title>
 
-  <!-- Carga el shell con BASE robusto -->
+  <!-- Carga el shell con BASE robusto (GitHub Pages o dominio propio) -->
   <script type="module">
   const isGh  = location.hostname.endsWith('github.io');
   const parts = location.pathname.split('/').filter(Boolean);
@@ -25,49 +25,66 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Estilos específicos de esta página -->
   <style>
+    /* Área */
     #nr .page-title{ display:flex; align-items:center; gap:12px; font-weight:700; font-size:22px; margin:0 0 6px }
     #nr .subtitle{ margin:0 0 10px; color:var(--gray-700); font-size:14px; display:flex; align-items:center; gap:10px }
 
+    /* Badge Firebase */
     #nr .badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--gray-300); background:var(--gray-100); color:var(--gray-900) }
     #nr .badge.ok{ background:var(--gray-200) }  #nr .badge.warn{ background:var(--gray-300) }
 
+    /* Fecha/Hora */
     #nr .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; color:var(--gray-700) }
 
-    #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; align-items:center }
-    #nr .toolbar button, #nr .toolbar a.button, #nr .history-actions button{
-      padding:10px 14px; font-size:14px; cursor:pointer; border:1px solid var(--gray-300); border-radius:10px;
-      background:var(--white); color:var(--gray-900); transition:background .15s ease, transform .03s ease, filter .15s ease;
+    /* Toolbar (estética base) */
+    #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px }
+    #nr .toolbar button,
+    #nr .toolbar a.button,
+    #nr .history-actions button{
+      padding:10px 14px; font-size:14px; cursor:pointer;
+      border:1px solid var(--gray-300); border-radius:10px;
+      background:var(--white); color:var(--gray-900);
+      transition:background .15s ease, transform .03s ease, filter .15s ease;
       text-decoration:none; display:inline-flex; align-items:center; gap:8px;
     }
-    #nr .toolbar button:hover, #nr .toolbar a.button:hover, #nr .history-actions button:hover{ background:var(--gray-100) }
-    #nr .toolbar button:active, #nr .toolbar a.button:active, #nr .history-actions button:active{ transform:translateY(1px) }
-    #nr .toolbar button[disabled], #nr .history-actions button[disabled]{ opacity:.55; cursor:not-allowed }
+    #nr .toolbar button:hover,
+    #nr .toolbar a.button:hover,
+    #nr .history-actions button:hover{ background:var(--gray-100) }
+    #nr .toolbar button:active,
+    #nr .toolbar a.button:active,
+    #nr .history-actions button:active{ transform:translateY(1px) }
+    #nr .toolbar button[disabled],
+    #nr .history-actions button[disabled]{ opacity:.55; cursor:not-allowed }
 
-    #nr .toolbar .btn-danger, #nr .history-actions .btn-danger{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
-    #nr .toolbar .btn-danger:hover, #nr .history-actions .btn-danger:hover{ background:#fee2e2; filter:brightness(1.02); }
+    /* Botón peligro */
+    #nr .toolbar .btn-danger,
+    #nr .history-actions .btn-danger{
+      background:#fef2f2; border-color:#fecaca; color:#991b1b;
+    }
+    #nr .toolbar .btn-danger:hover,
+    #nr .history-actions .btn-danger:hover{
+      background:#fee2e2; filter:brightness(1.02);
+    }
 
-    /* Toggle de vista (un solo botón “deslizable” que cicla modos) */
-    #viewToggle{ position:relative; }
-    #viewToggle .mode{ font-weight:700 }
-    #viewToggle[data-mode="numerico"] .mode{ color:#111 }
-    #viewToggle[data-mode="porcentaje"] .mode{ color:#111 }
-    #viewToggle[data-mode="mixto"] .mode{ color:#111 }
-
+    /* Entrada */
     #nr textarea{
       width:100%; min-height:150px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       padding:12px; border:1px solid var(--gray-300); background:var(--white); color:var(--gray-900); border-radius:12px; box-sizing:border-box
     }
-    #nr textarea[readonly]{ background:#fafafa; color:#555; }
 
+    /* Tabla principal */
     #nr table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%;
       background:var(--white); border:1px solid var(--gray-300); border-radius:12px; overflow:hidden }
     #nr th,#nr td{ border-bottom:1px solid var(--gray-200); padding:10px; text-align:center }
+    /* NO re-definimos colores de thead para respetar el estándar global negro/blanco del shell */
     #nr thead th{ cursor:pointer; position:relative; font-weight:700 }
     #nr thead th:first-child, #nr tbody td:first-child{ text-align:left }
     #nr .bandera{ width:20px; height:14px; margin-right:6px; vertical-align:middle }
     #nr .bold{ font-weight:700 }
 
+    /* Semáforo (colores) */
     :root{
       --ok-bg:#eaf7ee; --ok-fg:#166534; --ok-br:#22c55e;
       --mid-bg:#fffbeb; --mid-fg:#92400e; --mid-br:#f59e0b;
@@ -79,6 +96,7 @@
 
     #nr tfoot td{ font-weight:800; background:var(--gray-100); border-top:2px solid var(--gray-300) }
 
+    /* Filtros */
     #nr .filters{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; background:var(--white);
       border:1px solid var(--gray-300); border-radius:12px; padding:10px 12px; margin-top:18px }
     #nr .filter-group{ display:flex; align-items:center; gap:10px }
@@ -90,6 +108,7 @@
     #nr .filter-group .clear-btn{ background:var(--gray-100); border:1px solid var(--gray-300); padding:8px 12px; border-radius:10px; cursor:pointer }
     #nr .filter-group .clear-btn:hover{ background:var(--gray-200) }
 
+    /* Métricas rápidas */
     #nr .quick-metrics{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 }
     #nr .metric{ background:var(--white); border:1px solid var(--gray-300); padding:10px 12px; border-radius:10px; min-width:150px }
     #nr .metric .title{ font-size:12px; color:var(--gray-700); margin-bottom:4px }
@@ -97,49 +116,46 @@
     #nr .metric .delta.up{ color:#16a34a }   /* verde */
     #nr .metric .delta.down{ color:#dc2626 } /* rojo */
 
+    /* Histórico */
     #tablaHistorico .btn-danger{
       padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid #fecaca;
       background:#fef2f2; color:#991b1b; cursor:pointer;
     }
     #tablaHistorico .btn-danger:hover{ background:#fee2e2 }
 
+    /* Toast */
     #toast{ position:fixed; bottom:18px; right:20px; background:var(--black); color:#fff;
       padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000 }
-
-    #lockInfo{ display:flex; align-items:center; gap:8px; font-size:12px; }
   </style>
 </head>
 <body>
+  <!-- Ocultamos títulos del hero pasando vacío -->
   <gc-shell hero-title="" hero-subtitle="">
     <section id="nr">
+      <!-- TÍTULO SUPERIOR ÚNICO -->
       <div class="page-title">🧰 New Report CC Perú</div>
-      <p class="subtitle">
-        <span id="fbBadge" class="badge">Conectando…</span>
-        <span id="lockInfo" class="badge warn" style="display:none;"></span>
-      </p>
+      <p class="subtitle"><span id="fbBadge" class="badge">Conectando…</span></p>
 
       <div class="datetime" id="fechaHora"></div>
 
       <div class="toolbar">
-        <!-- ÚNICO BOTÓN DESLIZABLE DE VISTA -->
-        <button id="viewToggle" data-mode="numerico" title="Cambiar vista (clic para rotar)">
-          <span class="icon" id="viewIcon">📦</span>
-          <span class="mode" id="viewLabel">Vista Numérica</span>
+        <!-- 🆕 Botón deslizante de vistas (Mixta → Numérica → Porcentual) -->
+        <button id="btnViewToggle" data-mode="mixto">
+          <span id="viewIcon">🔁</span>
+          <span id="viewLabel">Vista Mixta</span>
         </button>
 
-        <!-- Edición compartida -->
-        <button id="btnTakeLock"     title="Tomar control de edición">🔒 Tomar control</button>
-        <button id="btnReleaseLock"  title="Liberar control" disabled>🔓 Liberar</button>
-        <button id="btnPushData"     title="Guardar/compartir datos pegados" disabled>⬆️ Compartir datos</button>
+        <button id="btnTake" class="btn-lock" title="Tomar control (WIP)" disabled>🔒 Tomar control</button>
+        <button id="btnRelease" class="btn-lock" title="Liberar (WIP)"  disabled>🔓 Liberar</button>
 
-        <!-- Otros -->
-        <button class="btn-danger" id="btnBorrarTodo">🧹 Borrar</button>
-        <button id="btnRestOrden">🧭 Restablecer Orden</button>
-
-        <a class="button" href="https://panel.2wcall.com/stats/queue/index?QueueSearch%5Bcountries%5D=&QueueSearch%5Bdate_type%5D=partner_created_at&QueueSearch%5Bdate_range%5D=20%2F09%2F2025+0%3A00+-+20%2F09%2F2025+23%3A59&QueueSearch%5Bpartner_id%5D=1" target="_blank" rel="noopener">🔗 Fuente (Panel)</a>
+        <button class="btn-danger" onclick="borrarTodo()">🧹 Borrar</button>
+        <button onclick="restablecerOrden()">🧭 Restablecer Orden</button>
+        <!-- Fuente (Panel) -->
+        <a class="button" href="https://panel.2wcall.com/stats/queue/index?QueueSearch%5Bcountries%5D=&QueueSearch%5Bdate_type%5D=partner_created_at&QueueSearch%5Bdate_range%5D=20%2F09%2F2025+0%3A00+-+20%2F09%2F2025+23%3A59&QueueSearch%5Bpartner_id%5D=1"
+           target="_blank" rel="noopener">🔗 Fuente (Panel)</a>
       </div>
 
-      <textarea id="inputData" placeholder="Pega aquí tu tabla…" readonly></textarea>
+      <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…"></textarea>
 
       <table id="tablaReporte">
         <thead><tr id="encabezadoTabla"></tr></thead>
@@ -148,22 +164,22 @@
       </table>
 
       <div class="history-actions" style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px;">
-        <button id="btnRegistrar" disabled>📌 Registrar avance ahora</button>
-        <button class="btn-danger" id="btnBorrarHist">🗑️ Borrar historial</button>
+        <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
+        <button class="btn-danger" onclick="borrarHistorial()">🗑️ Borrar historial</button>
       </div>
 
+      <!-- Filtros -->
       <div class="filters">
         <div class="filter-group">
           <label for="filtroPais">🌎 País:</label>
-          <select id="filtroPais">
+          <select id="filtroPais" onchange="onFiltroChange()">
             <option value="todos">🌍 Todos</option>
           </select>
-          <button class="clear-btn" id="btnAllCountries">Todos</button>
         </div>
 
         <div class="filter-group">
           <label for="presetRango">🗓️ Rango:</label>
-          <select id="presetRango">
+          <select id="presetRango" onchange="onPresetChange()">
             <option value="dia">Día específico</option>
             <option value="hoy">Hoy</option>
             <option value="ayer">Ayer</option>
@@ -173,11 +189,12 @@
 
         <div class="filter-group">
           <label for="filtroFecha">📅 Fecha:</label>
-          <input type="date" id="filtroFecha"/>
-          <button class="clear-btn" id="btnClearFecha">Todos</button>
+          <input type="date" id="filtroFecha" onchange="onFiltroChange()"/>
+          <button class="clear-btn" onclick="limpiarFecha()">Todos</button>
         </div>
       </div>
 
+      <!-- Métricas rápidas -->
       <div id="quickMetrics" class="quick-metrics" style="display:none;">
         <div class="metric"><div class="title">Min % Approve</div><div id="mMin" class="value">–</div></div>
         <div class="metric"><div class="title">Mediana % Approve</div><div id="mMed" class="value">–</div></div>
@@ -203,8 +220,9 @@
     <div id="toast"></div>
   </gc-shell>
 
+  <!-- ===== Lógica específica de la página ===== -->
   <script type="module">
-    // Espera util
+    // Espera robusta
     async function waitForEl(sel, timeout=8000){
       const t0=performance.now();
       while(performance.now()-t0 < timeout){
@@ -217,28 +235,53 @@
     await customElements.whenDefined('gc-shell');
     await waitForEl('#encabezadoTabla');
 
-    // Firebase v10.12.2 (mismo stack del guard)
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, onSnapshot, runTransaction, serverTimestamp, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // ==== Firebase (SDK 10.12.2) usando el app del guard ====
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc,
+      onSnapshot, runTransaction, serverTimestamp, getDoc, setDoc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const auth = getAuth();
-    const db   = getFirestore();
+    const app  = getApp();          // ⬅️ toma el mismo app que inicializó guard.js
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-    const fbBadge   = document.getElementById('fbBadge');
-    const lockInfoEl= document.getElementById('lockInfo');
-    const setBadge = (txt, cls='') => { fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; };
+    // ====== Estado compartido mínimo (para conexión + vista) ======
+    const nrDocRef = doc(db, 'nr_state', 'global');
 
-    // Prefs
+    const fbBadge = document.getElementById('fbBadge');
+    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
+
+    // Si el doc no existe, créalo (si reglas lo permiten). Si no, seguimos igual.
+    async function ensureStateDocIfNeeded(){
+      try{
+        const snap = await getDoc(nrDocRef);
+        if (!snap.exists()) {
+          await setDoc(nrDocRef, {
+            viewMode: 'mixto',
+            dataRaw : '',
+            updatedAt: serverTimestamp()
+          }, { merge:true });
+        }
+      }catch(e){
+        console.warn('[nr] ensureStateDocIfNeeded:', e.message || e);
+      }
+    }
+
+    // ===== Utils =====
     const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais',
           PREF_FFECHA='gc_filtro_fecha_iso', PREF_PRESET='gc_preset_rango';
     const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
     const readPref=(k,d=null)=>{ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{ return d;} };
 
-    // Tiempo
     const pad2=n=>String(n).padStart(2,'0');
     const formatDDMMYYYY=d=>`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
     const formatISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    const ddmmyyyyToISO=(s)=>{ if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; };
+
+    function ddmmyyyyToISO(s){ if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; }
+
     function toHora24(str){
       if(!str) return "";
       let s=str.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[\.]/g,'');
@@ -247,6 +290,7 @@
       if(m12){ let h=+m12[1]%12, min=+m12[2]; if(m12[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`; }
       return str;
     }
+
     function actualizarFechaHora(){
       const ahora=new Date();
       const fecha=ahora.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -255,214 +299,32 @@
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    // UI refs
-    const inputEl       = document.getElementById('inputData');
-    const viewToggleBtn = document.getElementById('viewToggle');
-    const viewIcon      = document.getElementById('viewIcon');
-    const viewLabel     = document.getElementById('viewLabel');
+    let vistaActual=readPref(PREF_VISTA,'mixto'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
 
-    const btnTakeLock   = document.getElementById('btnTakeLock');
-    const btnRelease    = document.getElementById('btnReleaseLock');
-    const btnPushData   = document.getElementById('btnPushData');
+    // Banderas
+    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
 
-    const btnRegistrar  = document.getElementById('btnRegistrar');
-    const btnBorrarHist = document.getElementById('btnBorrarHist');
-    const btnBorrarTodo = document.getElementById('btnBorrarTodo');
-    const btnRestOrden  = document.getElementById('btnRestOrden');
-
-    const filtroPaisEl  = document.getElementById("filtroPais");
-    const filtroFechaEl = document.getElementById("filtroFecha");
-    const presetEl      = document.getElementById("presetRango");
-    const btnAllCountries = document.getElementById("btnAllCountries");
-    const btnClearFecha   = document.getElementById("btnClearFecha");
-
-    // Estado compartido
-    const nrDocRef = doc(db,'nr_state','global');
-    const LOCK_TTL_SEC = 120;
-    let heartbeatTimer = null;
-    let holdLock = false;
-    let myRank = 'invitado';
-    let canEdit = false;
-    let canDelete = false;
-    let lastSnapshotDataRaw = '';
-    let vistaActual = readPref(PREF_VISTA,'numerico');
-
-    const ALLOWED_EDIT_ROLES   = new Set(['supervisor','admin']);
-    const ALLOWED_DELETE_ROLES = new Set(['supervisor','admin']);
-
-    async function getRank(){
-      const u = auth.currentUser;
-      if(!u) return 'invitado';
-      const t = await u.getIdTokenResult(true);
-      return String(t.claims?.rank || 'invitado').toLowerCase();
-    }
-
-    function setViewButton(mode){
-      viewToggleBtn.dataset.mode = mode;
-      if(mode==='numerico'){ viewIcon.textContent='📦'; viewLabel.textContent='Vista Numérica'; }
-      else if(mode==='porcentaje'){ viewIcon.textContent='📈'; viewLabel.textContent='Vista Porcentual'; }
-      else { viewIcon.textContent='🔁'; viewLabel.textContent='Vista Mixta'; }
-    }
-    setViewButton(vistaActual);
-
-    function applyRoleUI(){
-      // vista (toggle)
-      viewToggleBtn.disabled = !canEdit;
-
-      // edición compartida
-      btnTakeLock.disabled = !canEdit || holdLock;
-      btnRelease.disabled  = !holdLock;
-      btnPushData.disabled = !holdLock;
-      inputEl.readOnly     = !holdLock;
-
-      // histórico
-      btnRegistrar.disabled  = !canEdit;
-      btnBorrarHist.disabled = !canDelete;
-      btnBorrarTodo.disabled = !canDelete;
-    }
-
-    function showToast(msg){
+    function mostrarToast(msg){
       const t=document.getElementById("toast");
       t.textContent=msg; t.style.display="block"; t.style.opacity=1;
       setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600);
       setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200);
     }
 
-    function setLockInfo(lock){
-      if(!lock){ lockInfoEl.style.display='none'; return; }
-      const { holderEmail, since } = lock;
-      const at  = (since && since.toDate ? since.toDate() : null);
-      const hhmm = at ? `${pad2(at.getHours())}:${pad2(at.getMinutes())}` : '—';
-      lockInfoEl.textContent = holderEmail
-        ? `🔒 En edición por ${holderEmail} desde ${hhmm}`
-        : '🔒 En edición';
-      lockInfoEl.style.display='inline-flex';
-    }
+    const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
 
-    async function acquireLock(){
-      if(!canEdit){ showToast("No tienes permisos para editar."); return; }
-      const u = auth.currentUser; if(!u){ showToast("Sesión inválida."); return; }
-      try{
-        await runTransaction(db, async (tx)=>{
-          const snap = await tx.get(nrDocRef);
-          const now = Date.now();
-          let data = snap.exists() ? snap.data() : {};
-          const lock = data.lock;
-          let canTake = false;
-          if(!lock) canTake = true;
-          else {
-            const sinceMs = lock.since?.toMillis ? lock.since.toMillis() : 0;
-            const ttl = (lock.ttlSec || LOCK_TTL_SEC) * 1000;
-            if (now - sinceMs > ttl) canTake = true;
-            if (lock.holderUid === u.uid) canTake = true;
-          }
-          if(!canTake) throw new Error("Otro usuario está editando actualmente.");
-          const newLock = {
-            holderUid: u.uid,
-            holderEmail: u.email || '(sin email)',
-            since: serverTimestamp(),
-            ttlSec: LOCK_TTL_SEC
-          };
-          tx.set(nrDocRef, { lock: newLock }, { merge:true });
-        });
-        holdLock = true;
-        applyRoleUI();
-        startHeartbeat();
-        showToast("Control de edición adquirido ✅");
-      }catch(e){
-        console.warn(e); showToast(e.message || "No se pudo tomar el control.");
-      }
-    }
-    async function releaseLock(){
-      if(!holdLock) return;
-      const u = auth.currentUser; if(!u) return;
-      try{
-        await runTransaction(db, async (tx)=>{
-          const snap = await tx.get(nrDocRef);
-          if(!snap.exists()) return;
-          const data = snap.data() || {};
-          const lock = data.lock;
-          if(lock?.holderUid === u.uid){
-            tx.update(nrDocRef, { lock: null });
-          }
-        });
-      }catch(e){ console.warn(e); }
-      finally{
-        holdLock = false; stopHeartbeat(); applyRoleUI(); showToast("Control liberado.");
-      }
-    }
-    function startHeartbeat(){
-      stopHeartbeat();
-      heartbeatTimer = setInterval(async ()=>{
-        try{
-          const u = auth.currentUser;
-          if(!u || !holdLock) return;
-          const snap = await getDoc(nrDocRef);
-          const lock = snap.exists() ? (snap.data().lock || null) : null;
-          if(lock?.holderUid !== u.uid){
-            holdLock=false; applyRoleUI(); stopHeartbeat(); return;
-          }
-          await updateDoc(nrDocRef, { 'lock.since': serverTimestamp() });
-        }catch(e){ console.warn('[heartbeat]', e); }
-      }, 30000);
-    }
-    function stopHeartbeat(){ if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer=null; } }
-
-    async function pushSharedData(){
-      if(!holdLock){ showToast("Toma el control para compartir datos."); return; }
-      const raw = inputEl.value || '';
-      const u = auth.currentUser;
-      try{
-        await updateDoc(nrDocRef, {
-          dataRaw: raw, updatedAt: serverTimestamp(),
-          updatedBy: { uid: u.uid, email: u.email || '(sin email)', displayName: u.displayName || '' }
-        });
-        lastSnapshotDataRaw = raw;
-        showToast("Datos compartidos ✅");
-      }catch(e){ console.warn(e); showToast("No se pudo actualizar el estado compartido."); }
-    }
-
-    async function setSharedView(mode){
-      if(!canEdit){ showToast("No tienes permisos para cambiar la vista."); return; }
-      try{
-        await updateDoc(nrDocRef, { viewMode: mode, updatedAt: serverTimestamp() });
-        savePref(PREF_VISTA, mode);
-      }catch(e){ console.warn(e); showToast("No se pudo cambiar la vista compartida."); }
-    }
-
-    // Toggle cíclico de vistas en un solo botón
-    const MODES = ['numerico','porcentaje','mixto'];
-    viewToggleBtn.addEventListener('click', async ()=>{
-      const curr = viewToggleBtn.dataset.mode || 'numerico';
-      const idx  = MODES.indexOf(curr);
-      const next = MODES[(idx+1) % MODES.length];
-      setViewButton(next);
-      await setSharedView(next);
-      // si hay datos, re-procesa local
-      if((inputEl.value||'').trim()){ vistaActual = next; procesar(vistaActual); }
-    });
-
-    // ====== Render (tu lógica) ======
-    let dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
-    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
-    function mostrarToast(msg){ showToast(msg); }
     function borrarTodo(){
-      inputEl.value="";
+      document.getElementById("inputData").value="";
       document.querySelector("#tablaReporte tbody").innerHTML="";
       document.querySelector("#encabezadoTabla").innerHTML="";
       document.querySelector("#filaTotales").innerHTML="";
       dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{});
     }
-    function pctSafe(v,t){ if(!t) return "0.0%"; return ((v/t)*100).toFixed(1)+"%"; }
-    const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
 
     function procesar(vista){
-      vistaActual=vista; savePref(PREF_VISTA,vista);
-      estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
-
-      const input=(inputEl.value||"").trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
+      vistaActual=vista; savePref(PREF_VISTA,vista); estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
+      const input=document.getElementById("inputData").value.trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
       const filas=input.split("\n"), headersRaw=filas[0].split("\t").map(h=>h.trim()), headersLC=headersRaw.map(h=>h.toLowerCase());
-      const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
       const idx=(names)=> (Array.isArray(names)?names:[names]).reduce((r,n)=> r>=0?r:(headersRaw.indexOf(n)>=0?headersRaw.indexOf(n):headersLC.indexOf(n.toLowerCase())), -1);
       const IDX={ country:idx(COLMAP.country), total:idx(COLMAP.total), news:idx(COLMAP.news), recall:idx(COLMAP.recall), noAnswer:idx(COLMAP.noAnswer), approved:idx(COLMAP.approved), reject:idx(COLMAP.reject), trash:idx(COLMAP.trash) };
       if(IDX.country===-1||IDX.total===-1){ mostrarToast("⚠️ Falta Country/Total."); return; }
@@ -475,9 +337,11 @@
         dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall); dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
       }
       dataOriginal=Object.entries(dataGlobal);
-      renderTabla();
-      mostrarToast("✅ Datos procesados");
+      renderTabla(); mostrarToast("✅ Datos procesados");
     }
+
+    function pctSafe(v,t){ if(!t) return "0.0%"; return ((v/t)*100).toFixed(1)+"%"; }
+    const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
 
     function renderTabla(){
       const enc=document.getElementById("encabezadoTabla"), cuerpo=document.querySelector("#tablaReporte tbody"), tfoot=document.getElementById("filaTotales");
@@ -514,7 +378,8 @@
 
       const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.trash+=d.trash; a.reject+=d.reject; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
       if(Object.keys(dataGlobal).length){
-        let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||0; const clsTot = colorPct(t?tot.approved/t*100:0);
+        let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||0;
+        const clsTot = colorPct(t?tot.approved/t*100:0);
         if(vistaActual==="numerico"){
           foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
         }else if(vistaActual==="porcentaje"){
@@ -525,14 +390,20 @@
         tfoot.innerHTML=foot;
       }
     }
+
     function cambiarOrdenColumna(col){ estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1; if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0; columnaOrdenActual=estadoOrdenColumna[col]===0?null:col; savePref(PREF_ORDEN,estadoOrdenColumna); renderTabla(); }
     function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); renderTabla(); }
     function getValorOrdenable(d,col){ const t=d.total||0; const base={"Leads":d.total,"New":d.news,"% New":t?(d.news/t)*100:0,"Recall":d.recall,"% Recall":t?(d.recall/t)*100:0,"No Answer":d.noAnswer,"% No Answer":t?(d.noAnswer/t)*100:0,"Approve":d.approved,"% Approve":t?(d.approved/t)*100:0,"Reject":d.reject,"% Reject":t?(d.reject/t)*100:0,"Trash":d.trash,"% Trash":t?(d.trash/t)*100:0}; return base[col]||0; }
 
-    /* ===== Cloud histórico (ahora popula países desde el resultado) ===== */
+    /* ===== Cloud histórico ===== */
     let cloudHistorico=[];
+    const filtroPaisEl=document.getElementById("filtroPais");
+    const filtroFechaEl=document.getElementById("filtroFecha");
+    const presetEl=document.getElementById("presetRango");
+
     function rangeFromPreset(preset, dateISO){
-      const now=new Date(); const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+      const now=new Date();
+      const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
       const startOf=(iso)=> new Date(`${iso}T00:00:00`).getTime();
       const addDays=(iso,days)=>{ const d=new Date(`${iso}T00:00:00`); d.setDate(d.getDate()+days); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
       if(preset==='hoy'){ const s=startOf(todayISO), e=startOf(addDays(todayISO,1)); return {start:s, end:e}; }
@@ -541,6 +412,7 @@
       if(preset==='dia' && dateISO){ return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))}; }
       return {start:null, end:null};
     }
+
     function normalizeRows(rows){
       rows.forEach(r=>{
         const iso  = r.fechaISO || ddmmyyyyToISO(r.fecha);
@@ -551,6 +423,7 @@
       rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
       return rows;
     }
+
     async function fetchHistoricoCloud(fp, startTs, endTs){
       const base = collection(db,'historico');
       try {
@@ -570,110 +443,26 @@
         return normalizeRows(rows);
       } catch (e) {
         console.warn('[GC] fetchHistoricoCloud fallback:', e);
-        const snap = await getDocs(base);
-        let rows = [];
-        snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
-        if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
-        return normalizeRows(rows);
+        if (e.code === 'failed-precondition') {
+          let q2 = base;
+          if (startTs != null && endTs != null){
+            q2 = query(base, where('ts','>=',startTs), where('ts','<', endTs));
+          }
+          const snap = await getDocs(q2);
+          let rows = [];
+          snap.forEach(d=>rows.push({ ...d.data(), _id: d.id }));
+          if (fp !== 'todos') rows = rows.filter(r => r.pais === fp);
+          return normalizeRows(rows);
+        }
+        throw e;
       }
     }
 
-    async function renderTablaHistorico(){
-      const prefPais = readPref(PREF_FPAIS,'todos');
-      const prefFecha= readPref(PREF_FFECHA,'');
-      const prefPreset=readPref(PREF_PRESET,'hoy');
-      presetEl.value = prefPreset;
-      if(prefFecha) filtroFechaEl.value = prefFecha;
-      filtroFechaEl.disabled = (presetEl.value !== 'dia');
+    // (temporal) habilitar botón siempre
+    document.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('btnRegistrar')?.removeAttribute('disabled'); });
 
-      const {start, end} = rangeFromPreset(presetEl.value, filtroFechaEl.value || '');
-      try{
-        const fp = (prefPais==='todos' ? 'todos' : prefPais);
-        cloudHistorico=await fetchHistoricoCloud(fp, start, end);
-      }catch(e){
-        console.error('[GC] Fetch histórico:', e);
-        showToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
-        cloudHistorico=[];
-      }
-
-      // Relleno select países a partir del resultado (rápido)
-      const seen = new Set(['todos']);
-      const current = filtroPaisEl.value || prefPais || 'todos';
-      filtroPaisEl.innerHTML = '';
-      const optAll = document.createElement('option');
-      optAll.value='todos'; optAll.textContent='🌍 Todos'; filtroPaisEl.appendChild(optAll);
-      cloudHistorico.forEach(r=>{ const p=r.pais||''; if(p && !seen.has(p)){ seen.add(p); const o=document.createElement('option'); o.value=p; o.textContent=p; filtroPaisEl.appendChild(o);} });
-      // restaurar selección si existe
-      if([...filtroPaisEl.options].some(o=>o.value===current)) filtroPaisEl.value=current; else filtroPaisEl.value='todos';
-      savePref(PREF_FPAIS, filtroPaisEl.value);
-
-      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
-      cloudHistorico.forEach(r=>{
-        const pct = Number(r.pctApprove||0);
-        const cls = colorPct(pct);
-        const disabled = (!canDelete || !r._id) ? 'disabled' : '';
-        const tr=document.createElement("tr");
-        tr.innerHTML=`
-          <td>${r.hora||""}</td>
-          <td>${r.fecha||""}</td>
-          <td>${r.pais||""}</td>
-          <td>${r.leads||0}</td>
-          <td>${r.news||0}</td>
-          <td>${r.recall||0}</td>
-          <td>${r.noAnswer||0}</td>
-          <td>${r.approve||0}</td>
-          <td class="${cls}">${pct.toFixed(1)}%</td>
-          <td>${r.reject||0}</td>
-          <td>${r.trash||0}</td>
-          <td><button class="btn-danger" ${disabled}
-            onclick="eliminarRegistro('${r._id||''}')">🗑️ Eliminar</button></td>`;
-        tbody.appendChild(tr);
-      });
-
-      renderQuickMetrics();
-      renderGrafico();
-    }
-
-    const calcMedian=(arr)=>{ if(!arr.length) return 0; const v=[...arr].sort((a,b)=>a-b); const m=Math.floor(v.length/2); return v.length%2?v[m]:(v[m-1]+v[m])/2; };
-    function renderQuickMetrics(){
-      const box=document.getElementById('quickMetrics');
-      if(!cloudHistorico.length){ box.style.display='none'; return; }
-      const vals=cloudHistorico.map(r=>parseFloat(r.pctApprove||0)).filter(n=>!isNaN(n));
-      if(!vals.length){ box.style.display='none'; return; }
-      document.getElementById('mMin').textContent=`${Math.min(...vals).toFixed(1)}%`;
-      document.getElementById('mMed').textContent=`${calcMedian(vals).toFixed(1)}%`;
-      document.getElementById('mMax').textContent=`${Math.max(...vals).toFixed(1)}%`;
-      let deltaTxt='–', cls='';
-      if(vals.length>=2){
-        const last=vals[vals.length-1], prev=vals[vals.length-2];
-        const d=(last-prev).toFixed(1);
-        const arrow = (d>=0? '↑':'↓');
-        cls = d>=0? 'delta up':'delta down';
-        deltaTxt = `${arrow} ${Math.abs(d)} pp`;
-      }
-      const mDelta=document.getElementById('mDelta');
-      mDelta.className='value ' + cls;
-      mDelta.textContent=deltaTxt;
-      box.style.display='flex';
-    }
-    function renderGrafico(){
-      const ctx=document.getElementById('graficoAvance').getContext('2d');
-      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
-      const grayPal=['#111','#333','#555','#777','#999','#bbb'];
-      const datasets=Object.keys(agr).map((k,i)=>({
-        label:k, data:agr[k], fill:false, tension:.2,
-        borderColor: grayPal[i % grayPal.length],
-        backgroundColor: grayPal[i % grayPal.length],
-        pointRadius: 2
-      }));
-      if(window.graficoAvance) window.graficoAvance.destroy();
-      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
-    }
-
-    // Acciones histórico (con permisos)
     async function registrarAvance(){
-      if(!canEdit){ showToast("No tienes permisos para registrar avance."); return; }
-      if(!Object.keys(dataGlobal).length){ showToast("ℹ️ Procesa/pega datos antes de registrar."); return; }
+      if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
       const now=new Date();
       const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
       const fecha=formatDDMMYYYY(now), fechaISO=formatISO(now), ts=now.getTime();
@@ -691,111 +480,234 @@
       }
       try{
         await Promise.all(writes);
-        showToast("✅ Avance registrado en la nube.");
+        mostrarToast("✅ Avance registrado en la nube.");
         await renderTablaHistorico();
         renderGrafico();
       }catch(e){
         console.error('[GC] Firestore write error:', e);
-        showToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
+        mostrarToast("⚠️ Error guardando en la nube: " + (e.code || e.message));
       }
     }
+
     async function borrarHistorial(){
-      if(!canDelete){ showToast("No tienes permisos para borrar el historial."); return; }
       if(!confirm("¿Borrar TODO el historial de la nube?")) return;
       try{
         const snap=await getDocs(collection(db,'historico'));
         const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
-        await Promise.all(ops); showToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
-      }catch(e){ console.error(e); showToast("❌ No se pudo borrar: " + (e.code||e.message)); }
+        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
+      }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
     }
+
     async function eliminarRegistro(id){
-      if(!canDelete){ showToast("No tienes permisos para eliminar registros."); return; }
-      if(!id){ showToast("⚠️ No se encontró el ID del registro."); return; }
+      if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
       const ok = confirm("¿Seguro que deseas eliminar este registro?");
       if(!ok) return;
       try{
         await deleteDoc(doc(db, 'historico', id));
-        showToast("🗑️ Registro eliminado.");
+        mostrarToast("🗑️ Registro eliminado.");
         await renderTablaHistorico();
         renderGrafico();
       }catch(e){
         console.error(e);
-        showToast("❌ No se pudo eliminar: " + (e.code || e.message));
+        mostrarToast("❌ No se pudo eliminar: " + (e.code || e.message));
       }
     }
-    window.eliminarRegistro = eliminarRegistro;
 
-    // Filtros
-    filtroPaisEl.addEventListener('change', ()=>{ savePref(PREF_FPAIS, filtroPaisEl.value); renderTablaHistorico(); });
-    presetEl.addEventListener('change', ()=>{ const p=presetEl.value; savePref(PREF_PRESET,p); filtroFechaEl.disabled=(p!=='dia'); renderTablaHistorico(); });
-    filtroFechaEl.addEventListener('change', ()=>{ savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); });
-    btnAllCountries.addEventListener('click', ()=>{ filtroPaisEl.value='todos'; savePref(PREF_FPAIS,'todos'); renderTablaHistorico(); });
-    btnClearFecha.addEventListener('click', ()=>{ filtroFechaEl.value=''; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); });
-
-    btnBorrarTodo.addEventListener('click', borrarTodo);
-    btnRestOrden.addEventListener('click', restablecerOrden);
-    btnRegistrar.addEventListener('click', registrarAvance);
-    btnBorrarHist.addEventListener('click', borrarHistorial);
-
-    // ===== Suscripción al estado compartido (creación perezosa del doc si falta) =====
-    async function ensureStateDocIfNeeded(){
+    async function ensurePaisesOptions(){
+      if(filtroPaisEl.options.length>1) return;
       try{
-        const snap = await getDoc(nrDocRef);
-        if(!snap.exists() && canEdit){
-          // crea el doc base (una vez)
-          await updateDoc(nrDocRef, { viewMode: 'numerico' }).catch(async()=>{
-            // si falla updateDoc porque no existe, usa set con merge
-            const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-            await setDoc(nrDocRef, { viewMode:'numerico', dataRaw:'' }, { merge:true });
-          });
-        }
-      }catch(e){
-        // si reglas prohíben, no pasa nada; el onSnapshot abajo mostrará error
-      }
+        const snap=await getDocs(collection(db,'historico'));
+        const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
+        [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;filtroPaisEl.appendChild(o); });
+      }catch(e){ console.warn('[GC] ensurePaisesOptions:', e); }
     }
 
-    onSnapshot(nrDocRef, (snap)=>{
-      const data = snap.exists() ? snap.data() : {};
-      const { dataRaw = '', viewMode = 'numerico', lock = null } = data;
-      setLockInfo(lock);
+    function calcMedian(arr){
+      if(!arr.length) return 0;
+      const v=[...arr].sort((a,b)=>a-b);
+      const m=Math.floor(v.length/2);
+      return v.length%2?v[m]:(v[m-1]+v[m])/2;
+    }
 
-      // textarea desde la nube si no estoy editando
-      if(!holdLock){
-        inputEl.value = dataRaw;
-        lastSnapshotDataRaw = dataRaw;
-      }
-      vistaActual = viewMode || 'numerico';
-      setViewButton(vistaActual);
-      savePref(PREF_VISTA, vistaActual);
+    function renderQuickMetrics(){
+      const box=document.getElementById('quickMetrics');
+      if(!cloudHistorico.length){ box.style.display='none'; return; }
+      const vals=cloudHistorico.map(r=>parseFloat(r.pctApprove||0)).filter(n=>!isNaN(n));
+      if(!vals.length){ box.style.display='none'; return; }
+      const min=Math.min(...vals).toFixed(1);
+      const med=calcMedian(vals).toFixed(1);
+      const max=Math.max(...vals).toFixed(1);
 
-      if((inputEl.value||'').trim()){
-        try{ procesar(vistaActual); }catch{}
+      document.getElementById('mMin').textContent=`${min}%`;
+      document.getElementById('mMed').textContent=`${med}%`;
+      document.getElementById('mMax').textContent=`${max}%`;
+
+      let deltaTxt='–', cls='';
+      if(vals.length>=2){
+        const last=vals[vals.length-1], prev=vals[vals.length-2];
+        const d=(last-prev).toFixed(1);
+        const arrow = (d>=0? '↑':'↓');
+        cls = d>=0? 'delta up':'delta down';
+        deltaTxt = `${arrow} ${Math.abs(d)} pp`;
       }
-      setBadge('Conectado ✓','ok');
-    }, (err)=>{
-      console.warn('[nr_state] onSnapshot:', err);
-      setBadge('Sin acceso a nr_state/global','warn');
+      const mDelta=document.getElementById('mDelta');
+      mDelta.className='value ' + cls;
+      mDelta.textContent=deltaTxt;
+
+      box.style.display='flex';
+    }
+
+    async function renderTablaHistorico(){
+      await ensurePaisesOptions();
+      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
+
+      // Prefs  (🔴 default cambiado a 'hoy')
+      const prefPais=readPref(PREF_FPAIS,'todos');
+      const prefFecha=readPref(PREF_FFECHA,'');
+      const prefPreset=readPref(PREF_PRESET,'hoy');
+      if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
+      presetEl.value = prefPreset;
+      if(prefFecha) filtroFechaEl.value = prefFecha;
+
+      const preset = presetEl.value;
+      const dateISO = filtroFechaEl.value || '';
+      const {start, end} = rangeFromPreset(preset, dateISO);
+
+      try{
+        cloudHistorico=await fetchHistoricoCloud(filtroPaisEl.value, start, end);
+      }catch(e){
+        console.error('[GC] Fetch histórico:', e);
+        mostrarToast("⚠️ No se pudo leer la nube: " + (e.code||e.message));
+        cloudHistorico=[];
+      }
+
+      cloudHistorico.forEach(r=>{
+        const pct = Number(r.pctApprove||0);
+        const cls = colorPct(pct);
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
+          <td>${r.hora||""}</td>
+          <td>${r.fecha||""}</td>
+          <td>${r.pais||""}</td>
+          <td>${r.leads||0}</td>
+          <td>${r.news||0}</td>
+          <td>${r.recall||0}</td>
+          <td>${r.noAnswer||0}</td>
+          <td>${r.approve||0}</td>
+          <td class="${cls}">${pct.toFixed(1)}%</td>
+          <td>${r.reject||0}</td>
+          <td>${r.trash||0}</td>
+          <td>
+            <button class="btn-danger" ${r._id ? '' : 'disabled'}
+              onclick="eliminarRegistro('${r._id||''}')" title="Eliminar este registro">
+              🗑️ Eliminar
+            </button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      renderQuickMetrics();
+      renderGrafico();
+    }
+
+    function onFiltroChange(){ savePref(PREF_FPAIS, filtroPaisEl.value); savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); }
+    function onPresetChange(){ const preset=presetEl.value; savePref(PREF_PRESET, preset); filtroFechaEl.disabled = (preset !== 'dia'); renderTablaHistorico(); }
+    function limpiarFecha(){ filtroFechaEl.value=""; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); }
+
+    function renderGrafico(){
+      const ctx=document.getElementById('graficoAvance').getContext('2d');
+      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
+      const grayPal=['#111','#333','#555','#777','#999','#bbb'];
+      const datasets=Object.keys(agr).map((k,i)=>({
+        label:k, data:agr[k], fill:false, tension:.2,
+        borderColor: grayPal[i % grayPal.length],
+        backgroundColor: grayPal[i % grayPal.length],
+        pointRadius: 2
+      }));
+      if(window.graficoAvance) window.graficoAvance.destroy();
+      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
+    }
+
+    // Exponer
+    window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
+    window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
+    window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
+    window.eliminarRegistro=eliminarRegistro;
+
+    // ====== Botón de vista (Mixta → Numérica → Porcentual) ======
+    const viewToggleBtn = document.getElementById('btnViewToggle');
+    const viewIcon      = document.getElementById('viewIcon');
+    const viewLabel     = document.getElementById('viewLabel');
+
+    function setViewButton(mode){
+      viewToggleBtn.dataset.mode = mode;
+      if(mode==='mixto'){        viewIcon.textContent='🔁'; viewLabel.textContent='Vista Mixta'; }
+      else if(mode==='numerico'){viewIcon.textContent='📦'; viewLabel.textContent='Vista Numérica'; }
+      else /* porcentaje */     {viewIcon.textContent='📈'; viewLabel.textContent='Vista Porcentual'; }
+    }
+    setViewButton(vistaActual); // arranca con "mixto"
+
+    // Guardar modo de vista compartido
+    async function setSharedView(next){
+      try{
+        await runTransaction(db, async (tx)=>{
+          const snap = await tx.get(nrDocRef);
+          const curr = snap.exists() ? snap.data() : {};
+          tx.set(nrDocRef, { ...curr, viewMode: next, updatedAt: serverTimestamp() }, { merge:true });
+        });
+      }catch(e){ console.warn('[nr] setSharedView:', e.message || e); }
+    }
+    const MODES = ['mixto','numerico','porcentaje'];
+    viewToggleBtn.addEventListener('click', async ()=>{
+      const curr = viewToggleBtn.dataset.mode || 'mixto';
+      const idx  = MODES.indexOf(curr);
+      const next = MODES[(idx+1) % MODES.length];
+      setViewButton(next);
+      savePref(PREF_VISTA, next);
+      await setSharedView(next);
+      if((document.getElementById('inputData').value||'').trim()){
+        vistaActual = next;
+        procesar(vistaActual);
+      }
     });
 
-    // ===== Sesión / roles
-    auth.onAuthStateChanged(async (user)=>{
-      if(!user){ setBadge('Sin sesión','warn'); return; }
-      myRank   = await getRank();
-      canEdit  = ALLOWED_EDIT_ROLES.has(myRank);
-      canDelete= ALLOWED_DELETE_ROLES.has(myRank);
-      applyRoleUI();
+    // ====== Suscripción al doc de estado (marca conectado y sincroniza vista) ======
+    await ensureStateDocIfNeeded();  // intenta crear doc si falta (sin romper si no hay permiso)
+
+    onSnapshot(nrDocRef, (snap)=>{
+      const data = snap.data() || {};
+      const { dataRaw = '', viewMode = 'mixto' } = data;
+
+      // pinta badge conectado
       setBadge('Conectado ✓','ok');
 
-      // crea doc base si falta (solo editores), evita “Conectando…” eterno
-      await ensureStateDocIfNeeded();
+      // sincroniza botón de vista con el estado compartido
+      setViewButton(viewMode);
+      savePref(PREF_VISTA, viewMode);
 
-      // Prefs iniciales filtros
+      // si el textarea está vacío pero el doc tiene algo, lo cargamos y procesamos
+      const inputEl = document.getElementById('inputData');
+      if (!inputEl.value.trim() && dataRaw.trim()){
+        inputEl.value = dataRaw;
+        vistaActual = viewMode;
+        procesar(vistaActual);
+      }
+    }, (err)=>{
+      console.warn('[nr_state] onSnapshot:', err);
+      setBadge('Sin permiso para ver estado','warn');
+    });
+
+    // Auth (habilita registrar)
+    onAuthStateChanged(auth, ()=>{
+      document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+    });
+
+    // Prefs iniciales (default 'hoy')
+    document.addEventListener('DOMContentLoaded', ()=>{
       const prefPreset=readPref(PREF_PRESET,'hoy');
-      presetEl.value=prefPreset;
-      filtroFechaEl.disabled=(prefPreset!=='dia');
-      const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) filtroFechaEl.value=prefFecha;
-
-      await renderTablaHistorico();
+      document.getElementById('presetRango').value=prefPreset;
+      document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
+      const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
     });
   </script>
 </body>
