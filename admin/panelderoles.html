@@ -70,16 +70,14 @@
   </gc-shell>
 
   <script type="module">
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, reload } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
     // --------- BASE robusta ----------
     function computeBase(){
-      // Preferimos la que expone guard.js (absoluta)
       if (window.__GC_BASE__) {
         return window.__GC_BASE__.endsWith("/") ? window.__GC_BASE__ : (window.__GC_BASE__ + "/");
       }
-      // Fallback con meta[name="gc-base"]
       const meta = document.querySelector('meta[name="gc-base"]')?.content || "/Gestion-Center/";
       const abs  = new URL(String(meta).replace(/^\//,""), location.origin).href;
       return abs.endsWith("/") ? abs : abs + "/";
@@ -106,7 +104,7 @@
 
     // --------- Firebase ----------
     const auth = getAuth();
-    const fn   = getFunctions(); // si deseas una región: getFunctions(undefined, "us-central1")
+    const fn   = getFunctions();
 
     // --------- Helpers UI ----------
     function badgeColor(rank){
@@ -117,7 +115,7 @@
       return "#22c55e"; // invitado / sin rol
     }
 
-    // --------- Gate de ADMIN ----------
+    // --------- Gate de ADMIN (con reintentos) ----------
     async function requireAdmin(){
       const u = auth.currentUser;
 
@@ -127,37 +125,43 @@
         return false;
       }
 
-      let token;
-      try{
-        token = await u.getIdTokenResult(true); // fuerza refresh de claims
-      }catch(err){
-        console.warn("[panelderoles] Error al obtener claims; redirigiendo a login:", err);
-        go("login.html");
-        return false;
-      }
-
-      const rank = token.claims?.rank || "invitado";
-      console.log("[panelderoles] claims.rank =", rank);
-
-      if (rank !== "admin"){
-        // Feedback breve antes de salir (útil para entender “por qué me saca”)
-        try{
-          meMsg.textContent = "Acceso restringido: se requiere rol ADMIN. Tu rol: " + rank;
-          await new Promise(r=>setTimeout(r, 800));
-        }catch{}
-        go("index.html");
-        return false;
-      }
-
-      // Usuario válido → pintar y mostrar
-      meEmail.textContent = u.email || "(sin email)";
-      meUid.textContent   = u.uid;
-      meRank.textContent  = rank;
-      meRank.style.background = badgeColor(rank);
-
-      // Mostrar la página (guard.js ya podría haberla mostrado; esto asegura visibilidad)
+      // Mostrar "verificando" mientras resolvemos los claims
+      meMsg.textContent = "Verificando rol…";
       document.documentElement.style.visibility = "visible";
-      return true;
+
+      // Hasta 8 intentos (~4 segundos) para cubrir propagación de claims
+      const MAX_TRIES = 8;
+      for (let i=0; i<MAX_TRIES; i++){
+        try{
+          // Fuerza refresh completo del user y token
+          await reload(u);
+          await u.getIdToken(true);
+          const t = await u.getIdTokenResult(false);
+          const rank = String(t.claims?.rank || "invitado").toLowerCase();
+
+          console.log("[panelderoles] intento", i+1, "rank =", rank);
+
+          if (rank === "admin"){
+            // Usuario válido → pintar y listo
+            meEmail.textContent = u.email || "(sin email)";
+            meUid.textContent   = u.uid;
+            meRank.textContent  = rank;
+            meRank.style.background = badgeColor(rank);
+            meMsg.textContent = "Acceso concedido ✅";
+            return true;
+          }
+        }catch(err){
+          console.warn("[panelderoles] error obteniendo claims (intento", i+1, "):", err);
+        }
+        // Espera 500ms antes del próximo intento
+        await new Promise(r=>setTimeout(r, 500));
+      }
+
+      // Si agotamos intentos, negar acceso con mensaje claro y regresar al inicio
+      meMsg.textContent = "Acceso restringido: se requiere rol ADMIN.";
+      await new Promise(r=>setTimeout(r, 800));
+      go("index.html");
+      return false;
     }
 
     // --------- Utilidades ----------
@@ -169,8 +173,11 @@
 
     btnRefresh.addEventListener("click", async ()=>{
       try {
-        const t = await auth.currentUser.getIdTokenResult(true);
-        const rank = t.claims?.rank || "invitado";
+        const u = auth.currentUser;
+        await reload(u);
+        await u.getIdToken(true);
+        const t = await u.getIdTokenResult(false);
+        const rank = String(t.claims?.rank || "invitado").toLowerCase();
         meRank.textContent = rank;
         meRank.style.background = badgeColor(rank);
         meMsg.textContent = "Claims actualizados ✅ (rol: " + rank + ")";
@@ -187,7 +194,6 @@
     });
 
     // --------- Callable: asignar rol ----------
-    // Asegúrate de desplegar la Cloud Function "admin-setUserRank"
     btnAssign.addEventListener("click", async ()=>{
       assignMsg.textContent = "";
       const id   = (targetId.value || "").trim();
@@ -200,7 +206,7 @@
 
       try{
         const callable = httpsCallable(fn, "admin-setUserRank");
-        const resp = await callable({ id, role }); // backend acepta UID o email
+        const resp = await callable({ id, role });
         assignMsg.textContent = `OK ✅ ${resp?.data?.message || "Rol actualizado"}`;
       }catch(err){
         console.warn(err);
