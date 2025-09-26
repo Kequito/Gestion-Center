@@ -5,205 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>New Report — Gestión Center</title>
 
-  <!-- Carga el shell con BASE robusto (GitHub Pages o dominio propio) -->
+  <!-- Base robusta (GitHub Pages o dominio propio) + carga shell y bw.css -->
   <script type="module">
-  const isGh  = location.hostname.endsWith('github.io');
-  const parts = location.pathname.split('/').filter(Boolean);
-  const repo  = isGh ? (parts[0] || '') : '';
-  const base  = isGh ? `/${repo}/` : '/';
-  const abs   = (p) => new URL(p.replace(/^\//, ''), location.origin + base).href;
+    const isGh  = location.hostname.endsWith('github.io');
+    const parts = location.pathname.split('/').filter(Boolean);
+    const repo  = isGh ? (parts[0] || '') : '';
+    const base  = isGh ? `/${repo}/` : '/';
+    const abs   = (p) => new URL(p.replace(/^\//, ''), location.origin + base).href;
 
-  import(abs('assets/bw/shell.js')).catch(e => {
-    console.error('[newreport] No se pudo cargar shell.js:', e);
-    document.head.insertAdjacentHTML('beforeend', `
-      <style>:root{--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
-      --gray-700:#3f3f3f;--gray-900:#111;--white:#fff;--black:#0a0a0a;
-      font-family: Lexend,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}</style>`);
-  });
+    // CSS del nuevo sistema
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = abs('assets/bw/bw.css');
+    document.head.appendChild(link);
+
+    // Web component del shell
+    import(abs('assets/bw/shell.js')).catch(e => {
+      console.error('[newreport] No se pudo cargar shell.js:', e);
+      // fallback visual mínimo
+      document.head.insertAdjacentHTML('beforeend', `
+        <style>
+          :root{--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;--gray-700:#3f3f3f;--gray-900:#111;--white:#fff;--black:#0a0a0a}
+          body{font-family:'Lexend',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+        </style>`);
+    });
   </script>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Estilos específicos de esta página -->
+  <!-- Estilos locales (ligeros) sobre bw.css -->
   <style>
-    /* Área */
-    #nr .page-title{ display:flex; align-items:center; gap:12px; font-weight:700; font-size:22px; margin:0 0 6px }
-    #nr .subtitle{ margin:0 0 10px; color:var(--gray-700); font-size:14px; display:flex; align-items:center; gap:10px }
-
-    /* Badge Firebase */
+    /* Título y estado Firebase */
+    #nr .page-title{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; margin:0 0 8px }
     #nr .badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--gray-300); background:var(--gray-100); color:var(--gray-900) }
     #nr .badge.ok{ background:var(--gray-200) }  #nr .badge.warn{ background:var(--gray-300) }
+    #nr .datetime{ font-size:14px; color:var(--gray-700); margin:6px 0 10px }
 
-    /* Fecha/Hora */
-    #nr .datetime{ font-size:14px; font-weight:600; margin:8px 0 14px; color:var(--gray-700) }
-
-    /* Toolbar (estética base) */
-    #nr .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px }
-    #nr .toolbar button,
-    #nr .toolbar a.button,
-    #nr .history-actions button{
-      padding:10px 14px; font-size:14px; cursor:pointer;
-      border:1px solid var(--gray-300); border-radius:10px;
-      background:var(--white); color:var(--gray-900);
-      transition:background .15s ease, transform .03s ease, filter .15s ease;
-      text-decoration:none; display:inline-flex; align-items:center; gap:8px;
-    }
-    #nr .toolbar button:hover,
-    #nr .toolbar a.button:hover,
-    #nr .history-actions button:hover{ background:var(--gray-100) }
-    #nr .toolbar button:active,
-    #nr .toolbar a.button:active,
-    #nr .history-actions button:active{ transform:translateY(1px) }
-    #nr .toolbar button[disabled],
-    #nr .history-actions button[disabled]{ opacity:.55; cursor:not-allowed }
-
-    /* Botón peligro */
-    #nr .toolbar .btn-danger,
-    #nr .history-actions .btn-danger{
-      background:#fef2f2; border-color:#fecaca; color:#991b1b;
-    }
-    #nr .toolbar .btn-danger:hover,
-    #nr .history-actions .btn-danger:hover{
-      background:#fee2e2; filter:brightness(1.02);
-    }
-
-    /* Entrada */
+    /* Área de pegado */
     #nr textarea{
-      width:100%; min-height:150px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-      padding:12px; border:1px solid var(--gray-300); background:var(--white); color:var(--gray-900); border-radius:12px; box-sizing:border-box
+      width:100%; min-height:150px; resize:vertical;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      padding:12px; border:1px solid var(--gray-300); border-radius:12px;
+      background:var(--white); color:var(--gray-900);
     }
 
-    /* Tabla principal */
-    #nr table{ margin-top:16px; border-collapse:separate; border-spacing:0; width:100%;
-      background:var(--white); border:1px solid var(--gray-300); border-radius:12px; overflow:hidden }
-    #nr th,#nr td{ border-bottom:1px solid var(--gray-200); padding:10px; text-align:center }
-    /* NO re-definimos colores de thead para respetar el estándar global negro/blanco del shell */
-    #nr thead th{ cursor:pointer; position:relative; font-weight:700 }
-    #nr thead th:first-child, #nr tbody td:first-child{ text-align:left }
-    #nr .bandera{ width:20px; height:14px; margin-right:6px; vertical-align:middle }
-    #nr .bold{ font-weight:700 }
+    /* Tablas con bw.css + pequeños ajustes */
+    .gc-table th, .gc-table td{ text-align:center }
+    .gc-table thead th:first-child, .gc-table tbody td:first-child{ text-align:left }
 
-    /* Semáforo (colores) */
+    /* Semáforo de % Approve */
     :root{
       --ok-bg:#eaf7ee; --ok-fg:#166534; --ok-br:#22c55e;
       --mid-bg:#fffbeb; --mid-fg:#92400e; --mid-br:#f59e0b;
       --bad-bg:#fef2f2; --bad-fg:#991b1b; --bad-br:#ef4444;
     }
-    #nr td.green{ background:var(--ok-bg); color:var(--ok-fg); font-weight:800; border-left:3px solid var(--ok-br) }
-    #nr td.orange{ background:var(--mid-bg); color:var(--mid-fg); font-weight:800; border-left:3px solid var(--mid-br) }
-    #nr td.red{ background:var(--bad-bg); color:var(--bad-fg); font-weight:800; border-left:3px solid var(--bad-br) }
+    td.green{ background:var(--ok-bg); color:var(--ok-fg); font-weight:800; border-left:3px solid var(--ok-br) }
+    td.orange{ background:var(--mid-bg); color:var(--mid-fg); font-weight:800; border-left:3px solid var(--mid-br) }
+    td.red{ background:var(--bad-bg); color:var(--bad-fg); font-weight:800; border-left:3px solid var(--bad-br) }
 
-    #nr tfoot td{ font-weight:800; background:var(--gray-100); border-top:2px solid var(--gray-300) }
-
-    /* Filtros */
-    #nr .filters{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; background:var(--white);
-      border:1px solid var(--gray-300); border-radius:12px; padding:10px 12px; margin-top:18px }
-    #nr .filter-group{ display:flex; align-items:center; gap:10px }
-    #nr .filter-group label{ display:flex; align-items:center; gap:8px; font-weight:700; margin:0 }
-    #nr .filter-group select, #nr .filter-group input[type="date"]{
-      padding:8px 12px; border-radius:10px; border:1px solid var(--gray-300); background:var(--white); color:var(--gray-900);
-      min-width:140px; line-height:1; height:38px
-    }
-    #nr .filter-group .clear-btn{ background:var(--gray-100); border:1px solid var(--gray-300); padding:8px 12px; border-radius:10px; cursor:pointer }
-    #nr .filter-group .clear-btn:hover{ background:var(--gray-200) }
-
-    /* Métricas rápidas */
-    #nr .quick-metrics{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 }
-    #nr .metric{ background:var(--white); border:1px solid var(--gray-300); padding:10px 12px; border-radius:10px; min-width:150px }
-    #nr .metric .title{ font-size:12px; color:var(--gray-700); margin-bottom:4px }
-    #nr .metric .value{ font-size:18px; font-weight:800 }
-    #nr .metric .delta.up{ color:#16a34a }   /* verde */
-    #nr .metric .delta.down{ color:#dc2626 } /* rojo */
-
-    /* Histórico */
-    #tablaHistorico .btn-danger{
-      padding:6px 10px; font-size:12px; border-radius:8px; border:1px solid #fecaca;
-      background:#fef2f2; color:#991b1b; cursor:pointer;
-    }
-    #tablaHistorico .btn-danger:hover{ background:#fee2e2 }
-
-    /* Toast */
-    #toast{ position:fixed; bottom:18px; right:20px; background:var(--black); color:#fff;
-      padding:12px 18px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000 }
+    /* Botón eliminar compacto solo en histórico */
+    #tablaHistorico .gc-btn.gc-btn--sm{ padding:6px 10px; font-size:12px }
   </style>
 </head>
 <body>
   <!-- Ocultamos títulos del hero pasando vacío -->
   <gc-shell hero-title="" hero-subtitle="">
-    <section id="nr">
+    <section id="nr" class="gc-panel">
       <!-- TÍTULO SUPERIOR ÚNICO -->
       <div class="page-title">🧰 New Report CC Perú</div>
-      <p class="subtitle"><span id="fbBadge" class="badge">Conectando…</span></p>
+      <div class="gc-chipset" style="margin-bottom:8px">
+        <span id="fbBadge" class="gc-chip">Conectando…</span>
+      </div>
 
       <div class="datetime" id="fechaHora"></div>
 
-      <div class="toolbar">
-        <!-- 🆕 Botón deslizante de vistas (Mixta → Numérica → Porcentual) -->
-        <button id="btnViewToggle" data-mode="mixto">
-          <span id="viewIcon">🔁</span>
-          <span id="viewLabel">Vista Mixta</span>
-        </button>
-
-        <button id="btnTake" class="btn-lock" title="Tomar control (WIP)" disabled>🔒 Tomar control</button>
-        <button id="btnRelease" class="btn-lock" title="Liberar (WIP)"  disabled>🔓 Liberar</button>
-
-        <button class="btn-danger" onclick="borrarTodo()">🧹 Borrar</button>
-        <button onclick="restablecerOrden()">🧭 Restablecer Orden</button>
-        <!-- Fuente (Panel) -->
-        <a class="button" href="https://panel.2wcall.com/stats/queue/index?QueueSearch%5Bcountries%5D=&QueueSearch%5Bdate_type%5D=partner_created_at&QueueSearch%5Bdate_range%5D=20%2F09%2F2025+0%3A00+-+20%2F09%2F2025+23%3A59&QueueSearch%5Bpartner_id%5D=1"
-           target="_blank" rel="noopener">🔗 Fuente (Panel)</a>
+      <!-- Toolbar con bw.css -->
+      <div class="gc-toolbar" style="margin:10px 0 12px">
+        <button class="gc-btn" onclick="procesar('numerico')">📦 Vista Numérica</button>
+        <button class="gc-btn" onclick="procesar('porcentaje')">📈 Vista Porcentual</button>
+        <button class="gc-btn" onclick="procesar('mixto')">🔁 Vista Mixta</button>
+        <button class="gc-btn gc-btn--danger" onclick="borrarTodo()">🧹 Borrar</button>
+        <button class="gc-btn" onclick="restablecerOrden()">🧭 Restablecer Orden</button>
+        <a class="gc-btn u-right" href="https://panel.2wcall.com/stats/queue/index?QueueSearch%5Bcountries%5D=&QueueSearch%5Bdate_type%5D=partner_created_at&QueueSearch%5Bdate_range%5D=20%2F09%2F2025+0%3A00+-+20%2F09%2F2025+23%3A59&QueueSearch%5Bpartner_id%5D=1" target="_blank" rel="noopener">🔗 Fuente (Panel)</a>
       </div>
 
       <textarea id="inputData" placeholder="Pega aquí tu tabla con encabezados (Country, Total, New, Recall, No answer, Approved, Reject, Trash)…"></textarea>
 
-      <table id="tablaReporte">
+      <table id="tablaReporte" class="gc-table gc-table--sticky" style="margin-top:12px">
         <thead><tr id="encabezadoTabla"></tr></thead>
         <tbody></tbody>
         <tfoot><tr id="filaTotales"></tr></tfoot>
       </table>
 
-      <div class="history-actions" style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 10px;">
-        <button id="btnRegistrar" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
-        <button class="btn-danger" onclick="borrarHistorial()">🗑️ Borrar historial</button>
+      <!-- Acciones histórico -->
+      <div class="gc-toolbar" style="margin:12px 0 10px">
+        <button id="btnRegistrar" class="gc-btn gc-btn--primary" onclick="registrarAvance()" disabled>📌 Registrar avance ahora</button>
+        <button class="gc-btn gc-btn--danger" onclick="borrarHistorial()">🗑️ Borrar historial</button>
+        <!-- (CSV eliminado) -->
       </div>
 
       <!-- Filtros -->
-      <div class="filters">
-        <div class="filter-group">
-          <label for="filtroPais">🌎 País:</label>
-          <select id="filtroPais" onchange="onFiltroChange()">
-            <option value="todos">🌍 Todos</option>
-          </select>
-        </div>
+      <div class="gc-panel" style="margin-top:12px">
+        <div class="gc-toolbar">
+          <div class="gc-chipset">
+            <span class="gc-chip">🌎 País</span>
+            <select id="filtroPais" onchange="onFiltroChange()" class="gc-btn gc-btn--ghost">
+              <option value="todos">🌍 Todos</option>
+            </select>
+          </div>
 
-        <div class="filter-group">
-          <label for="presetRango">🗓️ Rango:</label>
-          <select id="presetRango" onchange="onPresetChange()">
-            <option value="dia">Día específico</option>
-            <option value="hoy">Hoy</option>
-            <option value="ayer">Ayer</option>
-            <option value="7d">Últimos 7 días</option>
-          </select>
-        </div>
+          <div class="gc-chipset">
+            <span class="gc-chip">🗓️ Rango</span>
+            <select id="presetRango" onchange="onPresetChange()" class="gc-btn gc-btn--ghost">
+              <option value="dia">Día específico</option>
+              <option value="hoy">Hoy</option>
+              <option value="ayer">Ayer</option>
+              <option value="7d">Últimos 7 días</option>
+            </select>
+          </div>
 
-        <div class="filter-group">
-          <label for="filtroFecha">📅 Fecha:</label>
-          <input type="date" id="filtroFecha" onchange="onFiltroChange()"/>
-          <button class="clear-btn" onclick="limpiarFecha()">Todos</button>
+          <div class="gc-chipset">
+            <span class="gc-chip">📅 Fecha</span>
+            <input type="date" id="filtroFecha" onchange="onFiltroChange()" class="gc-btn gc-btn--ghost"/>
+            <button class="gc-btn gc-btn--ghost" onclick="limpiarFecha()">Todos</button>
+          </div>
         </div>
       </div>
 
       <!-- Métricas rápidas -->
-      <div id="quickMetrics" class="quick-metrics" style="display:none;">
-        <div class="metric"><div class="title">Min % Approve</div><div id="mMin" class="value">–</div></div>
-        <div class="metric"><div class="title">Mediana % Approve</div><div id="mMed" class="value">–</div></div>
-        <div class="metric"><div class="title">Max % Approve</div><div id="mMax" class="value">–</div></div>
-        <div class="metric"><div class="title">Δ vs hora previa</div><div id="mDelta" class="value">–</div></div>
+      <div id="quickMetrics" class="gc-toolbar" style="display:none; margin:12px 0">
+        <span class="gc-chip"><strong>Min % Approve</strong> <span id="mMin">–</span></span>
+        <span class="gc-chip"><strong>Mediana % Approve</strong> <span id="mMed">–</span></span>
+        <span class="gc-chip"><strong>Max % Approve</strong> <span id="mMax">–</span></span>
+        <span class="gc-chip"><strong>Δ vs hora previa</strong> <span id="mDelta">–</span></span>
       </div>
 
-      <h3 class="page-title" style="font-size:18px; margin-top:6px;">📋 Registro histórico por hora</h3>
-      <table id="tablaHistorico">
+      <h3 style="font-size:16px; margin:6px 0 8px">📋 Registro histórico por hora</h3>
+      <table id="tablaHistorico" class="gc-table gc-table--sticky gc-table--compact">
         <thead>
           <tr>
             <th>Hora</th><th>Fecha</th><th>País</th>
@@ -214,15 +153,17 @@
         <tbody></tbody>
       </table>
 
-      <canvas id="graficoAvance" height="220"></canvas>
+      <div class="gc-panel" style="margin-top:12px">
+        <canvas id="graficoAvance" height="220"></canvas>
+      </div>
     </section>
 
-    <div id="toast"></div>
+    <div id="toast" class="gc-panel" style="position:fixed; bottom:18px; right:20px; display:none; z-index:1000"></div>
   </gc-shell>
 
   <!-- ===== Lógica específica de la página ===== -->
   <script type="module">
-    // Espera robusta
+    // Espera robusta del shell
     async function waitForEl(sel, timeout=8000){
       const t0=performance.now();
       while(performance.now()-t0 < timeout){
@@ -235,41 +176,40 @@
     await customElements.whenDefined('gc-shell');
     await waitForEl('#encabezadoTabla');
 
-    // ==== Firebase (SDK 10.12.2) usando el app del guard ====
-    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import {
-      getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc,
-      onSnapshot, runTransaction, serverTimestamp, getDoc, setDoc, updateDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-    const app  = getApp();          // ⬅️ toma el mismo app que inicializó guard.js
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
+      authDomain: "gestioncenterdata.firebaseapp.com",
+      projectId: "gestioncenterdata",
+      storageBucket: "gestioncenterdata.appspot.com",
+      messagingSenderId: "628401314464",
+      appId: "1:628401314464:web:0671233dfd801ee43587c5",
+      measurementId: "G-NBFZYTN094"
+    };
+
+    const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    // ====== Estado compartido mínimo (para conexión + vista) ======
-    const nrDocRef = doc(db, 'nr_state', 'global');
-
     const fbBadge = document.getElementById('fbBadge');
-    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'badge ' + cls; }
+    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'gc-chip ' + (cls || ''); }
 
-    // Si el doc no existe, créalo (si reglas lo permiten). Si no, seguimos igual.
-    async function ensureStateDocIfNeeded(){
-      try{
-        const snap = await getDoc(nrDocRef);
-        if (!snap.exists()) {
-          await setDoc(nrDocRef, {
-            viewMode: 'mixto',
-            dataRaw : '',
-            updatedAt: serverTimestamp()
-          }, { merge:true });
-        }
-      }catch(e){
-        console.warn('[nr] ensureStateDocIfNeeded:', e.message || e);
+    // Watchdog → habilita registrar aunque auth tarde (modo temporal)
+    let authSettled = false;
+    const authWatchdog = setTimeout(()=>{
+      if (!authSettled) {
+        console.warn('[GC] Auth watchdog timeout → habilitado sin auth (temporal)');
+        document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+        setBadge('Conectado ✓','ok');
+        renderTablaHistorico();
       }
-    }
+    }, 6000);
 
-    // ===== Utils =====
+    /* ===== Utils ===== */
     const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais',
           PREF_FFECHA='gc_filtro_fecha_iso', PREF_PRESET='gc_preset_rango';
     const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -299,9 +239,8 @@
     }
     actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
 
-    let vistaActual=readPref(PREF_VISTA,'mixto'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
+    let vistaActual=readPref(PREF_VISTA,'numerico'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
 
-    // Banderas
     const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
 
     function mostrarToast(msg){
@@ -350,7 +289,7 @@
       if(vistaActual==="numerico"){ cols.push("New","Recall","No Answer","Approve","Reject","Trash");
       }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
       }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
-      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
+      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.style.cursor='pointer'; th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
 
       let datos=[...dataOriginal];
       if(columnaOrdenActual){
@@ -358,12 +297,12 @@
         datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual);
           return e===1?B-A:e===2?A-B:0; });
       }
-      const flag=p=>codigos[p]?`<img class="bandera" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
+      const flag=p=>codigos[p]?`<img style="width:20px;height:14px;vertical-align:middle;margin-right:6px" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
 
       for(const [pais,d] of datos){
         const t=d.total||0;
         const tr=document.createElement("tr");
-        let html=`<td class="bold">${flag(pais)} ${pais}</td><td>${d.total}</td>`;
+        let html=`<td><strong>${flag(pais)} ${pais}</strong></td><td>${d.total}</td>`;
         if(vistaActual==="numerico"){
           html+=`<td>${d.news}</td><td>${d.recall}</td><td>${d.noAnswer}</td><td>${d.approved}</td><td>${d.reject}</td><td>${d.trash}</td>`;
         }else if(vistaActual==="porcentaje"){
@@ -378,7 +317,7 @@
 
       const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.trash+=d.trash; a.reject+=d.reject; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
       if(Object.keys(dataGlobal).length){
-        let foot=`<td class="bold">TOTAL</td><td>${tot.total}</td>`; const t=tot.total||0;
+        let foot=`<td><strong>TOTAL</strong></td><td>${tot.total}</td>`; const t=tot.total||0;
         const clsTot = colorPct(t?tot.approved/t*100:0);
         if(vistaActual==="numerico"){
           foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
@@ -542,18 +481,14 @@
       document.getElementById('mMed').textContent=`${med}%`;
       document.getElementById('mMax').textContent=`${max}%`;
 
-      let deltaTxt='–', cls='';
+      let deltaTxt='–';
       if(vals.length>=2){
         const last=vals[vals.length-1], prev=vals[vals.length-2];
         const d=(last-prev).toFixed(1);
         const arrow = (d>=0? '↑':'↓');
-        cls = d>=0? 'delta up':'delta down';
         deltaTxt = `${arrow} ${Math.abs(d)} pp`;
       }
-      const mDelta=document.getElementById('mDelta');
-      mDelta.className='value ' + cls;
-      mDelta.textContent=deltaTxt;
-
+      document.getElementById('mDelta').textContent=deltaTxt;
       box.style.display='flex';
     }
 
@@ -561,7 +496,7 @@
       await ensurePaisesOptions();
       const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
 
-      // Prefs  (🔴 default cambiado a 'hoy')
+      // Preferencias (default = 'hoy')
       const prefPais=readPref(PREF_FPAIS,'todos');
       const prefFecha=readPref(PREF_FFECHA,'');
       const prefPreset=readPref(PREF_PRESET,'hoy');
@@ -569,9 +504,7 @@
       presetEl.value = prefPreset;
       if(prefFecha) filtroFechaEl.value = prefFecha;
 
-      const preset = presetEl.value;
-      const dateISO = filtroFechaEl.value || '';
-      const {start, end} = rangeFromPreset(preset, dateISO);
+      const {start, end} = rangeFromPreset(presetEl.value, (filtroFechaEl.value||''));
 
       try{
         cloudHistorico=await fetchHistoricoCloud(filtroPaisEl.value, start, end);
@@ -598,7 +531,7 @@
           <td>${r.reject||0}</td>
           <td>${r.trash||0}</td>
           <td>
-            <button class="btn-danger" ${r._id ? '' : 'disabled'}
+            <button class="gc-btn gc-btn--sm gc-btn--danger" ${r._id ? '' : 'disabled'}
               onclick="eliminarRegistro('${r._id||''}')" title="Eliminar este registro">
               🗑️ Eliminar
             </button>
@@ -634,75 +567,17 @@
     window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
     window.eliminarRegistro=eliminarRegistro;
 
-    // ====== Botón de vista (Mixta → Numérica → Porcentual) ======
-    const viewToggleBtn = document.getElementById('btnViewToggle');
-    const viewIcon      = document.getElementById('viewIcon');
-    const viewLabel     = document.getElementById('viewLabel');
-
-    function setViewButton(mode){
-      viewToggleBtn.dataset.mode = mode;
-      if(mode==='mixto'){        viewIcon.textContent='🔁'; viewLabel.textContent='Vista Mixta'; }
-      else if(mode==='numerico'){viewIcon.textContent='📦'; viewLabel.textContent='Vista Numérica'; }
-      else /* porcentaje */     {viewIcon.textContent='📈'; viewLabel.textContent='Vista Porcentual'; }
-    }
-    setViewButton(vistaActual); // arranca con "mixto"
-
-    // Guardar modo de vista compartido
-    async function setSharedView(next){
-      try{
-        await runTransaction(db, async (tx)=>{
-          const snap = await tx.get(nrDocRef);
-          const curr = snap.exists() ? snap.data() : {};
-          tx.set(nrDocRef, { ...curr, viewMode: next, updatedAt: serverTimestamp() }, { merge:true });
-        });
-      }catch(e){ console.warn('[nr] setSharedView:', e.message || e); }
-    }
-    const MODES = ['mixto','numerico','porcentaje'];
-    viewToggleBtn.addEventListener('click', async ()=>{
-      const curr = viewToggleBtn.dataset.mode || 'mixto';
-      const idx  = MODES.indexOf(curr);
-      const next = MODES[(idx+1) % MODES.length];
-      setViewButton(next);
-      savePref(PREF_VISTA, next);
-      await setSharedView(next);
-      if((document.getElementById('inputData').value||'').trim()){
-        vistaActual = next;
-        procesar(vistaActual);
-      }
-    });
-
-    // ====== Suscripción al doc de estado (marca conectado y sincroniza vista) ======
-    await ensureStateDocIfNeeded();  // intenta crear doc si falta (sin romper si no hay permiso)
-
-    onSnapshot(nrDocRef, (snap)=>{
-      const data = snap.data() || {};
-      const { dataRaw = '', viewMode = 'mixto' } = data;
-
-      // pinta badge conectado
-      setBadge('Conectado ✓','ok');
-
-      // sincroniza botón de vista con el estado compartido
-      setViewButton(viewMode);
-      savePref(PREF_VISTA, viewMode);
-
-      // si el textarea está vacío pero el doc tiene algo, lo cargamos y procesamos
-      const inputEl = document.getElementById('inputData');
-      if (!inputEl.value.trim() && dataRaw.trim()){
-        inputEl.value = dataRaw;
-        vistaActual = viewMode;
-        procesar(vistaActual);
-      }
-    }, (err)=>{
-      console.warn('[nr_state] onSnapshot:', err);
-      setBadge('Sin permiso para ver estado','warn');
-    });
-
-    // Auth (habilita registrar)
+    // Auth
     onAuthStateChanged(auth, ()=>{
+      authSettled = true;
+      clearTimeout(authWatchdog);
       document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+      setBadge('Conectado ✓','ok');
+      renderTablaHistorico();
     });
+    signInAnonymously(auth).catch(e=>{ console.error('[GC] signInAnonymously error:', e); });
 
-    // Prefs iniciales (default 'hoy')
+    // Prefs iniciales (default = 'hoy')
     document.addEventListener('DOMContentLoaded', ()=>{
       const prefPreset=readPref(PREF_PRESET,'hoy');
       document.getElementById('presetRango').value=prefPreset;
