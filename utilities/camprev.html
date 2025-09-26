@@ -158,7 +158,6 @@ PEROP1AM-39726
       }
 
       let dataFinal=[], filtered=[], sortState=[];
-      let rawDistrib=[], rawCamp=[];
 
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
       function fillSelect(sel, values){
@@ -311,27 +310,28 @@ PEROP1AM-39726
         }catch{}
       }
 
-      // util copiar listas
       async function copyList(getter,label){
         const arr=filtered.map(getter).filter(Boolean); if(!arr.length){ toast('ℹ️ Nada para copiar'); return; }
         const text=arr.join('\n'); try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }catch{ toast('❌ No se pudo copiar'); }
       }
       async function copyNamesPerops(){
         if(!filtered.length){ toast('ℹ️ Nada para copiar'); return; }
-        // FORMATO: NOMBRE<TAB>PEROP
         const text=filtered.map(r=>`${r.nombre}\t${r.perop}`).join('\n');
         try{ await navigator.clipboard.writeText(text); toast(`📋 Nombres — PEROPs copiados (${filtered.length})`); }catch{ toast('❌ No se pudo copiar'); }
       }
 
-      // Boot
-      (async function(){
-        try{
-          const rawDistrib = await tryFetch(candidatesOperations());
-          const rawCamp    = await tryFetch(candidatesUtilities());
+      /* =================== INIT (esperando a gc-shell) =================== */
+      (async function init(){
+        // Espera a que el custom element esté listo y haya renderizado el DOM
+        await customElements.whenDefined('gc-shell');
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
 
-          // Merge
-          dataFinal=rawCamp.reduce((acc,row)=>{
-            const op=rawDistrib.find(o=>String(o.C)===String(row.A));
+        // Cargar data
+        try{
+          const distrib = await tryFetch(candidatesOperations());
+          const camp    = await tryFetch(candidatesUtilities());
+          dataFinal=camp.reduce((acc,row)=>{
+            const op=distrib.find(o=>String(o.C)===String(row.A));
             if(op){
               acc.push({
                 teamLeader: op.A||'', nombre: op.B||'', perop: row.A||'', campania: row.B||'',
@@ -352,7 +352,7 @@ PEROP1AM-39726
         applyFiltersAndRender();
         toast('✅ Datos cargados');
 
-        // Eventos
+        // Listeners (ya con DOM definitivo)
         $('headRow').addEventListener('click', (e)=>{
           const th = e.target.closest('th[data-col]'); if(!th) return; cycleSort(th, e);
         });
