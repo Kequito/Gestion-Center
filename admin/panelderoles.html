@@ -5,20 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Panel Admin — Gestión Center</title>
 
-  <!-- MUY IMPORTANTE: base para rutas absolutas en GitHub Pages -->
+  <!-- Base para rutas absolutas en GitHub Pages -->
   <meta name="gc-base" content="/Gestion-Center/"/>
 
-  <!-- Oculta de inmediato para evitar flicker hasta validar rol -->
+  <!-- Oculta hasta validar rol y montar el shell -->
   <style>html{visibility:hidden}</style>
 
-  <!-- Ecosistema GC -->
+  <!-- Guard primero (auth + BASE expuesta) -->
   <script type="module" src="../assets/guard.js"></script>
-  <script type="module" src="../assets/bw/shell.js"></script>
+
+  <!-- Estilos del tema -->
   <link rel="stylesheet" href="../assets/bw/bw.css">
 </head>
 <body>
-  <gc-shell hero-title="Panel de administración" hero-subtitle="Gestiona roles y utilidades de acceso">
-    <section class="grid-2">
+  <!-- Contenido sin shell; el shell se montará luego de verificar admin -->
+  <div id="app" style="padding:16px;max-width:1100px;margin:auto">
+    <h1 style="margin:0 0 8px">Panel de administración</h1>
+    <p id="bootMsg" class="muted">Verificando rol…</p>
+
+    <section class="grid-2" style="display:none" id="content">
       <!-- Estado del admin -->
       <article class="card">
         <h2>👤 Tu estado</h2>
@@ -67,7 +72,7 @@
         </details>
       </article>
     </section>
-  </gc-shell>
+  </div>
 
   <script type="module">
     import { getAuth, reload } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -88,15 +93,15 @@
 
     // --------- DOM refs ----------
     const $ = (sel)=>document.querySelector(sel);
+    const bootMsg = $("#bootMsg");
+    const content = $("#content");
     const meEmail = $("#meEmail");
     const meUid   = $("#meUid");
     const meRank  = $("#meRank");
     const meMsg   = $("#meMsg");
-
     const btnCopyUid = $("#btnCopyUid");
     const btnRefresh = $("#btnRefresh");
     const btnLogout  = $("#btnLogout");
-
     const targetId   = $("#targetId");
     const targetRole = $("#targetRole");
     const btnAssign  = $("#btnAssign");
@@ -107,71 +112,88 @@
     const fn   = getFunctions();
 
     // --------- Helpers UI ----------
-    function badgeColor(rank){
+    const badgeColor = (rank)=>{
       const r = String(rank||"").toLowerCase();
       if (r==="admin") return "#ef4444";
       if (r==="supervisor") return "#a855f7";
       if (r==="tl") return "#3b82f6";
-      return "#22c55e"; // invitado / sin rol
-    }
+      return "#22c55e";
+    };
 
-    // --------- Gate de ADMIN (con reintentos) ----------
-    async function requireAdmin(){
+    async function waitForAdmin(maxMs=4000){
       const u = auth.currentUser;
+      if (!u) return {ok:false, reason:"no-user"};
 
-      if (!u){
-        console.warn("[panelderoles] No hay usuario. Redirigiendo a login.");
-        go("login.html");
-        return false;
-      }
+      const deadline = Date.now() + maxMs;
+      let attempt = 0;
 
-      // Mostrar "verificando" mientras resolvemos los claims
-      meMsg.textContent = "Verificando rol…";
-      document.documentElement.style.visibility = "visible";
-
-      // Hasta 8 intentos (~4 segundos) para cubrir propagación de claims
-      const MAX_TRIES = 8;
-      for (let i=0; i<MAX_TRIES; i++){
-        try{
-          // Fuerza refresh completo del user y token
+      while (Date.now() < deadline) {
+        attempt++;
+        try {
           await reload(u);
           await u.getIdToken(true);
           const t = await u.getIdTokenResult(false);
           const rank = String(t.claims?.rank || "invitado").toLowerCase();
-
-          console.log("[panelderoles] intento", i+1, "rank =", rank);
-
-          if (rank === "admin"){
-            // Usuario válido → pintar y listo
-            meEmail.textContent = u.email || "(sin email)";
-            meUid.textContent   = u.uid;
-            meRank.textContent  = rank;
-            meRank.style.background = badgeColor(rank);
-            meMsg.textContent = "Acceso concedido ✅";
-            return true;
-          }
-        }catch(err){
-          console.warn("[panelderoles] error obteniendo claims (intento", i+1, "):", err);
+          console.log("[panelderoles] intento", attempt, "rank =", rank);
+          if (rank === "admin") return {ok:true, rank};
+        } catch (e) {
+          console.warn("[panelderoles] error claims intento", attempt, e);
         }
-        // Espera 500ms antes del próximo intento
-        await new Promise(r=>setTimeout(r, 500));
+        await new Promise(r=>setTimeout(r, 300));
+      }
+      return {ok:false, reason:"timeout"};
+    }
+
+    async function mountShell(){
+      // Monta el shell SOLO cuando ya sabemos que eres admin
+      await import("../assets/bw/shell.js");
+      // Envuélvelo con el tag real si tu shell necesita el custom element explícito
+      // Aquí usamos el contenido ya presente; el shell debería “enhance” o montar layout.
+    }
+
+    async function bootstrap(){
+      // Mostrar estado inicial
+      bootMsg.textContent = "Verificando rol…";
+
+      // 1) Espera admin
+      const u = auth.currentUser;
+      if (!u) { go("login.html"); return; }
+
+      const res = await waitForAdmin(4000);
+      if (!res.ok) {
+        bootMsg.textContent = "Acceso restringido: se requiere rol ADMIN.";
+        await new Promise(r=>setTimeout(r, 800));
+        go("index.html");
+        return;
       }
 
-      // Si agotamos intentos, negar acceso con mensaje claro y regresar al inicio
-      meMsg.textContent = "Acceso restringido: se requiere rol ADMIN.";
-      await new Promise(r=>setTimeout(r, 800));
-      go("index.html");
-      return false;
+      // 2) Montar shell ahora que el claim es correcto
+      bootMsg.textContent = "Cargando interfaz…";
+      await mountShell();
+
+      // 3) Pintar datos y mostrar contenido
+      const t = await u.getIdTokenResult(false);
+      const rank = String(t.claims?.rank || "invitado").toLowerCase();
+      meEmail.textContent = u.email || "(sin email)";
+      meUid.textContent   = u.uid;
+      meRank.textContent  = rank;
+      meRank.style.background = badgeColor(rank);
+
+      content.style.display = "";
+      bootMsg.textContent = "Acceso concedido ✅";
+
+      // 4) Finalmente, muestra la página sin flicker
+      document.documentElement.style.visibility = "visible";
     }
 
     // --------- Utilidades ----------
-    btnCopyUid.addEventListener("click", async ()=>{
+    btnCopyUid?.addEventListener("click", async ()=>{
       try { await navigator.clipboard.writeText(meUid.textContent); meMsg.textContent = "UID copiado ✅"; }
       catch { meMsg.textContent = "No se pudo copiar el UID"; }
       setTimeout(()=>meMsg.textContent="", 1500);
     });
 
-    btnRefresh.addEventListener("click", async ()=>{
+    btnRefresh?.addEventListener("click", async ()=>{
       try {
         const u = auth.currentUser;
         await reload(u);
@@ -188,21 +210,20 @@
       setTimeout(()=>meMsg.textContent="", 2500);
     });
 
-    btnLogout.addEventListener("click", async ()=>{
+    btnLogout?.addEventListener("click", async ()=>{
       try { await auth.signOut(); }
       finally { go("login.html"); }
     });
 
     // --------- Callable: asignar rol ----------
-    btnAssign.addEventListener("click", async ()=>{
+    btnAssign?.addEventListener("click", async ()=>{
       assignMsg.textContent = "";
       const id   = (targetId.value || "").trim();
       const role = (targetRole.value || "").trim().toLowerCase();
 
       if (!id){ assignMsg.textContent = "Ingresa un UID o un email."; return; }
       if (!["admin","supervisor","tl","invitado"].includes(role)){
-        assignMsg.textContent = "Rol inválido."; return;
-      }
+        assignMsg.textContent = "Rol inválido."; return; }
 
       try{
         const callable = httpsCallable(fn, "admin-setUserRank");
@@ -220,8 +241,8 @@
       }
     });
 
-    // --------- Kickoff ----------
-    requireAdmin();
+    // --------- Arranque ----------
+    bootstrap();
   </script>
 </body>
 </html>
