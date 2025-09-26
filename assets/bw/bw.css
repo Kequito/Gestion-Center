@@ -1,10 +1,23 @@
 :root{
   --font:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* escala BW existente */
   --black:#0a0a0a; --white:#fff;
   --gray-900:#111; --gray-700:#3f3f3f; --gray-500:#737373;
   --gray-300:#d4d4d4; --gray-200:#e5e5e5; --gray-100:#f5f5f5;
+
   --sidebar-w:280px; --sidebar-w-compact:72px; --radius:12px;
+
+  /* ⚙️ animaciones suaves */
+  --ease:cubic-bezier(.20,.70,.20,1);
+  --t-fast:.12s; --t-med:.24s;
+
+  /* 🎨 tonos del sidebar (alineados con encabezados negros) */
+  --aside-bg:#000;        /* fondo sidebar (negro puro) */
+  --aside-card:#0f0f0f;   /* bloques internos en el aside */
+  --aside-stroke:#1f1f1f; /* borde sutil */
 }
+
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -15,49 +28,80 @@ body{
 /* ===== Sidebar ===== */
 aside{
   position:fixed; inset:0 auto 0 0; z-index:20;
-  width:var(--sidebar-w); background:var(--black); color:var(--white);
-  border-right:1px solid var(--gray-300); display:flex; flex-direction:column; gap:12px;
+  width:var(--sidebar-w);
+  background:var(--aside-bg); color:var(--white);
+  border-right:1px solid var(--aside-stroke);
+  display:flex; flex-direction:column; gap:12px;
   padding:12px; overflow:auto;
+
+  /* animación barata (no layout) */
+  will-change:transform, background-color;
+  transition:background-color var(--t-med) linear,
+             transform var(--t-fast) var(--ease);
 }
 .brand{
   display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--gray-300); border-radius:var(--radius); padding:10px;
-  text-decoration:none; background:#0f0f0f
+  border:1px solid var(--aside-stroke); border-radius:var(--radius); padding:10px;
+  text-decoration:none; background:var(--aside-card);
+  transition:filter var(--t-med) ease, transform var(--t-fast) var(--ease);
 }
 .brand img{width:160px; height:auto; display:block}
+.brand:hover{filter:brightness(1.06)}
+.brand:active{transform:translateY(1px)}
+
 .sidebar-toggle{
-  width:100%; border:1px solid var(--gray-300); background:transparent; color:var(--white);
+  width:100%; border:1px solid var(--aside-stroke); background:transparent; color:var(--white);
   border-radius:10px; padding:10px 12px; font-weight:700; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px; line-height:1.1; white-space:nowrap
+  display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px; line-height:1.1; white-space:nowrap;
+  transition:filter var(--t-med) ease, transform var(--t-fast) var(--ease);
 }
 .sidebar-toggle .icon{font-size:16px}
+.sidebar-toggle:hover{filter:brightness(1.08)}
+.sidebar-toggle:active{transform:translateY(1px)}
+
 nav{display:flex; flex-direction:column; gap:10px}
-.nav-group{border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; background:#0f0f0f}
+.nav-group{border:1px solid var(--aside-stroke); border-radius:12px; overflow:hidden; background:var(--aside-card)}
 .nav-head{
   width:100%; background:transparent; color:var(--white); text-align:left; padding:10px 12px; border:0; cursor:pointer;
-  font-weight:700; display:flex; align-items:center; gap:8px
+  font-weight:700; display:flex; align-items:center; gap:8px;
+  transition:background var(--t-med) ease;
 }
-.nav-body{display:block; padding:6px}
-.nav-group.is-collapsed .nav-body{display:none}
+.nav-head:hover{background:#121212}
+
+/* 🎬 colapsable fluido (sin jank) */
+.nav-body{
+  display:grid; grid-template-rows:1fr; opacity:1;
+  transition:grid-template-rows .28s var(--ease), opacity .22s ease;
+}
+.nav-group.is-collapsed .nav-body{grid-template-rows:0fr; opacity:.0}
+.nav-body-inner{min-height:0; overflow:hidden; padding:6px}
+
 .nav-item{
   display:flex; align-items:center; gap:10px; color:var(--white); text-decoration:none;
-  padding:12px 12px; border-radius:10px; margin:4px; background:transparent
+  padding:12px 12px; border-radius:10px; margin:4px; background:transparent;
+  transition:background .18s ease, transform .18s var(--ease), color .18s ease;
 }
-.nav-item:hover{background:#141414}
+.nav-item:hover{background:#141414; transform:translateX(2px)}
 .nav-item.active{
-  background:var(--white); color:var(--gray-900); border-left:3px solid var(--gray-900); border-radius:10px
+  background:var(--white); color:var(--gray-900); border-left:3px solid var(--gray-900); border-radius:10px;
+  transform:none;
 }
 .spacer{flex:1}
 .role-card{
-  display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--gray-300); border-radius:10px;
-  background:#0f0f0f; color:var(--white)
+  display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--aside-stroke); border-radius:10px;
+  background:var(--aside-card); color:var(--white);
+  transition:transform var(--t-med) var(--ease), box-shadow var(--t-med) ease;
 }
+.role-card:hover{transform:translateY(-1px)}
 .role-dot{width:14px; height:14px; border-radius:50%; background:var(--gray-500)}
-.role-badge{font-size:12px; padding:2px 8px; border:1px solid var(--gray-300); border-radius:999px}
+.role-badge{font-size:12px; padding:2px 8px; border:1px solid var(--aside-stroke); border-radius:999px}
 .logout{
-  width:100%; padding:12px; border-radius:10px; border:1px solid var(--gray-300);
-  background:#1a1a1a; color:#fff; cursor:pointer; font-weight:700
+  width:100%; padding:12px; border-radius:10px; border:1px solid var(--aside-stroke);
+  background:#1a1a1a; color:#fff; cursor:pointer; font-weight:700;
+  transition:filter var(--t-med) ease, transform var(--t-fast) var(--ease);
 }
+.logout:hover{filter:brightness(1.06)}
+.logout:active{transform:translateY(1px)}
 
 /* ===== Main / contenido ===== */
 main{margin-left:var(--sidebar-w); padding:20px}
@@ -107,14 +151,19 @@ body.sidebar-compact .nav-item.active{
   outline:2px solid var(--white); outline-offset:2px;
 }
 
+/* Accesibilidad: reduce motion */
+@media (prefers-reduced-motion:reduce){
+  aside, .brand, .sidebar-toggle, .nav-head, .nav-body, .nav-item, .role-card, .logout{
+    transition:none !important;
+  }
+}
+
 /* =========================================================
    GC components — botones, chips, toolbars y tablas
    ========================================================= */
 
 /* Toolbar (fila de acciones) */
-.gc-toolbar{
-  display:flex; align-items:center; flex-wrap:wrap; gap:10px;
-}
+.gc-toolbar{ display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
 
 /* Botones */
 .gc-btn{
