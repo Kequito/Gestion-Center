@@ -8,6 +8,7 @@
       - Sin subtítulo por defecto
       - Título AUTO desde .page-title / h1 / h2 (o hero-title)
       - Si se usó auto, oculta la .page-title duplicada
+   ✅ Refuerzo: asegura "Delta Report" en Reportes si gc.config.js no lo trae
    =========================================================== */
 
 const HOME_ABS = "https://kequito.github.io/Gestion-Center/";
@@ -54,17 +55,44 @@ const BASE = computeBase();
 const abs  = (p) => new URL(String(p||"").replace(/^\//,""), BASE).href;
 window.__GC_BASE__ = BASE;
 
+/* ---------------- helpers nav/config ---------------- */
+function ensureDeltaReportInConfig(cfg){
+  if (!cfg || !Array.isArray(cfg.nav)) return cfg;
+
+  // Encontrar grupo "Reportes"
+  const reportsIdx = cfg.nav.findIndex(e => e?.type === "group" && /reportes/i.test(e.title||""));
+  if (reportsIdx === -1) return cfg;
+
+  const grp = cfg.nav[reportsIdx];
+  grp.items ||= [];
+
+  const hasDelta = grp.items.some(it =>
+    /deltareport\.html$/i.test(it?.href||"") || /delta\s*report/i.test(it?.label||"")
+  );
+
+  if (!hasDelta){
+    grp.items.push({
+      href: "reports/deltareport.html",
+      icon: "📈",
+      label: "Delta Report",
+    });
+  }
+  cfg.nav[reportsIdx] = grp;
+  return cfg;
+}
+
 /* ---------------- Config ---------------- */
 async function loadConfig() {
   try {
     const mod = await import(abs("assets/bw/gc.config.js"));
-    const cfg = mod?.GC_CONFIG || mod?.default;
+    let cfg = mod?.GC_CONFIG || mod?.default;
     if (!cfg) throw new Error("GC_CONFIG vacío");
 
     // Forzar home
     cfg.brand ||= {};
     cfg.brand.homeHref = HOME_ABS;
 
+    // Forzar que el link de "Inicio" (si aparece como link suelto) vaya al HOME_ABS
     if (Array.isArray(cfg.nav)) {
       cfg.nav = cfg.nav.map(entry => {
         if (entry?.type === "link" && /inicio/i.test(entry.label || "")) {
@@ -73,6 +101,10 @@ async function loadConfig() {
         return entry;
       });
     }
+
+    // Refuerzo: asegurar presencia de "Delta Report"
+    cfg = ensureDeltaReportInConfig(cfg);
+
     return cfg;
   } catch (e) {
     console.warn("[gc-shell] gc.config.js no disponible, uso fallback:", e);
@@ -90,13 +122,13 @@ async function loadConfig() {
         { type: "link", id: "home", label: "Inicio", icon: "🏠", href: HOME_ABS },
         { type: "group", id: "grp-reportes", title: "Reportes",
           items: [
-            { label: "New Report", icon: "🧰", href: "reports/newreport.html" },
-            { label: "Post-Sale Report", icon: "🚚", href: "reports/psreport.html" },
-            { label: "Delta Report", icon: "📈", href: "reports/deltareport.html" },
+            { label: "New Report",      icon: "🧰", href: "reports/newreport.html" },
+            { label: "Post-Sale Report",icon: "🚚", href: "reports/psreport.html" },
+            { label: "Delta Report",    icon: "📈", href: "reports/deltareport.html" }, // ✅ fallback incluye Delta
           ]},
         { type: "group", id: "grp-operaciones", title: "Operaciones",
           items: [
-            { label: "Distribución", icon: "📋", href: "operations/distribucion.html" },
+            { label: "Distribución",    icon: "📋", href: "operations/distribucion.html" },
             { label: "BI de OPs + Links", icon: "🔗", href: "operations/biops.html" },
           ]},
         { type: "group", id: "grp-cobertura", title: "Cobertura",
@@ -225,7 +257,7 @@ function paintRoleCard(root, normalizedKey){
   if (roleDot) roleDot.style.background = ui.color;
   if (roleName) roleName.textContent    = ui.name;
   if (roleBadge) roleBadge.textContent  = ui.name;
-  if (roleDesc) roleDesc.textContent    = ui.desc;
+  if (roleDesc)  roleDesc.textContent   = ui.desc;
 
   try{ localStorage.setItem("gc-role", ui.name); }catch{}
 }
@@ -268,7 +300,7 @@ function buildSidebar(CFG) {
         ${it.icon || ""} <span class="label">${it.label}</span></a>`;
     }).join("");
 
-    return `<section class="nav-group" data-key="${entry.id}"${groupNeeds}>
+    return `<section class="nav-group" data-key="${entry.id || ''}"${groupNeeds}>
       <button class="nav-head" aria-expanded="true" title="${entry.title}">
         <span class="chev">▾</span> <span class="txt">${entry.title}</span>
       </button>
