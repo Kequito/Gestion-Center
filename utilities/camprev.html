@@ -5,92 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — Selector de Apoyo 2.0</title>
 
-    <!-- Shell del ecosistema BW (desde /utilities/ sube un nivel) -->
+    <!-- Shell BW (aplica bw.css y sidebar) -->
     <script type="module" src="../assets/bw/shell.js"></script>
 
     <style>
-      /* ===== Camprev — estilos mínimos complementarios (el resto viene de bw.css) ===== */
-
-      :root{
-        --bd: var(--gray-300);
-        --txt-muted: var(--gray-700);
-      }
-
-      /* Panel superior con título */
+      :root{ --bd:var(--gray-300); --txt-muted:var(--gray-700) }
       .cp-title{ margin:0; font-size:22px }
 
       /* Filtros */
-      .filters{
-        display:grid; grid-template-columns:repeat(5, minmax(180px,1fr));
-        gap:12px; align-items:end;
-      }
+      .filters{ display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; align-items:end }
       .filter-group{ display:flex; flex-direction:column; gap:6px }
       .filter-group label{ font-size:12px; color:var(--txt-muted) }
-      .filter-group select,
-      .filter-group input[type="text"],
-      .filter-group textarea{
-        padding:10px 12px; border-radius:10px; border:1px solid var(--bd);
-        background:#fff; height:40px; outline:none; appearance:none;
-        font:inherit; color:inherit;
+      .filter-group select,.filter-group input,.filter-group textarea{
+        padding:10px 12px; border:1px solid var(--bd); border-radius:10px; height:40px; background:#fff; color:inherit; font:inherit; outline:none
       }
       .filter-group textarea{ height:auto; min-height:40px; resize:vertical; line-height:1.2 }
-      .grid-span-3{ grid-column: span 3; }
+      .grid-span-3{ grid-column:span 3 }
 
-      /* Tabla: indicadores de orden */
-      .sort-none::after{ content:"" }
-      .sort-desc::after{ content:" ↓"; font-weight:900 }
-      .sort-asc::after{ content:" ↑"; font-weight:900 }
+      /* Tabla */
+      .sort-none::after{content:""} .sort-desc::after{content:" ↓";font-weight:900} .sort-asc::after{content:" ↑";font-weight:900}
+      .pct{font-weight:800} .pct.red{color:#ef4444} .pct.orange{color:#f59e0b} .pct.green{color:#22c55e}
+      .perop{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy}
 
-      /* Colores de % */
-      .pct{ font-weight:800 }
-      .pct.red{ color:#ef4444 } .pct.orange{ color:#f59e0b } .pct.green{ color:#22c55e }
-
-      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy }
-
-      /* Toast */
-      #toast{
-        position:fixed; bottom:18px; right:20px; background:#111827; color:#fff;
-        padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35);
-        display:none; z-index:1000
-      }
-
-      /* Responsivo */
-      @media (max-width:1080px){
-        .filters{ grid-template-columns:repeat(2, minmax(140px,1fr)) }
-      }
+      #toast{ position:fixed; right:20px; bottom:18px; background:#111827; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000 }
+      @media (max-width:1080px){ .filters{grid-template-columns:repeat(2,minmax(140px,1fr))} }
     </style>
   </head>
   <body>
-    <!-- Shell sin hero (hero="off") mantiene sidebar BW y aplica bw.css -->
     <gc-shell hero="off">
-      <!-- ===== Título ===== -->
+      <!-- Título -->
       <section class="gc-panel" style="margin-bottom:12px">
         <h1 class="cp-title">👥 Selector de Apoyo — Ver 2.0</h1>
       </section>
 
-      <!-- ===== Controles ===== -->
+      <!-- Controles -->
       <section class="gc-panel" style="margin-bottom:12px">
         <div class="filters" style="margin-bottom:10px">
-          <div class="filter-group">
-            <label for="fltTL">Team Leader</label>
-            <select id="fltTL"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltCamp">Campaña</label>
-            <select id="fltCamp"><option value="">Todas</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltDesc">Descanso</label>
-            <select id="fltDesc"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltTurno">Turno</label>
-            <select id="fltTurno"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltSearch">Buscar</label>
-            <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
-          </div>
+          <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltCamp">Campaña</label><select id="fltCamp"><option value="">Todas</option></select></div>
+          <div class="filter-group"><label for="fltDesc">Descanso</label><select id="fltDesc"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltTurno">Turno</label><select id="fltTurno"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltSearch">Buscar</label><input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/></div>
 
           <div class="filter-group grid-span-3">
             <label for="fltList">Lista PEROP1AM (uno por línea, o separados por , ;)</label>
@@ -102,8 +57,8 @@ PEROP1AM-39726
 
           <div class="filter-group">
             <label>Modo lista PEROP</label>
-            <label title="Presiona X para alternar" style="display:inline-flex;align-items:center;gap:8px">
-              <input type="checkbox" id="toggleInclude" checked style="width:18px;height:18px;accent-color:#16a34a"/>
+            <label style="display:inline-flex;align-items:center;gap:8px">
+              <input type="checkbox" id="toggleInclude" checked style="width:18px;height:18px;accent-color:#16a34a">
               <span id="toggleLabel" style="font-size:13px;color:var(--gray-700)">Incluir lista</span>
             </label>
           </div>
@@ -120,22 +75,14 @@ PEROP1AM-39726
         </div>
 
         <div class="gc-toolbar">
-          <button id="btnReset" class="gc-btn">
-            <span class="gc-icon">🧹</span> Restablecer filtros
-          </button>
-          <button id="btnExport" class="gc-btn gc-btn--primary">
-            <span class="gc-icon">⬇️</span> Exportar (CSV)
-          </button>
-          <button id="btnCopyPerop" class="gc-btn">
-            <span class="gc-icon">📋</span> Copiar PEROPs filtrados
-          </button>
-          <button id="btnCopyNames" class="gc-btn">
-            <span class="gc-icon">📋</span> Copiar Nombres filtrados
-          </button>
+          <button id="btnReset" class="gc-btn"><span class="gc-icon">🧹</span> Restablecer filtros</button>
+          <button id="btnExport" class="gc-btn gc-btn--primary"><span class="gc-icon">⬇️</span> Exportar (CSV)</button>
+          <button id="btnCopyPerop" class="gc-btn"><span class="gc-icon">📋</span> Copiar PEROPs filtrados</button>
+          <button id="btnCopyNames" class="gc-btn"><span class="gc-icon">📋</span> Copiar Nombres filtrados</button>
         </div>
       </section>
 
-      <!-- ===== Tabla ===== -->
+      <!-- Tabla -->
       <section class="gc-panel">
         <div style="overflow:auto">
           <table id="tblCampRev" class="gc-table gc-table--sticky"
@@ -146,13 +93,13 @@ PEROP1AM-39726
                 <th data-col="nombre" class="sort-none">Operador</th>
                 <th data-col="perop" class="sort-none">PEROP1AM</th>
                 <th data-col="campania" class="sort-none">Campaña</th>
-                <th data-col="orders" class="sort-none" style="text-align:right">Total Orders</th>
-                <th data-col="approve" class="sort-none" style="text-align:right">%Approve</th>
-                <th data-col="reject" class="sort-none" style="text-align:right">%Reject</th>
-                <th data-col="trash" class="sort-none" style="text-align:right">%Trash</th>
-                <th data-col="avg" class="sort-none" style="text-align:right">Avg Check</th>
+                <th data-col="orders"   class="sort-none" style="text-align:right">Total Orders</th>
+                <th data-col="approve"  class="sort-none" style="text-align:right">%Approve</th>
+                <th data-col="reject"   class="sort-none" style="text-align:right">%Reject</th>
+                <th data-col="trash"    class="sort-none" style="text-align:right">%Trash</th>
+                <th data-col="avg"      class="sort-none" style="text-align:right">Avg Check</th>
                 <th data-col="descanso" class="sort-none">Descanso</th>
-                <th data-col="turno" class="sort-none">Turno</th>
+                <th data-col="turno"    class="sort-none">Turno</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -164,18 +111,17 @@ PEROP1AM-39726
     </gc-shell>
 
     <script type="module">
-      /* =========================================================
-         Camprev — lógica con bw.css + gc-shell
-         ========================================================= */
+      /* =================== Helpers =================== */
+      const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)}
+      const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+      const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}}
+      const STATE_KEY='selector_apoyo_v2_state';
 
-      // ===== BASE robusto (usa __GC_BASE__ si shell ya lo calculó) =====
       function fallbackBase(){
         const host  = location.hostname;
         const parts = location.pathname.split("/").filter(Boolean);
         const repo  = "Gestion-Center";
-        if (host.endsWith("github.io")){
-          return `${location.origin}/${(parts[0]||repo)}/`;
-        }
+        if (host.endsWith("github.io")) return `${location.origin}/${(parts[0]||repo)}/`;
         const idx = parts.indexOf(repo);
         if (idx !== -1) return `${location.origin}/${parts.slice(0, idx+1).join("/")}/`;
         return `${location.origin}/${repo}/`;
@@ -183,55 +129,37 @@ PEROP1AM-39726
       const BASE = (window.__GC_BASE__ || fallbackBase());
       const abs  = (p) => new URL(String(p||'').replace(/^\//,''), BASE).href;
 
-      // ===== Helpers =====
-      const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)}
-      const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
-      const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}}
-      const STATE_KEY='selector_apoyo_v2_state';
-
-      let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
-
-      // Espera a que el shell haya pintado el contenido (tabla presente)
-      function waitFor(sel, timeout=8000){
-        return new Promise((res,rej)=>{
-          const t0=performance.now();
-          (function loop(){
-            const el=document.querySelector(sel);
-            if(el) return res(el);
-            if(performance.now()-t0>timeout) return rej(new Error('timeout waiting '+sel));
-            requestAnimationFrame(loop);
-          })();
-        });
+      async function tryFetch(urls){
+        let lastErr=null;
+        for(const u of urls){
+          try{
+            const r=await fetch(u);
+            if(r.ok) return await r.json();
+            lastErr = new Error(`HTTP ${r.status} en ${u}`);
+          }catch(e){ lastErr=e; }
+        }
+        throw lastErr || new Error('No se pudo cargar');
       }
 
-      // ===== Carga =====
-      async function loadJSON(url){
-        const sep=url.includes('?')?'&':'?';
-        const r=await fetch(url+sep+'t='+(Date.now()));
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        return r.json();
+      // Rutas candidatas robustas
+      function candidatesOperations(){
+        return [
+          abs('operations/datadistribucion.json'),
+          new URL('../operations/datadistribucion.json', location.href).href,
+          `${location.origin}/Gestion-Center/operations/datadistribucion.json`,
+        ];
       }
-      async function loadData(){
-        const [distrib,camp]=await Promise.all([
-          loadJSON(abs('operations/datadistribucion.json')),
-          loadJSON(abs('utilities/datacamprev.json')),
-        ]);
-        rawDistrib=distrib; rawCamp=camp;
-
-        dataFinal=rawCamp.reduce((acc,row)=>{
-          const op=rawDistrib.find(o=>String(o.C)===String(row.A));
-          if(op){
-            acc.push({
-              teamLeader: op.A||'', nombre: op.B||'', perop: row.A||'', campania: row.B||'',
-              orders: Number(row.C)||0, approve: String(row.E||''), reject: String(row.M||''), trash: String(row.O||''),
-              avg: Number(row.P)||0, descanso: op.E||'', turno: op.F||''
-            });
-          }
-          return acc;
-        },[]);
+      function candidatesUtilities(){
+        return [
+          abs('utilities/datacamprev.json'),
+          new URL('./datacamprev.json', location.href).href,
+          `${location.origin}/Gestion-Center/utilities/datacamprev.json`,
+        ];
       }
 
-      // ===== Filtros =====
+      let dataFinal=[], filtered=[], sortState=[];
+      let rawDistrib=[], rawCamp=[];
+
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
       function fillSelect(sel, values){
         sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
@@ -251,7 +179,6 @@ PEROP1AM-39726
         return { full, digits };
       }
 
-      // ===== Render =====
       function colorPct(val,type){
         const n=parseFloat(String(val).replace('%',''))||0;
         if(type==="approve"){ if(n<=24) return "red"; if(n<=29) return "orange"; return "green"; }
@@ -270,8 +197,8 @@ PEROP1AM-39726
             <td>${r.campania}</td>
             <td style="text-align:right">${r.orders}</td>
             <td class="pct ${colorPct(r.approve,'approve')}" style="text-align:right">${r.approve}</td>
-            <td class="pct ${colorPct(r.reject,'reject')}" style="text-align:right">${r.reject}</td>
-            <td class="pct ${colorPct(r.trash,'trash')}" style="text-align:right">${r.trash}</td>
+            <td class="pct ${colorPct(r.reject,'reject')}"  style="text-align:right">${r.reject}</td>
+            <td class="pct ${colorPct(r.trash,'trash')}"    style="text-align:right">${r.trash}</td>
             <td style="text-align:right">$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
             <td>${r.descanso}</td>
             <td>${r.turno}</td>`;
@@ -295,19 +222,16 @@ PEROP1AM-39726
         document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
       }
 
-      // ===== Orden acumulativo =====
       function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
       function refreshHeadSortClasses(){ resetHeadSortClasses(); sortState.forEach(({col,mode})=>{ const th=document.querySelector(`#headRow th[data-col="${col}"]`); if(th&&mode){ th.classList.remove('sort-none'); th.classList.add(mode===1?'sort-desc':'sort-asc'); } }); }
       function cycleSort(th, e = { shiftKey:false }){
         const col = th?.dataset?.col; if(!col) return;
         const idx = sortState.findIndex(s => s.col === col);
-        let next = 1; // DESC
+        let next = 1;
         if (idx !== -1){
           const was = sortState[idx].mode;
-          if (was === 1) next = 2;           // ASC
-          else if (was === 2){               // NONE
-            sortState.splice(idx,1); refreshHeadSortClasses(); applyFiltersAndRender(); return;
-          }
+          if (was === 1) next = 2;
+          else if (was === 2){ sortState.splice(idx,1); refreshHeadSortClasses(); applyFiltersAndRender(); return; }
           sortState.splice(idx,1);
         }
         const entry = { col, mode: next };
@@ -315,7 +239,6 @@ PEROP1AM-39726
         refreshHeadSortClasses(); applyFiltersAndRender();
       }
 
-      // ===== Aplicar filtros =====
       function applyFiltersAndRender(){
         const vTL = norm(document.getElementById('fltTL').value);
         const vCa = norm(document.getElementById('fltCamp').value);
@@ -323,8 +246,7 @@ PEROP1AM-39726
         const vTu = norm(document.getElementById('fltTurno').value);
 
         const qRaw = norm(document.getElementById('fltSearch').value);
-        theTokens = qRaw.split(/\s+/).filter(Boolean);
-        const qTokens = theTokens;
+        const qTokens = qRaw.split(/\s+/).filter(Boolean);
 
         const includeMode = document.getElementById('toggleInclude').checked;
         const lists = parsePeropList(document.getElementById('fltList').value);
@@ -360,7 +282,7 @@ PEROP1AM-39726
               else if(['approve','reject','trash'].includes(col)){ A=parseFloat(String(A).replace('%',''))||0; B=parseFloat(String(B).replace('%',''))||0; }
               else { A=String(A); B=String(B); }
               const cmp=(typeof A==='number'&&typeof B==='number')?(A-B):A.localeCompare(B,'es',{numeric:true,sensitivity:'base'});
-              if(cmp!==0) return mode===1 ? -cmp : cmp; // 1=desc, 2=asc
+              if(cmp!==0) return mode===1 ? -cmp : cmp;
             }
             return 0;
           });
@@ -371,7 +293,6 @@ PEROP1AM-39726
         saveState();
       }
 
-      // ===== Persistencia =====
       function saveState(){
         const s={
           fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value,
@@ -390,62 +311,51 @@ PEROP1AM-39726
         }catch{}
       }
 
-      // ===== Boot =====
-      (async function boot(){
-        await waitFor('#tblCampRev');
-
+      // Boot
+      (async function(){
         try{
-          await loadData();
-          buildFilters(dataFinal);
-          restoreState();
-          applyFiltersAndRender();
-          toast('✅ Datos cargados');
+          rawDistrib = await tryFetch(candidatesOperations());
+          rawCamp    = await tryFetch(candidatesUtilities());
         }catch(e){
-          console.error(e); toast('❌ No se pudieron cargar los JSON');
+          console.error('[camprev] Error cargando JSON:', e);
+          toast('❌ No se pudieron cargar los JSON');
+          return;
         }
 
-        // Delegación sort
+        // Merge
+        dataFinal=rawCamp.reduce((acc,row)=>{
+          const op=rawDistrib.find(o=>String(o.C)===String(row.A));
+          if(op){
+            acc.push({
+              teamLeader: op.A||'', nombre: op.B||'', perop: row.A||'', campania: row.B||'',
+              orders: Number(row.C)||0, approve: String(row.E||''), reject: String(row.M||''), trash: String(row.O||''),
+              avg: Number(row.P)||0, descanso: op.E||'', turno: op.F||''
+            });
+          }
+          return acc;
+        },[]);
+
+        buildFilters(dataFinal);
+        restoreState();
+        applyFiltersAndRender();
+        toast('✅ Datos cargados');
+
+        // Eventos
         document.getElementById('headRow').addEventListener('click', (e)=>{
-          const th = e.target.closest('th[data-col]');
-          if(!th) return;
-          cycleSort(th, e);
+          const th = e.target.closest('th[data-col]'); if(!th) return; cycleSort(th, e);
         });
-
-        // Filtros
         const onInput=debounce(applyFiltersAndRender,160);
-        ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>{
-          document.getElementById(id).addEventListener('change', applyFiltersAndRender);
-        });
-        ['fltSearch','fltList'].forEach(id=>{
-          document.getElementById(id).addEventListener('input', onInput);
-        });
-        toggleInclude.addEventListener('change', ()=>{
-          toggleLabel.textContent = toggleInclude.checked?'Incluir lista':'Excluir lista';
-          applyFiltersAndRender();
-        });
-
-        // Acciones
-        document.getElementById('btnReset').addEventListener('click', ()=>{
-          fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value='';
-          fltSearch.value=''; fltList.value='';
-          toggleInclude.checked=true; toggleLabel.textContent='Incluir lista';
-          sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos');
-        });
+        ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>document.getElementById(id).addEventListener('change',applyFiltersAndRender));
+        ['fltSearch','fltList'].forEach(id=>document.getElementById(id).addEventListener('input',onInput));
+        toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
+        document.getElementById('btnReset').addEventListener('click',()=>{ fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value=''; fltSearch.value=''; fltList.value=''; toggleInclude.checked=true; toggleLabel.textContent='Incluir lista'; sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos'); });
         document.getElementById('btnExport').addEventListener('click', exportCSV);
         document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
         document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
-
-        // Atajo: X alterna modo lista
-        document.addEventListener('keydown',(e)=>{
-          if(e.key.toLowerCase()==='x'){
-            toggleInclude.checked=!toggleInclude.checked;
-            toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista';
-            applyFiltersAndRender();
-          }
-        });
+        document.addEventListener('keydown',(e)=>{ if(e.key.toLowerCase()==='x'){ toggleInclude.checked=!toggleInclude.checked; toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); } });
       })();
 
-      // ===== Exportar / Copiar =====
+      // util export/copy
       function exportCSV(){
         if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
         const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
