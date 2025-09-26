@@ -7,8 +7,10 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0; font-family:var(--font); background:var(--white); color:var(--gray-900);
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+body{
+  margin:0; font-family:var(--font); background:var(--white); color:var(--gray-900);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale
+}
 
 /* ===== Sidebar ===== */
 aside{
@@ -17,41 +19,60 @@ aside{
   border-right:1px solid var(--gray-300); display:flex; flex-direction:column; gap:12px;
   padding:12px; overflow:auto;
 }
-.brand{display:flex; align-items:center; justify-content:center;
+.brand{
+  display:flex; align-items:center; justify-content:center;
   border:1px solid var(--gray-300); border-radius:var(--radius); padding:10px;
-  text-decoration:none; background:#0f0f0f}
+  text-decoration:none; background:#0f0f0f
+}
 .brand img{width:160px; height:auto; display:block}
-.sidebar-toggle{width:100%; border:1px solid var(--gray-300); background:transparent; color:var(--white);
+.sidebar-toggle{
+  width:100%; border:1px solid var(--gray-300); background:transparent; color:var(--white);
   border-radius:10px; padding:10px 12px; font-weight:700; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px; line-height:1.1; white-space:nowrap}
+  display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px; line-height:1.1; white-space:nowrap
+}
 .sidebar-toggle .icon{font-size:16px}
 nav{display:flex; flex-direction:column; gap:10px}
 .nav-group{border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; background:#0f0f0f}
-.nav-head{width:100%; background:transparent; color:var(--white); text-align:left; padding:10px 12px; border:0; cursor:pointer;
-  font-weight:700; display:flex; align-items:center; gap:8px}
+.nav-head{
+  width:100%; background:transparent; color:var(--white); text-align:left; padding:10px 12px; border:0; cursor:pointer;
+  font-weight:700; display:flex; align-items:center; gap:8px
+}
 .nav-body{display:block; padding:6px}
 .nav-group.is-collapsed .nav-body{display:none}
-.nav-item{display:flex; align-items:center; gap:10px; color:var(--white); text-decoration:none;
-  padding:12px 12px; border-radius:10px; margin:4px; background:transparent}
+.nav-item{
+  display:flex; align-items:center; gap:10px; color:var(--white); text-decoration:none;
+  padding:12px 12px; border-radius:10px; margin:4px; background:transparent
+}
 .nav-item:hover{background:#141414}
-.nav-item.active{background:var(--white); color:var(--gray-900); border-left:3px solid var(--gray-900); border-radius:10px}
+.nav-item.active{
+  background:var(--white); color:var(--gray-900); border-left:3px solid var(--gray-900); border-radius:10px
+}
 .spacer{flex:1}
-.role-card{display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--gray-300); border-radius:10px;
-  background:#0f0f0f; color:var(--white)}
+.role-card{
+  display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--gray-300); border-radius:10px;
+  background:#0f0f0f; color:var(--white)
+}
 .role-dot{width:14px; height:14px; border-radius:50%; background:var(--gray-500)}
 .role-badge{font-size:12px; padding:2px 8px; border:1px solid var(--gray-300); border-radius:999px}
-.logout{width:100%; padding:12px; border-radius:10px; border:1px solid var(--gray-300);
-  background:#1a1a1a; color:#fff; cursor:pointer; font-weight:700}
+.logout{
+  width:100%; padding:12px; border-radius:10px; border:1px solid var(--gray-300);
+  background:#1a1a1a; color:#fff; cursor:pointer; font-weight:700
+}
 
 /* ===== Main / contenido ===== */
 main{margin-left:var(--sidebar-w); padding:20px}
-.hero{border:1px solid var(--gray-300); border-radius:var(--radius); padding:14px; background:var(--gray-100)}
+.hero{
+  border:1px solid var(--gray-300); border-radius:var(--radius); padding:14px; background:var(--gray-100)
+}
 .hero h1{margin:0 0 6px; font-size:22px}
 .hero p{margin:0; color:var(--gray-700); font-size:14px}
 .grid{display:grid; gap:12px; margin-top:14px; grid-template-columns:repeat(2, minmax(280px, 1fr))}
 .card{border:1px solid var(--gray-300); border-radius:var(--radius); padding:12px; background:var(--white)}
 .card h3{margin:0 0 8px; font-size:15px}
-.card a{display:flex; align-items:center; gap:8px; color:var(--gray-900); text-decoration:none; padding:8px 0; border-top:1px solid var(--gray-200)}
+.card a{
+  display:flex; align-items:center; gap:8px; color:var(--gray-900); text-decoration:none;
+  padding:8px 0; border-top:1px solid var(--gray-200)
+}
 .card a:first-of-type{border-top:0}
 .card a:hover{background:var(--gray-100)}
 
@@ -65,8 +86,12 @@ body.sidebar-compact .sidebar-toggle .lbl,
 body.sidebar-compact .role-text{display:none}
 body.sidebar-compact .nav-head{justify-content:center; padding:8px}
 body.sidebar-compact .nav-body{padding:4px 2px}
-body.sidebar-compact .nav-item{margin:6px; padding:10px 0; justify-content:center; min-height:40px; border-radius:12px}
-body.sidebar-compact .nav-item.active{border-left:none; background:var(--white); color:var(--gray-900); outline:2px solid var(--white)}
+body.sidebar-compact .nav-item{
+  margin:6px; padding:10px 0; justify-content:center; min-height:40px; border-radius:12px
+}
+body.sidebar-compact .nav-item.active{
+  border-left:none; background:var(--white); color:var(--gray-900); outline:2px solid var(--white)
+}
 
 /* ===== Responsive ===== */
 @media (max-width:1080px){
@@ -81,3 +106,81 @@ body.sidebar-compact .nav-item.active{border-left:none; background:var(--white);
 .nav-item:focus-visible, .nav-head:focus-visible, .sidebar-toggle:focus-visible, .logout:focus-visible, .brand:focus-visible{
   outline:2px solid var(--white); outline-offset:2px;
 }
+
+/* =========================================================
+   GC components — botones, chips, toolbars y tablas
+   ========================================================= */
+
+/* Toolbar (fila de acciones) */
+.gc-toolbar{
+  display:flex; align-items:center; flex-wrap:wrap; gap:10px;
+}
+
+/* Botones */
+.gc-btn{
+  appearance:none; -webkit-appearance:none;
+  display:inline-flex; align-items:center; gap:8px; justify-content:center;
+  padding:10px 14px; line-height:1; font-weight:700; font-size:14px;
+  border:1px solid var(--gray-300); border-radius:12px;
+  background:var(--white); color:var(--gray-900);
+  cursor:pointer; user-select:none; text-decoration:none;
+  box-shadow:0 1px 0 rgba(0,0,0,.04);
+  transition:background .2s ease, box-shadow .2s ease, transform .02s ease, border-color .2s ease;
+}
+.gc-btn:hover{ background:var(--gray-100); box-shadow:0 2px 8px rgba(0,0,0,.06) }
+.gc-btn:active{ transform:translateY(1px) }
+.gc-btn[disabled], .gc-btn.is-disabled{ opacity:.6; cursor:not-allowed }
+
+/* Variantes */
+.gc-btn--primary{ background:var(--black); color:var(--white); border-color:var(--black) }
+.gc-btn--primary:hover{ filter:brightness(1.05) }
+.gc-btn--ghost{ background:transparent }
+.gc-btn--danger{ border-color:var(--gray-300); background:var(--white); color:var(--gray-900) } /* B/W */
+.gc-btn--sm{ padding:8px 10px; font-size:13px; border-radius:10px }
+.gc-btn--lg{ padding:12px 16px; font-size:15px; border-radius:14px }
+
+/* Icono dentro del botón */
+.gc-icon{ width:16px; height:16px; display:inline-block; line-height:1 }
+
+/* Chips / contadores */
+.gc-chipset{ display:flex; flex-wrap:wrap; gap:8px }
+.gc-chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 10px; font-weight:700; font-size:12px; line-height:1;
+  border:1px solid var(--gray-300); border-radius:9999px;
+  background:var(--white); color:var(--gray-900);
+}
+.gc-chip--dark{ background:var(--black); color:var(--white); border-color:var(--black) }
+
+/* Utilidad para empujar a la derecha */
+.u-right{ margin-left:auto }
+
+/* Panel contenedor (cuadros) */
+.gc-panel{
+  background:var(--white); border:1px solid var(--gray-300);
+  border-radius:var(--radius); padding:12px;
+}
+
+/* Tablas GC */
+.gc-table{
+  width:100%; border-collapse:separate; border-spacing:0;
+  background:var(--white); border:1px solid var(--gray-300);
+  border-radius:12px; overflow:hidden;
+}
+.gc-table th, .gc-table td{ padding:12px 14px; border-bottom:1px solid var(--gray-200) }
+.gc-table tbody tr:hover{ background:var(--gray-100) }
+
+/* Encabezado invertido (negro/blanco) */
+.gc-table thead th{
+  background:var(--black); color:var(--white); font-weight:700; text-align:left;
+}
+.gc-table thead th:first-child{ border-top-left-radius:12px }
+.gc-table thead th:last-child{  border-top-right-radius:12px }
+
+/* Pie de tabla */
+.gc-table tfoot td{ font-weight:800; background:var(--gray-100); border-top:2px solid var(--gray-300) }
+
+/* Modificadores */
+.gc-table--striped tbody tr:nth-child(even){ background:var(--gray-100) }
+.gc-table--compact th, .gc-table--compact td{ padding:8px 10px }
+.gc-table--sticky thead th{ position:sticky; top:0; z-index:1 }
