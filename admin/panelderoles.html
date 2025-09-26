@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Panel Admin — Gestión Center</title>
 
-  <!-- MUY IMPORTANTE para que shell/guard calculen rutas absolutas -->
-  <meta name="gc-base" content="/Gestion-Center/">
+  <!-- MUY IMPORTANTE: base para rutas absolutas en GitHub Pages -->
+  <meta name="gc-base" content="/Gestion-Center/"/>
+
+  <!-- Oculta de inmediato para evitar flicker hasta validar rol -->
+  <style>html{visibility:hidden}</style>
 
   <!-- Ecosistema GC -->
   <script type="module" src="../assets/guard.js"></script>
   <script type="module" src="../assets/bw/shell.js"></script>
   <link rel="stylesheet" href="../assets/bw/bw.css">
-
-  <style>html{visibility:hidden}</style>
 </head>
 <body>
   <gc-shell hero-title="Panel de administración" hero-subtitle="Gestiona roles y utilidades de acceso">
@@ -23,12 +24,13 @@
         <h2>👤 Tu estado</h2>
         <p style="margin-top:8px">
           <strong>Email:</strong> <span id="meEmail">—</span><br>
-          <strong>UID:</strong> <span id="meUid">—</span><button id="btnCopyUid" class="btn sm" style="margin-left:6px">Copiar</button><br>
+          <strong>UID:</strong> <span id="meUid">—</span>
+          <button id="btnCopyUid" class="btn sm" style="margin-left:6px">Copiar</button><br>
           <strong>Rango:</strong> <span id="meRank" class="badge">—</span>
         </p>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
           <button id="btnRefresh" class="btn">Refrescar claims</button>
-          <button id="btnLogout" class="btn danger">Cerrar sesión aquí</button>
+          <button id="btnLogout" class="btn danger">Cerrar sesión</button>
         </div>
         <p id="meMsg" class="muted" style="margin-top:10px"></p>
       </article>
@@ -58,31 +60,36 @@
         <details style="margin-top:10px">
           <summary>¿Qué hace esto?</summary>
           <p class="muted">
-            Llama a una Cloud Function (Callable) que usa el Admin SDK para escribir el claim <code>rank</code>
-            del usuario destino (<em>admin | supervisor | tl | invitado</em>). Luego debes pedirle a esa persona
-            que recargue su sesión para ver el nuevo rol.
+            Llama a una Cloud Function (Callable) que usa el Admin SDK para escribir el claim
+            <code>rank</code> del usuario destino (<em>admin | supervisor | tl | invitado</em>).
+            Luego el usuario debe refrescar su sesión para ver el nuevo rol.
           </p>
         </details>
       </article>
     </section>
-
-    <!-- (Futuro) Listado de usuarios / auditoría -->
-    <!-- <section class="card">
-      <h2>📋 Usuarios (vista rápida)</h2>
-      <p class="muted">Aquí podemos renderizar un listado paginado cuando tengamos la función <code>admin-listUsers</code>.</p>
-      <div id="usersTable"></div>
-    </section> -->
   </gc-shell>
 
   <script type="module">
     import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-    const auth = getAuth();
-    const fn   = getFunctions(); // si necesitas región específica: getFunctions(undefined, "us-central1")
+    // --------- BASE robusta ----------
+    function computeBase(){
+      // Preferimos la que expone guard.js (absoluta)
+      if (window.__GC_BASE__) {
+        return window.__GC_BASE__.endsWith("/") ? window.__GC_BASE__ : (window.__GC_BASE__ + "/");
+      }
+      // Fallback con meta[name="gc-base"]
+      const meta = document.querySelector('meta[name="gc-base"]')?.content || "/Gestion-Center/";
+      const abs  = new URL(String(meta).replace(/^\//,""), location.origin).href;
+      return abs.endsWith("/") ? abs : abs + "/";
+    }
+    const BASE = computeBase();
+    const urlFromBase = (path)=> new URL(String(path||"").replace(/^\//,""), BASE).href;
+    const go = (path)=> location.replace(urlFromBase(path));
 
+    // --------- DOM refs ----------
     const $ = (sel)=>document.querySelector(sel);
-
     const meEmail = $("#meEmail");
     const meUid   = $("#meUid");
     const meRank  = $("#meRank");
@@ -97,6 +104,11 @@
     const btnAssign  = $("#btnAssign");
     const assignMsg  = $("#assignMsg");
 
+    // --------- Firebase ----------
+    const auth = getAuth();
+    const fn   = getFunctions(); // si deseas una región: getFunctions(undefined, "us-central1")
+
+    // --------- Helpers UI ----------
     function badgeColor(rank){
       const r = String(rank||"").toLowerCase();
       if (r==="admin") return "#ef4444";
@@ -105,32 +117,50 @@
       return "#22c55e"; // invitado / sin rol
     }
 
+    // --------- Gate de ADMIN ----------
     async function requireAdmin(){
-      // guard.js ya bloquea no autenticados; aquí validamos claim admin
       const u = auth.currentUser;
+
       if (!u){
-        // si algo raro pasa, redirige a login
-        const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
-        location.replace(new URL("login.html", base).href);
+        console.warn("[panelderoles] No hay usuario. Redirigiendo a login.");
+        go("login.html");
         return false;
       }
-      const t = await u.getIdTokenResult(true);
-      const isAdmin = t.claims?.rank === "admin";
-      if (!isAdmin){
-        const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
-        location.replace(new URL("index.html", base).href);
+
+      let token;
+      try{
+        token = await u.getIdTokenResult(true); // fuerza refresh de claims
+      }catch(err){
+        console.warn("[panelderoles] Error al obtener claims; redirigiendo a login:", err);
+        go("login.html");
         return false;
       }
-      // pintar estado
+
+      const rank = token.claims?.rank || "invitado";
+      console.log("[panelderoles] claims.rank =", rank);
+
+      if (rank !== "admin"){
+        // Feedback breve antes de salir (útil para entender “por qué me saca”)
+        try{
+          meMsg.textContent = "Acceso restringido: se requiere rol ADMIN. Tu rol: " + rank;
+          await new Promise(r=>setTimeout(r, 800));
+        }catch{}
+        go("index.html");
+        return false;
+      }
+
+      // Usuario válido → pintar y mostrar
       meEmail.textContent = u.email || "(sin email)";
       meUid.textContent   = u.uid;
-      meRank.textContent  = t.claims?.rank || "invitado";
-      meRank.style.background = badgeColor(t.claims?.rank);
+      meRank.textContent  = rank;
+      meRank.style.background = badgeColor(rank);
+
+      // Mostrar la página (guard.js ya podría haberla mostrado; esto asegura visibilidad)
       document.documentElement.style.visibility = "visible";
       return true;
     }
 
-    // Utilidades
+    // --------- Utilidades ----------
     btnCopyUid.addEventListener("click", async ()=>{
       try { await navigator.clipboard.writeText(meUid.textContent); meMsg.textContent = "UID copiado ✅"; }
       catch { meMsg.textContent = "No se pudo copiar el UID"; }
@@ -140,27 +170,24 @@
     btnRefresh.addEventListener("click", async ()=>{
       try {
         const t = await auth.currentUser.getIdTokenResult(true);
-        meRank.textContent = t.claims?.rank || "invitado";
-        meRank.style.background = badgeColor(t.claims?.rank);
-        meMsg.textContent = "Claims actualizados ✅";
+        const rank = t.claims?.rank || "invitado";
+        meRank.textContent = rank;
+        meRank.style.background = badgeColor(rank);
+        meMsg.textContent = "Claims actualizados ✅ (rol: " + rank + ")";
       } catch(e){
         meMsg.textContent = "No se pudieron refrescar los claims";
         console.warn(e);
       }
-      setTimeout(()=>meMsg.textContent="", 2000);
+      setTimeout(()=>meMsg.textContent="", 2500);
     });
 
     btnLogout.addEventListener("click", async ()=>{
       try { await auth.signOut(); }
-      finally {
-        const base = window.__GC_BASE__ || (location.origin + "/Gestion-Center/");
-        location.href = new URL("login.html", base).href;
-      }
+      finally { go("login.html"); }
     });
 
-    // ====== Asignar rol (Callable) ======
-    // Espera que tengas una Function deployada, por ejemplo:
-    // exports["admin-setUserRank"] = functions.https.onCall(async (data, ctx) => { ... })
+    // --------- Callable: asignar rol ----------
+    // Asegúrate de desplegar la Cloud Function "admin-setUserRank"
     btnAssign.addEventListener("click", async ()=>{
       assignMsg.textContent = "";
       const id   = (targetId.value || "").trim();
@@ -173,11 +200,10 @@
 
       try{
         const callable = httpsCallable(fn, "admin-setUserRank");
-        const resp = await callable({ id, role }); // el backend aceptará UID o email
+        const resp = await callable({ id, role }); // backend acepta UID o email
         assignMsg.textContent = `OK ✅ ${resp?.data?.message || "Rol actualizado"}`;
       }catch(err){
         console.warn(err);
-        // Errores comunes cuando la function no existe o no está autorizada
         if (String(err)?.includes("function not found")){
           assignMsg.textContent = "La Function admin-setUserRank no está desplegada.";
         } else if (err?.code === "permission-denied"){
@@ -188,7 +214,7 @@
       }
     });
 
-    // Kickoff
+    // --------- Kickoff ----------
     requireAdmin();
   </script>
 </body>
