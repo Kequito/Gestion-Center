@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — Selector de Apoyo 2.0</title>
 
-    <!-- Shell BW: aplica bw.css y sidebar -->
+    <!-- Shell BW (inyecta sidebar + bw.css) -->
     <script type="module" src="../assets/bw/shell.js"></script>
 
     <style>
@@ -22,7 +22,7 @@
       .filter-group textarea{ height:auto; min-height:40px; resize:vertical; line-height:1.2 }
       .grid-span-3{ grid-column:span 3 }
 
-      /* Tabla */
+      /* Tabla + orden */
       .sort-none::after{content:""} .sort-desc::after{content:" ↓";font-weight:900} .sort-asc::after{content:" ↑";font-weight:900}
       .pct{font-weight:800} .pct.red{color:#ef4444} .pct.orange{color:#f59e0b} .pct.green{color:#22c55e}
       .perop{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy}
@@ -76,10 +76,10 @@ PEROP1AM-39726
 
         <div class="gc-toolbar">
           <button id="btnReset" class="gc-btn"><span class="gc-icon">🧹</span> Restablecer filtros</button>
-          <!-- Eliminado Exportar (CSV) -->
-          <button id="btnCopyPerop" class="gc-btn"><span class="gc-icon">📋</span> Copiar PEROPs filtrados</button>
-          <button id="btnCopyNames" class="gc-btn"><span class="gc-icon">📋</span> Copiar Nombres filtrados</button>
-          <button id="btnCopyBoth" class="gc-btn gc-btn--primary"><span class="gc-icon">📋</span> Copiar Nombres — PEROPs filtrados</button>
+          <!-- Exportar (CSV) removido -->
+          <button id="btnCopyPerop"  class="gc-btn"><span class="gc-icon">📋</span> Copiar PEROPs filtrados</button>
+          <button id="btnCopyNames"  class="gc-btn"><span class="gc-icon">📋</span> Copiar Nombres filtrados</button>
+          <button id="btnCopyBoth"   class="gc-btn gc-btn--primary"><span class="gc-icon">📋</span> Copiar Nombres — PEROPs filtrados</button>
         </div>
       </section>
 
@@ -91,16 +91,16 @@ PEROP1AM-39726
             <thead>
               <tr id="headRow">
                 <th data-col="teamLeader" class="sort-none">Team Leader</th>
-                <th data-col="nombre" class="sort-none">Operador</th>
-                <th data-col="perop" class="sort-none">PEROP1AM</th>
-                <th data-col="campania" class="sort-none">Campaña</th>
-                <th data-col="orders"   class="sort-none" style="text-align:right">Total Orders</th>
-                <th data-col="approve"  class="sort-none" style="text-align:right">%Approve</th>
-                <th data-col="reject"   class="sort-none" style="text-align:right">%Reject</th>
-                <th data-col="trash"    class="sort-none" style="text-align:right">%Trash</th>
-                <th data-col="avg"      class="sort-none" style="text-align:right">Avg Check</th>
-                <th data-col="descanso" class="sort-none">Descanso</th>
-                <th data-col="turno"    class="sort-none">Turno</th>
+                <th data-col="nombre"     class="sort-none">Operador</th>
+                <th data-col="perop"      class="sort-none">PEROP1AM</th>
+                <th data-col="campania"   class="sort-none">Campaña</th>
+                <th data-col="orders"     class="sort-none" style="text-align:right">Total Orders</th>
+                <th data-col="approve"    class="sort-none" style="text-align:right">%Approve</th>
+                <th data-col="reject"     class="sort-none" style="text-align:right">%Reject</th>
+                <th data-col="trash"      class="sort-none" style="text-align:right">%Trash</th>
+                <th data-col="avg"        class="sort-none" style="text-align:right">Avg Check</th>
+                <th data-col="descanso"   class="sort-none">Descanso</th>
+                <th data-col="turno"      class="sort-none">Turno</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -112,7 +112,7 @@ PEROP1AM-39726
     </gc-shell>
 
     <script type="module">
-      /* =================== Helpers =================== */
+      /* ============== Helpers mínimos ============== */
       const $ = id => document.getElementById(id);
       const toast=(m)=>{const t=$('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)}
       const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
@@ -142,23 +142,21 @@ PEROP1AM-39726
         }
         throw lastErr || new Error('No se pudo cargar');
       }
-      function candidatesOperations(){
-        return [
-          abs('operations/datadistribucion.json'),
-          new URL('../operations/datadistribucion.json', location.href).href,
-          `${location.origin}/Gestion-Center/operations/datadistribucion.json`,
-        ];
-      }
-      function candidatesUtilities(){
-        return [
-          abs('utilities/datacamprev.json'),
-          new URL('./datacamprev.json', location.href).href,
-          `${location.origin}/Gestion-Center/utilities/datacamprev.json`,
-        ];
-      }
+      const candidatesOperations = () => [
+        abs('operations/datadistribucion.json'),
+        new URL('../operations/datadistribucion.json', location.href).href,
+        `${location.origin}/Gestion-Center/operations/datadistribucion.json`,
+      ];
+      const candidatesUtilities = () => [
+        abs('utilities/datacamprev.json'),
+        new URL('./datacamprev.json', location.href).href,
+        `${location.origin}/Gestion-Center/utilities/datacamprev.json`,
+      ];
 
+      /* ============== Estado ============== */
       let dataFinal=[], filtered=[], sortState=[];
 
+      /* ============== UI builders ============== */
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
       function fillSelect(sel, values){
         sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
@@ -320,11 +318,32 @@ PEROP1AM-39726
         try{ await navigator.clipboard.writeText(text); toast(`📋 Nombres — PEROPs copiados (${filtered.length})`); }catch{ toast('❌ No se pudo copiar'); }
       }
 
-      /* =================== INIT (esperando a gc-shell) =================== */
+      /* ============== Espera robusta a que gc-shell RENDERICE ============== */
+      function waitForUI(ids, timeout=15000){
+        return new Promise((resolve, reject)=>{
+          const haveAll = () => ids.every(id => document.getElementById(id));
+          if (haveAll()) return resolve();
+
+          const root = document.querySelector('gc-shell') || document;
+          const mo = new MutationObserver(()=>{
+            if (haveAll()){ mo.disconnect(); resolve(); }
+          });
+          mo.observe(root, {childList:true, subtree:true});
+
+          const t = setTimeout(()=>{ mo.disconnect(); reject(new Error('UI no renderizó a tiempo')); }, timeout);
+          // intento inicial
+          if (haveAll()){ clearTimeout(t); mo.disconnect(); resolve(); }
+        });
+      }
+
+      /* ============== INIT ============== */
       (async function init(){
-        // Espera a que el custom element esté listo y haya renderizado el DOM
-        await customElements.whenDefined('gc-shell');
-        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        try{ await customElements.whenDefined('gc-shell'); }catch{}
+        try{
+          await waitForUI(['fltTL','fltCamp','fltDesc','fltTurno','fltSearch','fltList','headRow','tblCampRev','toggleInclude','toggleLabel']);
+        }catch(e){
+          console.error('[camprev] Espera de UI falló:', e);
+        }
 
         // Cargar data
         try{
@@ -352,10 +371,11 @@ PEROP1AM-39726
         applyFiltersAndRender();
         toast('✅ Datos cargados');
 
-        // Listeners (ya con DOM definitivo)
+        // Listeners (con DOM garantizado)
         $('headRow').addEventListener('click', (e)=>{
           const th = e.target.closest('th[data-col]'); if(!th) return; cycleSort(th, e);
         });
+
         const onInput=debounce(applyFiltersAndRender,160);
         ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>$(id).addEventListener('change',applyFiltersAndRender));
         ['fltSearch','fltList'].forEach(id=>$(id).addEventListener('input',onInput));
@@ -372,7 +392,7 @@ PEROP1AM-39726
         $('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
         $('btnCopyBoth').addEventListener('click',copyNamesPerops);
 
-        // atajo: X alterna incluir/excluir
+        // Atajo: 'x' alterna incluir/excluir
         document.addEventListener('keydown',(e)=>{ if(e.key.toLowerCase()==='x'){ const t=$('toggleInclude'); t.checked=!t.checked; $('toggleLabel').textContent=t.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); } });
       })();
     </script>
