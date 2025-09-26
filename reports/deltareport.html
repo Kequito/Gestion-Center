@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GC · Deltas de Leads</title>
 
-  <!-- base del ecosistema -->
+  <!-- Ecosistema GC -->
   <meta name="gc-base" content="/Gestion-Center/">
-  <script type="module" src="assets/bw/shell.js"></script>
+  <script type="module" src="../assets/bw/shell.js"></script>
 
-  <!-- tu tipografía original (shell también la inyecta si falta; la dejamos igual) -->
+  <!-- Tipografía (el shell también la agrega si faltara) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -26,6 +26,7 @@
     }
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--font); background:var(--white); color:var(--gray-900)}
+    /* El shell genera <main>; este estilo aplica allí */
     main{max-width:1200px; margin:32px auto; padding:0 16px}
     h1{font-size:28px; margin:0 0 8px; letter-spacing:.2px}
     p.sub{margin:0 0 20px; color:var(--gray-700)}
@@ -89,70 +90,69 @@
 <body>
   <!-- Shell GC: agrega sidebar + hero automáticamente -->
   <gc-shell>
-    <main>
-      <h1 class="page-title">Analizador de Deltas de Leads</h1>
-      <p class="sub">Pega la tabla (Country · Date of creation CRM · 0..23). Calcula totales por rango horario y variaciones día a día por país y por hora.</p>
+    <!-- El shell generará <main> y colocará aquí dentro tu contenido -->
+    <h1 class="page-title">Analizador de Deltas de Leads</h1>
+    <p class="sub">Pega la tabla (Country · Date of creation CRM · 0..23). Calcula totales por rango horario y variaciones día a día por país y por hora.</p>
 
-      <div class="grid cols-2">
-        <section class="panel">
-          <h3>1) Pegar datos</h3>
-          <div class="content">
-            <textarea id="paste" placeholder="Pega aquí los datos con encabezados: Country \t Date of creation CRM \t 0 \t 1 ... 23"></textarea>
-            <div class="row" style="margin-top:10px">
-              <button id="btnParse" class="btn">Detectar y cargar</button>
-              <div id="status" class="status"><span class="dot"></span><span id="statusText">Esperando datos…</span></div>
-            </div>
-            <div id="errors" class="content" style="padding:0; margin-top:10px; color:var(--red)"></div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h3>2) Filtros y rango horario</h3>
-          <div class="content">
-            <div class="row" style="margin-bottom:10px">
-              <label>País:&nbsp;</label>
-              <select id="fCountry"><option value="">Todos</option></select>
-              <label>Desde:&nbsp;</label>
-              <input id="fFrom" type="date" />
-              <label>Hasta:&nbsp;</label>
-              <input id="fTo" type="date" />
-            </div>
-            <div class="row">
-              <span class="chip">Rango horario</span>
-              <label>Inicio:&nbsp;</label><input id="hStart" type="number" min="0" max="23" value="8" />
-              <label>Fin:&nbsp;</label><input id="hEnd" type="number" min="0" max="23" value="21" />
-              <button id="btnApply" class="btn">Aplicar filtros</button>
-            </div>
-            <div class="legend" style="margin-top:10px">
-              <span><span class="sw sw-up"></span> ↑ Aumento</span>
-              <span><span class="sw sw-down"></span> ↓ Disminución</span>
-              <span><span class="sw sw-same"></span> = Sin cambios</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section class="panel" style="margin-top:16px">
-        <h3>3) Resumen por país (total del rango y delta vs. día previo)</h3>
+    <div class="grid cols-2">
+      <section class="panel">
+        <h3>1) Pegar datos</h3>
         <div class="content">
-          <div id="cards" class="cards"></div>
+          <textarea id="paste" placeholder="Pega aquí los datos con encabezados: Country 	Date of creation CRM 	0 	1 ... 23"></textarea>
+          <div class="row" style="margin-top:10px">
+            <button id="btnParse" class="btn">Detectar y cargar</button>
+            <div id="status" class="status"><span class="dot"></span><span id="statusText">Esperando datos…</span></div>
+          </div>
+          <div id="errors" class="content" style="padding:0; margin-top:10px; color:var(--red)"></div>
         </div>
       </section>
 
-      <section class="panel" style="margin-top:16px">
-        <h3>4) Tabla por país y fecha</h3>
-        <div class="content scroller">
-          <table id="tableDaily"></table>
+      <section class="panel">
+        <h3>2) Filtros y rango horario</h3>
+        <div class="content">
+          <div class="row" style="margin-bottom:10px">
+            <label>País:&nbsp;</label>
+            <select id="fCountry"><option value="">Todos</option></select>
+            <label>Desde:&nbsp;</label>
+            <input id="fFrom" type="date" />
+            <label>Hasta:&nbsp;</label>
+            <input id="fTo" type="date" />
+          </div>
+          <div class="row">
+            <span class="chip">Rango horario</span>
+            <label>Inicio:&nbsp;</label><input id="hStart" type="number" min="0" max="23" value="8" />
+            <label>Fin:&nbsp;</label><input id="hEnd" type="number" min="0" max="23" value="21" />
+            <button id="btnApply" class="btn">Aplicar filtros</button>
+          </div>
+          <div class="legend" style="margin-top:10px">
+            <span><span class="sw sw-up"></span> ↑ Aumento</span>
+            <span><span class="sw sw-down"></span> ↓ Disminución</span>
+            <span><span class="sw sw-same"></span> = Sin cambios</span>
+          </div>
         </div>
       </section>
+    </div>
 
-      <section class="panel" style="margin-top:16px">
-        <h3>5) Comparación por hora vs. día previo (por país)</h3>
-        <div class="content scroller">
-          <table id="tableHourly"></table>
-        </div>
-      </section>
-    </main>
+    <section class="panel" style="margin-top:16px">
+      <h3>3) Resumen por país (total del rango y delta vs. día previo)</h3>
+      <div class="content">
+        <div id="cards" class="cards"></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+      <h3>4) Tabla por país y fecha</h3>
+      <div class="content scroller">
+        <table id="tableDaily"></table>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+      <h3>5) Comparación por hora vs. día previo (por país)</h3>
+      <div class="content scroller">
+        <table id="tableHourly"></table>
+      </div>
+    </section>
   </gc-shell>
 
   <script>
@@ -275,8 +275,8 @@
         for(let h=0; h<24; h++){
           const v = curr.hours[h];
           const pv = prev ? prev.hours[h] : null;
-          const d = (pv!=null && v!=null) ? (v - pv) : (pv==null && v!=null ? null : (pv!=null && v==null ? null : null));
-          outHourly.push({country, date:curr.date, hour:h, v, prev:pv, delta: (pv!=null && v!=null) ? d : null});
+          const d = (pv!=null && v!=null) ? (v - pv) : null;
+          outHourly.push({country, date:curr.date, hour:h, v, prev:pv, delta:(pv!=null && v!=null)? d : null});
         }
       }
     }
