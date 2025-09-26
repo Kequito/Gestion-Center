@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión Center — Deltas de Leads</title>
+
+  <!-- ⚙️ BASE (GitHub Pages / local). shell.js calculará BASE absoluto -->
+  <meta name="gc-base" content="/Gestion-Center/">
+
+  <!-- Shell BW + Guard + bw.css se inyectan desde shell.js -->
+  <script type="module" src="assets/bw/shell.js"></script>
+
+  <style>
+    /* ===== Estilos locales mínimos, 100% compatibles con BW ===== */
+    :root{
+      --green:#16a34a; --red:#dc2626; --amber:#f59e0b;
+      --shadow:0 6px 24px rgba(0,0,0,.08);
+    }
+    .delta{font-weight:700}
+    .delta.up{color:var(--green)}
+    .delta.down{color:var(--red)}
+    .delta.same{color:#555}
+    .delta-badge{display:inline-flex; align-items:center; gap:6px; padding:2px 10px; border-radius:999px; font-weight:800; font-size:12px}
+    .delta-badge.up{background:rgba(22,163,74,.10); color:var(--green)}
+    .delta-badge.down{background:rgba(220,38,38,.10); color:var(--red)}
+    .delta-badge.same{background:rgba(0,0,0,.06); color:#333}
+
+    .cards{display:grid; grid-template-columns:repeat(4, minmax(220px,1fr)); gap:12px}
+    @media (max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:860px){.cards{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.cards{grid-template-columns:1fr}}
+    .card{border:1px solid var(--gray-300); border-radius:12px; padding:12px; background:var(--white); box-shadow:var(--shadow)}
+    .card .t{font-size:12px; color:var(--gray-700)}
+    .card .v{font-size:22px; font-weight:800}
+
+    .muted{color:var(--gray-500)}
+    .nowrap{white-space:nowrap}
+
+    .status{display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--gray-700)}
+    .dot{width:10px; height:10px; border-radius:50%; background:var(--amber)}
+    .status.ready .dot{background:var(--green)}
+    .status.error .dot{background:var(--red)}
+
+    .scroller{overflow:auto; border:1px solid var(--gray-300); border-radius:12px}
+  </style>
+</head>
+<body>
+  <!-- ✅ Integrado al ecosistema BW: sidebar, header, roles, etc. -->
+  <gc-shell hero-title="Deltas de Leads" hero-subtitle="Pegado rápido · Variaciones por rango horario y por hora vs. día previo">
+
+    <!-- Título de página (si omites hero-title, el shell lo lee de aquí) -->
+    <h1 class="page-title" style="display:none">Deltas de Leads</h1>
+
+    <!-- Toolbar superior con estilo GC -->
+    <div class="gc-panel" style="margin-top:14px">
+      <div class="gc-toolbar">
+        <button id="btnParse" class="gc-btn gc-btn--primary gc-btn--lg">Detectar y cargar</button>
+        <div class="gc-chipset">
+          <span class="gc-chip"><span class="gc-icon">📎</span>Pega tu tabla: <code>Country | Date of creation CRM | 0..23</code></span>
+        </div>
+        <span class="u-right status" id="status"><span class="dot"></span><span id="statusText">Esperando datos…</span></span>
+      </div>
+      <div style="margin-top:10px">
+        <textarea id="paste" class="gc-panel" style="width:100%; min-height:160px; padding:12px; font-family:ui-monospace,monospace" placeholder="Country	Tate of creation CRM	0	1	...	23
+Chile	22.09.2025	1	1	6	13	...
+
+(Soporta TABs o múltiples espacios)"></textarea>
+        <div id="errors" style="margin-top:8px; color:var(--red)"></div>
+      </div>
+    </div>
+
+    <!-- Filtros y rango horario -->
+    <div class="gc-panel" style="margin-top:12px">
+      <div class="gc-toolbar">
+        <div class="gc-chipset">
+          <label class="gc-chip">País:&nbsp;<select id="fCountry"><option value="">Todos</option></select></label>
+          <label class="gc-chip">Desde:&nbsp;<input id="fFrom" type="date"></label>
+          <label class="gc-chip">Hasta:&nbsp;<input id="fTo" type="date"></label>
+          <span class="gc-chip gc-chip--dark">Rango horario</span>
+          <label class="gc-chip">Inicio:&nbsp;<input id="hStart" type="number" min="0" max="23" value="8"></label>
+          <label class="gc-chip">Fin:&nbsp;<input id="hEnd" type="number" min="0" max="23" value="21"></label>
+        </div>
+        <button id="btnApply" class="gc-btn gc-btn--primary">Aplicar filtros</button>
+      </div>
+      <div class="gc-chipset" style="margin-top:8px">
+        <span class="gc-chip"><span class="gc-icon">🟩</span>Aumento</span>
+        <span class="gc-chip"><span class="gc-icon">🟥</span>Disminución</span>
+        <span class="gc-chip"><span class="gc-icon">⬜</span>Sin cambios</span>
+      </div>
+    </div>
+
+    <!-- Resumen por país (tarjetas) -->
+    <div class="gc-panel" style="margin-top:12px">
+      <h3 style="margin:0 0 8px">Resumen por país (total del rango y Δ vs. día previo)</h3>
+      <div id="cards" class="cards"></div>
+    </div>
+
+    <!-- Tabla diaria -->
+    <div class="gc-panel" style="margin-top:12px">
+      <h3 style="margin:0 0 8px">Tabla por país y fecha</h3>
+      <div class="scroller">
+        <table id="tableDaily" class="gc-table gc-table--compact gc-table--sticky"></table>
+      </div>
+    </div>
+
+    <!-- Tabla horaria -->
+    <div class="gc-panel" style="margin-top:12px; margin-bottom:28px">
+      <h3 style="margin:0 0 8px">Comparación por hora vs. día previo (por país)</h3>
+      <div class="scroller">
+        <table id="tableHourly" class="gc-table gc-table--compact gc-table--sticky"></table>
+      </div>
+    </div>
+
+    <p class="muted" style="margin:6px 2px 24px">GC · Deltas de Leads — compatible con BW v2 · usa claims de rol para navegación.</p>
+  </gc-shell>
+
+  <script>
+  // ===== Utilidades BASE =====
+  const byId = id => document.getElementById(id);
+  const statusEl = byId('status');
+  const statusText = byId('statusText');
+  function setStatus(type, msg){
+    statusEl.classList.remove('ready','error');
+    if(type) statusEl.classList.add(type);
+    statusText.textContent = msg;
+  }
+
+  function detectSeparator(line){
+    if(line.includes('\\t')) return '\\t';
+    return /\\s{2,}/.test(line) ? /\\s{2,}/ : ','; // fallback CSV
+  }
+  function normHeader(h){ return h.trim().toLowerCase().replace(/\\s+/g,' '); }
+  function parseDateDDMMYYYY(s){
+    const m = s.trim().match(/^(\\d{2})[\\./-](\\d{2})[\\./-](\\d{4})$/);
+    if(!m) return null; const [_, dd, mm, yyyy] = m; return \`\${yyyy}-\${mm}-\${dd}\`;
+  }
+
+  // ===== Parser =====
+  function parsePastedData(text){
+    const errors = [];
+    const lines = text.split(/\\r?\\n/).filter(l => l.trim() !== '');
+    if(lines.length < 2) return {rows:[], countries:new Set(), errors:["No se detectaron filas suficientes."]};
+
+    const sep = detectSeparator(lines[0]);
+    const headers = lines[0].split(sep).map(h=>normHeader(h));
+    const idxCountry = headers.findIndex(h => h.startsWith('country'));
+    const idxDate = headers.findIndex(h => h.includes('date') || h.includes('creation'));
+    if(idxCountry === -1 || idxDate === -1){
+      return {rows:[], countries:new Set(), errors:["Encabezados requeridos: 'Country' y 'Date of creation CRM'."]};
+    }
+    const hourIdx = Array.from({length:24}, (_,h)=> headers.findIndex(hh => hh === String(h)));
+
+    let lastCountry = null; const out = []; const countries = new Set();
+    for(let i=1;i<lines.length;i++){
+      const raw = lines[i].split(sep);
+      if(raw.every(x=>x.trim()==='')) continue;
+      let c = (raw[idxCountry]||'').trim();
+      if(!c){ if(!lastCountry){ errors.push(\`Fila \${i+1}: Country vacío sin país previo.\`); continue; } c = lastCountry; }
+      lastCountry = c;
+      const iso = parseDateDDMMYYYY(raw[idxDate]||'');
+      if(!iso){ errors.push(\`Fila \${i+1}: fecha inválida '\${raw[idxDate]||''}'.\`); continue; }
+
+      const hours = Array(24).fill(null);
+      for(let h=0; h<24; h++){
+        const ix = hourIdx[h]; if(ix === -1) continue;
+        const v = (raw[ix]||'').trim();
+        if(v==='') hours[h] = null; else { const n = Number(v.replace(/,/g,'')); hours[h] = Number.isFinite(n)? n : null; }
+      }
+      const total = hours.reduce((a,b)=> a + (b??0), 0);
+      const coverage = hours.filter(v=>v!=null).length;
+      out.push({country:c, date:iso, hours, total, coverage, completeness:coverage/24});
+      countries.add(c);
+    }
+    out.sort((a,b)=> a.country.localeCompare(b.country) || a.date.localeCompare(b.date));
+    return {rows:out, countries, errors};
+  }
+
+  function sumBand(hours, start=8, end=21){
+    const s = Math.max(0, Math.min(23, start|0));
+    const e = Math.max(s, Math.min(23, end|0));
+    let tot=0, cov=0; for(let h=s; h<=e; h++){ const v = hours[h]; if(v!=null){ tot+=v; cov++; } }
+    return {total:tot, coverage:cov, len:e-s+1, completeness: cov/(e-s+1)};
+  }
+
+  function computeDeltas(rows, start=8, end=21){
+    const byC = new Map(); for(const r of rows){ if(!byC.has(r.country)) byC.set(r.country, []); byC.get(r.country).push(r); }
+    for(const arr of byC.values()) arr.sort((a,b)=> a.date.localeCompare(b.date));
+
+    const outDaily = []; const outHourly = [];
+    for(const [country, arr] of byC){
+      for(let i=0;i<arr.length;i++){
+        const curr = arr[i]; const prev = i>0 ? arr[i-1] : null;
+        const band = sumBand(curr.hours, start, end);
+        const bandPrev = prev ? sumBand(prev.hours, start, end) : null;
+        const delta = bandPrev ? (band.total - bandPrev.total) : null;
+        const pct = (bandPrev && bandPrev.total>0) ? (delta / bandPrev.total) : null;
+        outDaily.push({country, date:curr.date, bandTotal:band.total, delta, pct});
+
+        for(let h=0; h<24; h++){
+          const v = curr.hours[h]; const pv = prev ? prev.hours[h] : null;
+          const d = (pv!=null && v!=null) ? (v - pv) : null;
+          outHourly.push({country, date:curr.date, hour:h, v, prev:pv, delta:d});
+        }
+      }
+    }
+    outDaily.sort((a,b)=> a.country.localeCompare(b.country) || a.date.localeCompare(b.date));
+    outHourly.sort((a,b)=> a.country.localeCompare(b.country) || a.date.localeCompare(b.date) || a.hour-b.hour);
+    return {daily:outDaily, hourly:outHourly};
+  }
+
+  function humanDelta(n){ if(n==null) return {txt:'—', cls:'same'}; if(n>0) return {txt:\`+\${n}\`, cls:'up'}; if(n<0) return {txt:\`\${n}\`, cls:'down'}; return {txt:'= 0', cls:'same'}; }
+  function fmtDate(iso){ const [y,m,d]=iso.split('-'); return \`\${d}.\${m}.\${y}\`; }
+
+  // ===== Estado y render =====
+  let STATE = { rows:[], daily:[], hourly:[], countries:[], start:8, end:21 };
+
+  function applyFilters(){
+    const ctry = byId('fCountry').value;
+    const from = byId('fFrom').value || null;
+    const to   = byId('fTo').value   || null;
+    const start = Number(byId('hStart').value|0);
+    const end   = Number(byId('hEnd').value|0);
+
+    STATE.start=start; STATE.end=end;
+    const {daily, hourly} = computeDeltas(STATE.rows, start, end);
+
+    let d = daily.filter(r=> !ctry || r.country===ctry);
+    let h = hourly.filter(r=> !ctry || r.country===ctry);
+    if(from) { d = d.filter(r=> r.date>=from); h = h.filter(r=> r.date>=from); }
+    if(to)   { d = d.filter(r=> r.date<=to);   h = h.filter(r=> r.date<=to); }
+
+    renderCards(d);
+    renderDailyTable(d, start, end);
+    renderHourlyTable(h);
+  }
+
+  function renderCards(daily){
+    const wrap = byId('cards'); wrap.innerHTML=''; const frag = document.createDocumentFragment();
+    for(const r of daily){
+      const d = humanDelta(r.delta);
+      const el = document.createElement('div'); el.className='card';
+      el.innerHTML = `
+        <div class="t">${r.country} · ${fmtDate(r.date)} · <span class="muted">${STATE.start}:00–${STATE.end}:00</span></div>
+        <div class="v">${r.bandTotal.toLocaleString('es-PE')}</div>
+        <div class="delta ${d.cls}">${d.txt} ${r.pct==null?'' : `<span class="muted">(${(r.pct*100).toFixed(1)}%)</span>`}</div>
+      `;
+      frag.appendChild(el);
+    }
+    wrap.appendChild(frag);
+  }
+
+  function renderDailyTable(daily, start, end){
+    const t = byId('tableDaily');
+    if(daily.length===0){ t.innerHTML='<thead></thead><tbody><tr><td class="muted">Sin datos</td></tr></tbody>'; return; }
+
+    t.innerHTML='';
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr>
+      <th>País</th>
+      <th>Fecha</th>
+      <th class="nowrap">Total ${start}:00–${end}:00</th>
+      <th>Δ vs. día previo</th>
+    </tr>`;
+    t.appendChild(thead);
+
+    const tb = document.createElement('tbody');
+    for(const r of daily){
+      const d = humanDelta(r.delta);
+      const badge = `<span class="delta-badge ${d.cls}">${d.txt}${r.pct==null?'':` · ${(r.pct*100).toFixed(1)}%`}</span>`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.country}</td>
+        <td class="nowrap">${fmtDate(r.date)}</td>
+        <td style="text-align:right">${r.bandTotal.toLocaleString('es-PE')}</td>
+        <td>${badge}</td>
+      `;
+      tb.appendChild(tr);
+    }
+    t.appendChild(tb);
+  }
+
+  function renderHourlyTable(hourly){
+    const t = byId('tableHourly');
+    if(hourly.length===0){ t.innerHTML='<thead></thead><tbody><tr><td class="muted">Sin datos</td></tr></tbody>'; return; }
+
+    const thead = document.createElement('thead');
+    let th = '<tr><th>País</th><th>Fecha</th>';
+    for(let h=0; h<24; h++) th += `<th>${h}</th>`; th += '</tr>';
+    thead.innerHTML = th;
+
+    const key = r => r.country+'|'+r.date; const groups = new Map();
+    for(const r of hourly){ const k=key(r); if(!groups.has(k)) groups.set(k, {country:r.country, date:r.date, hours:Array(24).fill(null)}); groups.get(k).hours[r.hour] = r; }
+
+    const tb = document.createElement('tbody');
+    for(const g of groups.values()){
+      const tr = document.createElement('tr');
+      let tds = `<td>${g.country}</td><td class="nowrap">${fmtDate(g.date)}</td>`;
+      for(let h=0; h<24; h++){
+        const r = g.hours[h]; if(!r){ tds += '<td class="muted">—</td>'; continue; }
+        const v = r.v; const d = humanDelta(r.delta);
+        const badge = r.delta==null ? '<span class="muted">—</span>' : `<span class="delta-badge ${d.cls}">${d.txt}</span>`;
+        tds += `<td style="text-align:right">${v==null?'<span class="muted">·</span>':v}<div>${badge}</div></td>`;
+      }
+      tr.innerHTML = tds; tb.appendChild(tr);
+    }
+
+    t.innerHTML=''; t.appendChild(thead); t.appendChild(tb);
+  }
+
+  // ===== Eventos =====
+  byId('btnParse').addEventListener('click', ()=>{
+    const raw = byId('paste').value; setStatus('', 'Procesando…');
+    const {rows, countries, errors} = parsePastedData(raw);
+    const errBox = byId('errors'); errBox.innerHTML = '';
+    if(errors.length){ errBox.innerHTML = '<ul style="margin:6px 0 0 16px">'+errors.map(e=>`<li>${e}</li>`).join('')+'</ul>'; }
+    STATE.rows = rows; STATE.countries = Array.from(countries).sort();
+    const sel = byId('fCountry'); sel.innerHTML = '<option value="">Todos</option>' + STATE.countries.map(c=>`<option>${c}</option>`).join('');
+    if(rows.length){ setStatus('ready', `✅ Datos cargados: ${rows.length} filas · ${STATE.countries.length} países`); }
+    else{ setStatus('error', 'No se cargaron filas válidas.'); }
+    applyFilters();
+  });
+  byId('btnApply').addEventListener('click', applyFilters);
+  </script>
+</body>
+</html>
