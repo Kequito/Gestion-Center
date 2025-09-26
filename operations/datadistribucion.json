@@ -3,10 +3,19 @@
    "A": "AIXA CASTELLANOS",
    "B": "ALEXANDRA INGRID TAPULLIMA URQUIA",
    "C": "PEROP1AM-37107",
-   "D": "PSECUADOR",
+   "D": "ECUADOR",
    "E": "JUEVES",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
+ },
+ {
+   "A": "AIXA CASTELLANOS",
+   "B": "ANNY ROCIO MACALUPÚ MILLA",
+   "C": "PEROP1AM-41582",
+   "D": "PARAGUAY",
+   "E": "MIÉRCOLES",
+   "F": "13:00-22:00",
+   "G": "CALLYPSO"
  },
  {
    "A": "AIXA CASTELLANOS",
@@ -30,7 +39,7 @@
    "A": "AIXA CASTELLANOS",
    "B": "EROS UGALDE LAZARTE",
    "C": "PEROP1AM-41386",
-   "D": "CHILE",
+   "D": "ECUADOR",
    "E": "MIÉRCOLES",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
@@ -57,10 +66,10 @@
    "A": "AIXA CASTELLANOS",
    "B": "JAIRO JEANPOL RODRIGUEZ ALEGRIA",
    "C": "PEROP1AM-40059",
-   "D": "CHILE",
-   "E": "JUEVES",
+   "D": "SIN PROGRAMAR",
+   "E": "",
    "F": "13:00-22:00",
-   "G": "INTEGRAL"
+   "G": "SIN DATA"
  },
  {
    "A": "AIXA CASTELLANOS",
@@ -147,7 +156,7 @@
    "A": "AIXA CASTELLANOS",
    "B": "RAUL JOSUE MALQUI SAUCEDO",
    "C": "PEROP1AM-39054",
-   "D": "SIN PROGRAMAR",
+   "D": "CHILE",
    "E": "LUNES",
    "F": "13:00-22:00",
    "G": "PRIMA"
@@ -165,7 +174,7 @@
    "A": "AIXA CASTELLANOS",
    "B": "ZOILA ELENA CARRANZA GALINDO",
    "C": "PEROP1AM-41017",
-   "D": "SIN PROGRAMAR",
+   "D": "ECUADOR",
    "E": "JUEVES",
    "F": "13:00-22:00",
    "G": "PRIMA"
@@ -192,19 +201,10 @@
    "A": "ANA BRAVO",
    "B": "BRENDA ELIANE MANRIQUE REMIGIO",
    "C": "PEROP1AM-40365",
-   "D": "PSPERU",
+   "D": "PSCHILE",
    "E": "MIÉRCOLES",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
- },
- {
-   "A": "ANA BRAVO",
-   "B": "BRENDA TATIANA HUAMAN ALZAMORA",
-   "C": "PEROP1AM-29492",
-   "D": "SIN PROGRAMAR",
-   "E": "",
-   "F": "07:00-16:00",
-   "G": "SIN DATA"
  },
  {
    "A": "ANA BRAVO",
@@ -232,6 +232,15 @@
    "E": "DOMINGO",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
+ },
+ {
+   "A": "ANA BRAVO",
+   "B": "JAIRO MORENO ARAUJO",
+   "C": "PEROP1AM-41389",
+   "D": "COLOMBIA",
+   "E": "MIÉRCOLES",
+   "F": "07:00-16:00",
+   "G": "CALLYPSO"
  },
  {
    "A": "ANA BRAVO",
@@ -264,19 +273,10 @@
    "A": "ANA BRAVO",
    "B": "MARIA CRISTINA MENDOZA ALONZO",
    "C": "PEROP1AM-4124",
-   "D": "CHILE",
+   "D": "COLOMBIA",
    "E": "DOMINGO",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
- },
- {
-   "A": "ANA BRAVO",
-   "B": "MARINA COROMOTO PIÑANGO MARCANO",
-   "C": "PEROP1AM-40884",
-   "D": "COLOMBIA",
-   "E": "JUEVES",
-   "F": "07:00-16:00",
-   "G": "PRIMA"
  },
  {
    "A": "ANA BRAVO",
@@ -319,7 +319,7 @@
    "B": "YENE MAGDALENI TAKAHASHI RIBBECK",
    "C": "PEROP1AM-4578",
    "D": "COLOMBIA",
-   "E": "LUNES",
+   "E": "MARTES",
    "F": "07:00-16:00",
    "G": "PRIMA"
  },
@@ -327,7 +327,7 @@
    "A": "ANA BRAVO",
    "B": "YVAN ANDRES GONZALES ROJAS",
    "C": "PEROP1AM-41607",
-   "D": "SIN PROGRAMAR",
+   "D": "COLOMBIA",
    "E": "LUNES",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
@@ -345,25 +345,16 @@
    "A": "DALIA CASTILLO",
    "B": "ANGY ESTEFANI ALVA SEGURA",
    "C": "PEROP1AM-41826",
-   "D": "MEXICO",
+   "D": "PSMEXICO",
    "E": "DOMINGO",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
  },
  {
    "A": "DALIA CASTILLO",
-   "B": "BEYERLY KATITZA CURAY MORALES",
-   "C": "PEROP1AM-41901",
-   "D": "SIN PROGRAMAR",
-   "E": "",
-   "F": "07:00-16:00",
-   "G": "SIN DATA"
- },
- {
-   "A": "DALIA CASTILLO",
    "B": "CARLITA DEL CISNE SUNCION VEGAS",
    "C": "PEROP1AM-41768",
-   "D": "PSMEXICO",
+   "D": "MEXICO",
    "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
@@ -388,12 +379,12 @@
  },
  {
    "A": "DALIA CASTILLO",
-   "B": "DINA CAJO VILCHEZ",
-   "C": "PEROP1AM-41817",
+   "B": "ILIARI ARIANA CHIMOY VASQUEZ",
+   "C": "PEROP1AM-41922",
    "D": "MEXICO",
    "E": "MARTES",
    "F": "07:00-16:00",
-   "G": "CALLYPSO"
+   "G": "PRIMA"
  },
  {
    "A": "DALIA CASTILLO",
@@ -417,7 +408,7 @@
    "A": "DALIA CASTILLO",
    "B": "JUANA SOLEDAD RAMIREZ FERNANDEZ",
    "C": "PEROP1AM-41809",
-   "D": "PSECUADOR",
+   "D": "MEXICO",
    "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
@@ -426,10 +417,19 @@
    "A": "DALIA CASTILLO",
    "B": "LORENA ANALI NAVARRO ALVARADO",
    "C": "PEROP1AM-39724",
-   "D": "MEXICO",
+   "D": "PERU",
    "E": "VIERNES",
    "F": "07:00-16:00",
    "G": "PRIMA"
+ },
+ {
+   "A": "DALIA CASTILLO",
+   "B": "LUCERO STEFANY SALCEDO QUISPE",
+   "C": "PEROP1AM-41924",
+   "D": "MEXICO",
+   "E": "MIÉRCOLES",
+   "F": "07:00-16:00",
+   "G": "INTEGRAL"
  },
  {
    "A": "DALIA CASTILLO",
@@ -439,6 +439,15 @@
    "E": "LUNES",
    "F": "07:00-16:00",
    "G": "PRIMA"
+ },
+ {
+   "A": "DALIA CASTILLO",
+   "B": "NOELIA CUETO YAÑEZ",
+   "C": "PEROP1AM-41915",
+   "D": "SIN PROGRAMAR",
+   "E": "LUNES",
+   "F": "07:00-16:00",
+   "G": "SIN DATA"
  },
  {
    "A": "DALIA CASTILLO",
@@ -478,10 +487,28 @@
  },
  {
    "A": "DANIEL DE LA CRUZ",
+   "B": "ANGEL SEBASTIAN TICA ROJAS",
+   "C": "PEROP1AM-41096",
+   "D": "PERU",
+   "E": "MIÉRCOLES",
+   "F": "07:00-16:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "DANIEL DE LA CRUZ",
    "B": "BRYAN ENRIQUE CORNEJO AREVALO",
    "C": "PEROP1AM-41777",
    "D": "PSPERU",
    "E": "LUNES",
+   "F": "07:00-16:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "DANIEL DE LA CRUZ",
+   "B": "CRISTIAN ANDERSON MORALES LOROÑA",
+   "C": "PEROP1AM-41618",
+   "D": "VENEZUELA",
+   "E": "SABADO",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
  },
@@ -498,8 +525,8 @@
    "A": "DANIEL DE LA CRUZ",
    "B": "EDSON FRANCISCO SALAS CORDOVA",
    "C": "PEROP1AM-41197",
-   "D": "PSCHILE",
-   "E": "VIERNES",
+   "D": "SIN PROGRAMAR",
+   "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "PRIMA"
  },
@@ -508,7 +535,7 @@
    "B": "ELISA PALMIRA FLORES FILIOS",
    "C": "PEROP1AM-40804",
    "D": "PERU",
-   "E": "MARTES",
+   "E": "LUNES",
    "F": "07:00-16:00",
    "G": "PRIMA"
  },
@@ -517,7 +544,7 @@
    "B": "EVA MICAELA GOICOCHEA PEREDA",
    "C": "PEROP1AM-41327",
    "D": "PERU",
-   "E": "VIERNES",
+   "E": "SABADO",
    "F": "07:00-16:00",
    "G": "PRIMA"
  },
@@ -529,24 +556,6 @@
    "E": "MIÉRCOLES",
    "F": "07:00-16:00",
    "G": "PRIMA"
- },
- {
-   "A": "DANIEL DE LA CRUZ",
-   "B": "GERSON ANDRE CHAVARRIA MALAVER",
-   "C": "PEROP1AM-41388",
-   "D": "PERU",
-   "E": "LUNES",
-   "F": "07:00-16:00",
-   "G": "SIN DATA"
- },
- {
-   "A": "DANIEL DE LA CRUZ",
-   "B": "JAIRO MORENO ARAUJO",
-   "C": "PEROP1AM-41389",
-   "D": "VENEZUELA",
-   "E": "MIÉRCOLES",
-   "F": "07:00-16:00",
-   "G": "CALLYPSO"
  },
  {
    "A": "DANIEL DE LA CRUZ",
@@ -568,37 +577,28 @@
  },
  {
    "A": "DAVID VABLOS",
-   "B": "ALDO RAÚL VALENTINO MERCADO PEREZ",
-   "C": "PEROP1AM-41900",
-   "D": "SIN PROGRAMAR",
-   "E": "SABADO",
-   "F": "07:00-16:00",
-   "G": "SIN DATA"
- },
- {
-   "A": "DAVID VABLOS",
-   "B": "CRISTIAN ANDERSON MORALES LOROÑA",
-   "C": "PEROP1AM-41618",
+   "B": "BRISLID MARIANA BALVIN LEON",
+   "C": "PEROP1AM-41921",
    "D": "MEXICO",
-   "E": "SABADO",
+   "E": "MIÉRCOLES",
    "F": "07:00-16:00",
-   "G": "INTEGRAL"
+   "G": "PRIMA"
  },
  {
    "A": "DAVID VABLOS",
    "B": "DAVID RAFAEL ROMERO DE LA CRUZ",
    "C": "PEROP1AM-41808",
-   "D": "MEXICO",
+   "D": "PERU",
    "E": "MIÉRCOLES",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
  },
  {
    "A": "DAVID VABLOS",
-   "B": "EDUARDO ALBERTO JAUREGUI VIZARRETA",
-   "C": "PEROP1AM-41886",
+   "B": "DINA CAJO VILCHEZ",
+   "C": "PEROP1AM-41817",
    "D": "MEXICO",
-   "E": "JUEVES",
+   "E": "MARTES",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
  },
@@ -613,12 +613,12 @@
  },
  {
    "A": "DAVID VABLOS",
-   "B": "JEREMY JOSUE APARICIO MONTES",
-   "C": "PEROP1AM-41903",
-   "D": "SIN PROGRAMAR",
-   "E": "",
+   "B": "JHON SMITH TARRILLO RIVERA",
+   "C": "PEROP1AM-41923",
+   "D": "MEXICO",
+   "E": "JUEVES",
    "F": "07:00-16:00",
-   "G": "SIN DATA"
+   "G": "PRIMA"
  },
  {
    "A": "DAVID VABLOS",
@@ -633,8 +633,8 @@
    "A": "DAVID VABLOS",
    "B": "KIRANN LUCINDA CHAVEZ BACILIO",
    "C": "PEROP1AM-40987",
-   "D": "MEXICO",
-   "E": "VIERNES",
+   "D": "PERU",
+   "E": "",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
  },
@@ -658,19 +658,28 @@
  },
  {
    "A": "DAVID VABLOS",
-   "B": "MEI LI WONG SEGURA",
-   "C": "PEROP1AM-41834",
-   "D": "PSPERU",
+   "B": "MARINA COROMOTO PIÑANGO MARCANO",
+   "C": "PEROP1AM-40884",
+   "D": "MEXICO",
    "E": "JUEVES",
    "F": "07:00-16:00",
-   "G": "INTEGRAL"
+   "G": "PRIMA"
  },
  {
    "A": "DAVID VABLOS",
-   "B": "NADIA MIRELLA EGUIZABAL HUANGAL",
-   "C": "PEROP1AM-41888",
+   "B": "MEI LI WONG SEGURA",
+   "C": "PEROP1AM-41834",
    "D": "SIN PROGRAMAR",
-   "E": "MARTES",
+   "E": "",
+   "F": "07:00-16:00",
+   "G": "SIN DATA"
+ },
+ {
+   "A": "DAVID VABLOS",
+   "B": "RAFAEL DARIO AGUIAR ARRAIZ",
+   "C": "PEROP1AM-41916",
+   "D": "SIN PROGRAMAR",
+   "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "SIN DATA"
  },
@@ -696,7 +705,7 @@
    "A": "DAVID VABLOS",
    "B": "VERONICA GUIO ROMERO",
    "C": "PEROP1AM-41111",
-   "D": "PSMEXICO",
+   "D": "MEXICO",
    "E": "LUNES",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
@@ -714,7 +723,7 @@
    "A": "JHOSEP GARCIA",
    "B": "ANGEL JHONERICK VASQUEZ PEREDO",
    "C": "PEROP1AM-39257",
-   "D": "SIN PROGRAMAR",
+   "D": "MEXICO",
    "E": "LUNES",
    "F": "22:00-07:00",
    "G": "INTEGRAL"
@@ -723,19 +732,10 @@
    "A": "JHOSEP GARCIA",
    "B": "ANGELES SUJEYS BUSTAMANTE GONZALES",
    "C": "PEROP1AM-29864",
-   "D": "MEXICO",
-   "E": "MIÉRCOLES",
+   "D": "ECUADOR",
+   "E": "MARTES",
    "F": "22:00-07:00",
    "G": "CALLYPSO"
- },
- {
-   "A": "JHOSEP GARCIA",
-   "B": "DANNY WILSON CHUGUDEN RUIZ",
-   "C": "PEROP1AM-41902",
-   "D": "SIN PROGRAMAR",
-   "E": "",
-   "F": "22:00-07:00",
-   "G": "SIN DATA"
  },
  {
    "A": "JHOSEP GARCIA",
@@ -750,7 +750,7 @@
    "A": "JHOSEP GARCIA",
    "B": "ELEANE MEYLI ZELAYA GUERRA",
    "C": "PEROP1AM-40055",
-   "D": "MEXICO",
+   "D": "PERU",
    "E": "MARTES",
    "F": "22:00-07:00",
    "G": "PRIMA"
@@ -793,6 +793,15 @@
  },
  {
    "A": "JHOSEP GARCIA",
+   "B": "JOSSELIN SHANTAL SIGÜENSA TORRES",
+   "C": "PEROP1AM-35707",
+   "D": "MEXICO",
+   "E": "LUNES",
+   "F": "22:00-07:00",
+   "G": "PRIMA"
+ },
+ {
+   "A": "JHOSEP GARCIA",
    "B": "LUIS ANGEL SANTOS REATEGUI",
    "C": "PEROP1AM-4122",
    "D": "PERU",
@@ -822,10 +831,118 @@
    "A": "JHOSEP GARCIA",
    "B": "TATIANA PAOLA MENACHO AGUERO",
    "C": "PEROP1AM-7471",
+   "D": "SIN PROGRAMAR",
+   "E": "",
+   "F": "22:00-07:00",
+   "G": "SIN DATA"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "CESAR ALEXANDER MAYANGA MINAYA",
+   "C": "PEROP1AM-32506",
+   "D": "COLOMBIA",
+   "E": "MARTES",
+   "F": "13:00-22:00",
+   "G": "PRIMA"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "DAVID JAREN RODRIGUEZ NUÑEZ",
+   "C": "PEROP1AM-41124",
+   "D": "MEXICO",
+   "E": "VIERNES",
+   "F": "13:00-22:00",
+   "G": "CALLYPSO"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "EMERSON JOAO COAGUILA PERLECHE",
+   "C": "PEROP1AM-29871",
+   "D": "COLOMBIA",
+   "E": "VIERNES",
+   "F": "13:00-22:00",
+   "G": "PRIMA"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "GIANPIERE CARDENAS ROMANI",
+   "C": "PEROP1AM-41221",
+   "D": "COLOMBIA",
+   "E": "LUNES",
+   "F": "13:00-22:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "JAIRO ALBERTO SALINAS PRIMO",
+   "C": "PEROP1AM-41573",
+   "D": "COLOMBIA",
+   "E": "MIÉRCOLES",
+   "F": "13:00-22:00",
+   "G": "CALLYPSO"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "LADY NAYELI HUAMANI SAAVEDRA",
+   "C": "PEROP1AM-41603",
+   "D": "COLOMBIA",
+   "E": "VIERNES",
+   "F": "13:00-22:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "MAYKI JHOSET ALVA COTRINA",
+   "C": "PEROP1AM-40754",
+   "D": "MEXICO",
+   "E": "MIÉRCOLES",
+   "F": "13:00-22:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "NAKASHIRO ANTONI GONZALES HINOSTROZA",
+   "C": "PEROP1AM-41606",
+   "D": "COLOMBIA",
+   "E": "SABADO",
+   "F": "13:00-22:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "NIANCALBERT JESUS VILLEGAS TORO",
+   "C": "PEROP1AM-41820",
+   "D": "MEXICO",
+   "E": "VIERNES",
+   "F": "13:00-22:00",
+   "G": "CALLYPSO"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "ROSBETLY EVELYN MINAYA FLORES",
+   "C": "PEROP1AM-41008",
    "D": "MEXICO",
    "E": "JUEVES",
-   "F": "22:00-07:00",
+   "F": "13:00-22:00",
    "G": "INTEGRAL"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "TRACY MAVEL RIOS VARGAS",
+   "C": "PEROP1AM-41811",
+   "D": "MEXICO",
+   "E": "MIÉRCOLES",
+   "F": "13:00-22:00",
+   "G": "INTEGRAL"
+ },
+ {
+   "A": "LUCAS UTRILLA",
+   "B": "XIOMARA TAHIS GUZMAN CAJO",
+   "C": "PEROP1AM-41338",
+   "D": "COSTA RICA",
+   "E": "DOMINGO",
+   "F": "13:00-22:00",
+   "G": "CALLYPSO"
  },
  {
    "A": "MIGUEL TAPIA",
@@ -835,15 +952,6 @@
    "E": "MIÉRCOLES",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
- },
- {
-   "A": "MIGUEL TAPIA",
-   "B": "ANDY GONZALES GARCIA",
-   "C": "PEROP1AM-15601",
-   "D": "SIN PROGRAMAR",
-   "E": "JUEVES",
-   "F": "13:00-22:00",
-   "G": "SIN DATA"
  },
  {
    "A": "MIGUEL TAPIA",
@@ -867,7 +975,7 @@
    "A": "MIGUEL TAPIA",
    "B": "ARNOLD AARON IZQUIERDO MOROCHO",
    "C": "PEROP1AM-40788",
-   "D": "PSMEXICO",
+   "D": "PERU",
    "E": "SABADO",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
@@ -904,7 +1012,7 @@
    "B": "FABIO SEBASTIAN LOBATO CARHUAPOMA",
    "C": "PEROP1AM-41800",
    "D": "PERU",
-   "E": "SABADO",
+   "E": "VIERNES",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
  },
@@ -912,17 +1020,17 @@
    "A": "MIGUEL TAPIA",
    "B": "FABRIZZIO YANDE REQUEJO AGUIRRE",
    "C": "PEROP1AM-39884",
-   "D": "PSPERU",
-   "E": "LUNES",
+   "D": "SIN PROGRAMAR",
+   "E": "",
    "F": "13:00-22:00",
-   "G": "PRIMA"
+   "G": "SIN DATA"
  },
  {
    "A": "MIGUEL TAPIA",
    "B": "IVI YENIFER RIVERA URIARTE",
    "C": "PEROP1AM-40345",
    "D": "VENEZUELA",
-   "E": "MARTES",
+   "E": "LUNES",
    "F": "13:00-22:00",
    "G": "CALLYPSO"
  },
@@ -939,8 +1047,8 @@
    "A": "MIGUEL TAPIA",
    "B": "JOSE ALEJANDRO CHAVEZ IPARRAGUIRRE",
    "C": "PEROP1AM-30250",
-   "D": "PSPERU",
-   "E": "VIERNES",
+   "D": "PERU",
+   "E": "DOMINGO",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
  },
@@ -984,7 +1092,7 @@
    "A": "MIGUEL TAPIA",
    "B": "YANJES ISAAC GUEVARA MALENCHE",
    "C": "PEROP1AM-40833",
-   "D": "PSCHILE",
+   "D": "PERU",
    "E": "MIÉRCOLES",
    "F": "13:00-22:00",
    "G": "INTEGRAL"
@@ -1003,16 +1111,7 @@
    "B": "ALEXANDRA XIMENA CALDERON GIRON",
    "C": "PEROP1AM-41776",
    "D": "PERU",
-   "E": "DOMINGO",
-   "F": "07:00-16:00",
-   "G": "INTEGRAL"
- },
- {
-   "A": "NAYELI LOPEZ",
-   "B": "ANGEL SEBASTIAN TICA ROJAS",
-   "C": "PEROP1AM-41096",
-   "D": "PERU",
-   "E": "MIÉRCOLES",
+   "E": "VIERNES",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
  },
@@ -1083,7 +1182,7 @@
    "A": "NAYELI LOPEZ",
    "B": "PAMELA ODET VASQUEZ MEJIA",
    "C": "PEROP1AM-41761",
-   "D": "PERU",
+   "D": "SIN PROGRAMAR",
    "E": "MIÉRCOLES",
    "F": "07:00-16:00",
    "G": "PRIMA"
@@ -1093,7 +1192,7 @@
    "B": "ROSA THALIA AREVALO PORTOCARRERO",
    "C": "PEROP1AM-39022",
    "D": "URUGUAY",
-   "E": "SABADO",
+   "E": "DOMINGO",
    "F": "07:00-16:00",
    "G": "PRIMA"
  },
@@ -1102,7 +1201,7 @@
    "B": "SHEILY ESTEFANY SALVADOR OJEDA",
    "C": "PEROP1AM-40012",
    "D": "URUGUAY",
-   "E": "VIERNES",
+   "E": "MARTES",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
  },
@@ -1110,7 +1209,7 @@
    "A": "NAYELI LOPEZ",
    "B": "XIOMARA CELESTE VELARDE SULCA",
    "C": "PEROP1AM-40013",
-   "D": "PERU",
+   "D": "SIN PROGRAMAR",
    "E": "DOMINGO",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
@@ -1126,66 +1225,12 @@
  },
  {
    "A": "RODRIGO FEBRES",
-   "B": "ADRIAN MAURICIO ROJAS HERNANDEZ",
-   "C": "PEROP1AM-41171",
-   "D": "SIN PROGRAMAR",
-   "E": "",
-   "F": "13:00-22:00",
-   "G": "SIN DATA"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "ANNY ROCIO MACALUPÚ MILLA",
-   "C": "PEROP1AM-41582",
-   "D": "MEXICO",
-   "E": "JUEVES",
-   "F": "13:00-22:00",
-   "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
    "B": "ANTHONY EDUARDO MUÑOZ CHUGNAS",
    "C": "PEROP1AM-41885",
    "D": "MEXICO",
-   "E": "MIÉRCOLES",
-   "F": "13:00-22:00",
-   "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "ANYELA YAMID CARLOS BALDEON",
-   "C": "PEROP1AM-41827",
-   "D": "SIN PROGRAMAR",
-   "E": "",
-   "F": "13:00-22:00",
-   "G": "SIN DATA"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "CESAR ALEXANDER MAYANGA MINAYA",
-   "C": "PEROP1AM-32506",
-   "D": "COLOMBIA",
    "E": "MARTES",
    "F": "13:00-22:00",
-   "G": "PRIMA"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "DAVID JAREN RODRIGUEZ NUÑEZ",
-   "C": "PEROP1AM-41124",
-   "D": "MEXICO",
-   "E": "VIERNES",
-   "F": "13:00-22:00",
    "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "EMERSON JOAO COAGUILA PERLECHE",
-   "C": "PEROP1AM-29871",
-   "D": "COLOMBIA",
-   "E": "VIERNES",
-   "F": "13:00-22:00",
-   "G": "PRIMA"
  },
  {
    "A": "RODRIGO FEBRES",
@@ -1200,26 +1245,8 @@
    "A": "RODRIGO FEBRES",
    "B": "GERALDINE ESTEFANY MORALES MEDINA",
    "C": "PEROP1AM-4618",
-   "D": "MEXICO",
+   "D": "PERU",
    "E": "SABADO",
-   "F": "13:00-22:00",
-   "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "GIANPIERE CARDENAS ROMANI",
-   "C": "PEROP1AM-41221",
-   "D": "COLOMBIA",
-   "E": "LUNES",
-   "F": "13:00-22:00",
-   "G": "INTEGRAL"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "JAIRO ALBERTO SALINAS PRIMO",
-   "C": "PEROP1AM-41573",
-   "D": "COLOMBIA",
-   "E": "MIÉRCOLES",
    "F": "13:00-22:00",
    "G": "CALLYPSO"
  },
@@ -1234,28 +1261,19 @@
  },
  {
    "A": "RODRIGO FEBRES",
+   "B": "JHON ANTONY MANAHUACO PALOMINO",
+   "C": "PEROP1AM-41913",
+   "D": "MEXICO",
+   "E": "MARTES",
+   "F": "13:00-22:00",
+   "G": "PRIMA"
+ },
+ {
+   "A": "RODRIGO FEBRES",
    "B": "KAREN ELENA ELLES LEÓN",
    "C": "co-operator-24140",
    "D": "MEXICO",
    "E": "DOMINGO",
-   "F": "13:00-22:00",
-   "G": "SIN DATA"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "LADY NAYELI HUAMANI SAAVEDRA",
-   "C": "PEROP1AM-41603",
-   "D": "COLOMBIA",
-   "E": "VIERNES",
-   "F": "13:00-22:00",
-   "G": "INTEGRAL"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "LEO DIOGGO LAINES MOLINA",
-   "C": "PEROP1AM-41861",
-   "D": "SIN PROGRAMAR",
-   "E": "",
    "F": "13:00-22:00",
    "G": "SIN DATA"
  },
@@ -1281,46 +1299,10 @@
    "A": "RODRIGO FEBRES",
    "B": "MARIA DEL CARMEN YAGUA GOMEZ",
    "C": "PEROP1AM-11347",
-   "D": "MEXICO",
+   "D": "PERU",
    "E": "SABADO",
    "F": "13:00-22:00",
    "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "MAYKI JHOSET ALVA COTRINA",
-   "C": "PEROP1AM-40754",
-   "D": "MEXICO",
-   "E": "MIÉRCOLES",
-   "F": "13:00-22:00",
-   "G": "INTEGRAL"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "NAKASHIRO ANTONI GONZALES HINOSTROZA",
-   "C": "PEROP1AM-41606",
-   "D": "COLOMBIA",
-   "E": "SABADO",
-   "F": "13:00-22:00",
-   "G": "INTEGRAL"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "NIANCALBERT JESUS VILLEGAS TORO",
-   "C": "PEROP1AM-41820",
-   "D": "MEXICO",
-   "E": "VIERNES",
-   "F": "13:00-22:00",
-   "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "ROSBETLY EVELYN MINAYA FLORES",
-   "C": "PEROP1AM-41008",
-   "D": "MEXICO",
-   "E": "JUEVES",
-   "F": "13:00-22:00",
-   "G": "INTEGRAL"
  },
  {
    "A": "RODRIGO FEBRES",
@@ -1342,24 +1324,6 @@
  },
  {
    "A": "RODRIGO FEBRES",
-   "B": "TRACY MAVEL RIOS VARGAS",
-   "C": "PEROP1AM-41811",
-   "D": "MEXICO",
-   "E": "MIÉRCOLES",
-   "F": "13:00-22:00",
-   "G": "INTEGRAL"
- },
- {
-   "A": "RODRIGO FEBRES",
-   "B": "XIOMARA TAHIS GUZMAN CAJO",
-   "C": "PEROP1AM-41338",
-   "D": "COSTA RICA",
-   "E": "DOMINGO",
-   "F": "13:00-22:00",
-   "G": "CALLYPSO"
- },
- {
-   "A": "RODRIGO FEBRES",
    "B": "YESSICA YOVANA IZAGUIRRE PUMARICRA",
    "C": "PEROP1AM-30253",
    "D": "MEXICO",
@@ -1372,7 +1336,7 @@
    "B": "ANA CECILIA PEREZ PANDARES",
    "C": "PEROP1AM-40669",
    "D": "ECUADOR",
-   "E": "MARTES",
+   "E": "SABADO",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
  },
@@ -1398,7 +1362,7 @@
    "A": "SEBASTIAN ROSAS",
    "B": "CIELO ELIZABETH MEDINA MEDINA",
    "C": "PEROP1AM-40979",
-   "D": "SIN PROGRAMAR",
+   "D": "ECUADOR",
    "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "PRIMA"
@@ -1407,7 +1371,7 @@
    "A": "SEBASTIAN ROSAS",
    "B": "CRISTHIAN ALEXANDER CAMPOS CARBONERO",
    "C": "PEROP1AM-41057",
-   "D": "ECUADOR",
+   "D": "SIN PROGRAMAR",
    "E": "SABADO",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
@@ -1420,6 +1384,15 @@
    "E": "MIÉRCOLES",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
+ },
+ {
+   "A": "SEBASTIAN ROSAS",
+   "B": "EDUARDO ALBERTO JAUREGUI VIZARRETA",
+   "C": "PEROP1AM-41886",
+   "D": "PARAGUAY",
+   "E": "JUEVES",
+   "F": "07:00-16:00",
+   "G": "CALLYPSO"
  },
  {
    "A": "SEBASTIAN ROSAS",
@@ -1443,7 +1416,7 @@
    "A": "SEBASTIAN ROSAS",
    "B": "JIHAN PIERRE QUISPE HERRERA",
    "C": "PEROP1AM-39019",
-   "D": "PARAGUAY",
+   "D": "SIN PROGRAMAR",
    "E": "DOMINGO",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
@@ -1479,7 +1452,7 @@
    "A": "SEBASTIAN ROSAS",
    "B": "SOFIA PAMELA CARRILLO PACHERRES",
    "C": "PEROP1AM-37728",
-   "D": "SIN PROGRAMAR",
+   "D": "COSTA RICA",
    "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "CALLYPSO"
@@ -1489,7 +1462,7 @@
    "B": "VICKY NAZARET FERNANDEZ GARCIA",
    "C": "PEROP1AM-4995",
    "D": "ECUADOR",
-   "E": "MIÉRCOLES",
+   "E": "JUEVES",
    "F": "07:00-16:00",
    "G": "INTEGRAL"
  }
