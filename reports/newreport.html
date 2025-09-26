@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>New Report — Gestión Center</title>
 
-  <!-- Base robusta (GitHub Pages o dominio propio) + carga shell y bw.css -->
+  <!-- Carga robusta de bw.css y shell -->
   <script type="module">
     const isGh  = location.hostname.endsWith('github.io');
     const parts = location.pathname.split('/').filter(Boolean);
@@ -13,16 +13,13 @@
     const base  = isGh ? `/${repo}/` : '/';
     const abs   = (p) => new URL(p.replace(/^\//, ''), location.origin + base).href;
 
-    // CSS del nuevo sistema
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = abs('assets/bw/bw.css');
     document.head.appendChild(link);
 
-    // Web component del shell
     import(abs('assets/bw/shell.js')).catch(e => {
       console.error('[newreport] No se pudo cargar shell.js:', e);
-      // fallback visual mínimo
       document.head.insertAdjacentHTML('beforeend', `
         <style>
           :root{--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;--gray-700:#3f3f3f;--gray-900:#111;--white:#fff;--black:#0a0a0a}
@@ -31,15 +28,13 @@
     });
   </script>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Estilos locales (ligeros) sobre bw.css -->
+  <!-- Ajustes locales -->
   <style>
     /* Título y estado Firebase */
     #nr .page-title{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; margin:0 0 8px }
-    #nr .badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--gray-300); background:var(--gray-100); color:var(--gray-900) }
-    #nr .badge.ok{ background:var(--gray-200) }  #nr .badge.warn{ background:var(--gray-300) }
+    #nr .gc-chip.ok{ background:var(--gray-200); border-color:var(--gray-300) }
     #nr .datetime{ font-size:14px; color:var(--gray-700); margin:6px 0 10px }
 
     /* Área de pegado */
@@ -54,7 +49,7 @@
     .gc-table th, .gc-table td{ text-align:center }
     .gc-table thead th:first-child, .gc-table tbody td:first-child{ text-align:left }
 
-    /* Semáforo de % Approve */
+    /* Semáforo % Approve */
     :root{
       --ok-bg:#eaf7ee; --ok-fg:#166534; --ok-br:#22c55e;
       --mid-bg:#fffbeb; --mid-fg:#92400e; --mid-br:#f59e0b;
@@ -64,15 +59,23 @@
     td.orange{ background:var(--mid-bg); color:var(--mid-fg); font-weight:800; border-left:3px solid var(--mid-br) }
     td.red{ background:var(--bad-bg); color:var(--bad-fg); font-weight:800; border-left:3px solid var(--bad-br) }
 
-    /* Botón eliminar compacto solo en histórico */
+    /* Botón eliminar histórico compacto */
     #tablaHistorico .gc-btn.gc-btn--sm{ padding:6px 10px; font-size:12px }
+
+    /* ---- Campos nativos estilizados (para evitar issues de .gc-btn en selects/inputs) ---- */
+    .gc-select, .gc-date{
+      padding:8px 12px; border-radius:12px; border:1px solid var(--gray-300);
+      background:var(--white); color:var(--gray-900); font-weight:700; line-height:1;
+    }
+    .gc-select{ appearance:auto; -webkit-appearance:auto }
+    .gc-date{ appearance:auto; -webkit-appearance:auto }
+    .gc-field-wrap{ display:flex; align-items:center; gap:8px }
   </style>
 </head>
 <body>
-  <!-- Ocultamos títulos del hero pasando vacío -->
+  <!-- Hero vacío (título propio abajo) -->
   <gc-shell hero-title="" hero-subtitle="">
     <section id="nr" class="gc-panel">
-      <!-- TÍTULO SUPERIOR ÚNICO -->
       <div class="page-title">🧰 New Report CC Perú</div>
       <div class="gc-chipset" style="margin-bottom:8px">
         <span id="fbBadge" class="gc-chip">Conectando…</span>
@@ -80,7 +83,7 @@
 
       <div class="datetime" id="fechaHora"></div>
 
-      <!-- Toolbar con bw.css -->
+      <!-- Toolbar -->
       <div class="gc-toolbar" style="margin:10px 0 12px">
         <button class="gc-btn" onclick="procesar('numerico')">📦 Vista Numérica</button>
         <button class="gc-btn" onclick="procesar('porcentaje')">📈 Vista Porcentual</button>
@@ -108,16 +111,16 @@
       <!-- Filtros -->
       <div class="gc-panel" style="margin-top:12px">
         <div class="gc-toolbar">
-          <div class="gc-chipset">
+          <div class="gc-field-wrap">
             <span class="gc-chip">🌎 País</span>
-            <select id="filtroPais" onchange="onFiltroChange()" class="gc-btn gc-btn--ghost">
+            <select id="filtroPais" class="gc-select" onchange="onFiltroChange()">
               <option value="todos">🌍 Todos</option>
             </select>
           </div>
 
-          <div class="gc-chipset">
+          <div class="gc-field-wrap">
             <span class="gc-chip">🗓️ Rango</span>
-            <select id="presetRango" onchange="onPresetChange()" class="gc-btn gc-btn--ghost">
+            <select id="presetRango" class="gc-select" onchange="onPresetChange()">
               <option value="dia">Día específico</option>
               <option value="hoy">Hoy</option>
               <option value="ayer">Ayer</option>
@@ -125,9 +128,9 @@
             </select>
           </div>
 
-          <div class="gc-chipset">
+          <div class="gc-field-wrap">
             <span class="gc-chip">📅 Fecha</span>
-            <input type="date" id="filtroFecha" onchange="onFiltroChange()" class="gc-btn gc-btn--ghost"/>
+            <input type="date" id="filtroFecha" class="gc-date" onchange="onFiltroChange()"/>
             <button class="gc-btn gc-btn--ghost" onclick="limpiarFecha()">Todos</button>
           </div>
         </div>
@@ -161,9 +164,8 @@
     <div id="toast" class="gc-panel" style="position:fixed; bottom:18px; right:20px; display:none; z-index:1000"></div>
   </gc-shell>
 
-  <!-- ===== Lógica específica de la página ===== -->
+  <!-- Lógica -->
   <script type="module">
-    // Espera robusta del shell
     async function waitForEl(sel, timeout=8000){
       const t0=performance.now();
       while(performance.now()-t0 < timeout){
@@ -176,7 +178,7 @@
     await customElements.whenDefined('gc-shell');
     await waitForEl('#encabezadoTabla');
 
-    // Firebase
+    /* ===== Firebase ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
@@ -198,7 +200,6 @@
     const fbBadge = document.getElementById('fbBadge');
     function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'gc-chip ' + (cls || ''); }
 
-    // Watchdog → habilita registrar aunque auth tarde (modo temporal)
     let authSettled = false;
     const authWatchdog = setTimeout(()=>{
       if (!authSettled) {
@@ -496,13 +497,25 @@
       await ensurePaisesOptions();
       const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
 
-      // Preferencias (default = 'hoy')
-      const prefPais=readPref(PREF_FPAIS,'todos');
-      const prefFecha=readPref(PREF_FFECHA,'');
-      const prefPreset=readPref(PREF_PRESET,'hoy');
-      if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
-      presetEl.value = prefPreset;
-      if(prefFecha) filtroFechaEl.value = prefFecha;
+      // Forzar predeterminado "hoy" SIEMPRE al entrar
+      const firstLoad = !sessionStorage.getItem('nr-init');
+      if(firstLoad){
+        presetEl.value = 'hoy';
+        filtroFechaEl.value = '';
+        filtroFechaEl.disabled = true;
+        savePref(PREF_PRESET,'hoy');
+        savePref(PREF_FFECHA,'');
+        sessionStorage.setItem('nr-init','1');
+      }else{
+        // restaurar desde prefs para navegación interna
+        const prefPais=readPref(PREF_FPAIS,'todos');
+        const prefFecha=readPref(PREF_FFECHA,'');
+        const prefPreset=readPref(PREF_PRESET,'hoy');
+        if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
+        presetEl.value = prefPreset;
+        if(prefFecha) filtroFechaEl.value = prefFecha;
+        filtroFechaEl.disabled = (presetEl.value !== 'dia');
+      }
 
       const {start, end} = rangeFromPreset(presetEl.value, (filtroFechaEl.value||''));
 
@@ -543,9 +556,26 @@
       renderGrafico();
     }
 
-    function onFiltroChange(){ savePref(PREF_FPAIS, filtroPaisEl.value); savePref(PREF_FFECHA, filtroFechaEl.value || ''); renderTablaHistorico(); }
-    function onPresetChange(){ const preset=presetEl.value; savePref(PREF_PRESET, preset); filtroFechaEl.disabled = (preset !== 'dia'); renderTablaHistorico(); }
-    function limpiarFecha(){ filtroFechaEl.value=""; savePref(PREF_FFECHA,''); presetEl.value='dia'; savePref(PREF_PRESET,'dia'); filtroFechaEl.disabled=false; renderTablaHistorico(); }
+    function onFiltroChange(){
+      savePref(PREF_FPAIS, filtroPaisEl.value);
+      savePref(PREF_FFECHA, filtroFechaEl.value || '');
+      renderTablaHistorico();
+    }
+    function onPresetChange(){
+      const preset=presetEl.value;
+      savePref(PREF_PRESET, preset);
+      filtroFechaEl.disabled = (preset !== 'dia');
+      if(preset!=='dia'){ filtroFechaEl.value=''; savePref(PREF_FFECHA,''); }
+      renderTablaHistorico();
+    }
+    function limpiarFecha(){
+      filtroFechaEl.value="";
+      savePref(PREF_FFECHA,'');
+      presetEl.value='dia';
+      savePref(PREF_PRESET,'dia');
+      filtroFechaEl.disabled=false;
+      renderTablaHistorico();
+    }
 
     function renderGrafico(){
       const ctx=document.getElementById('graficoAvance').getContext('2d');
@@ -577,12 +607,12 @@
     });
     signInAnonymously(auth).catch(e=>{ console.error('[GC] signInAnonymously error:', e); });
 
-    // Prefs iniciales (default = 'hoy')
+    // Init (fija 'hoy' en primer ingreso de la sesión)
     document.addEventListener('DOMContentLoaded', ()=>{
-      const prefPreset=readPref(PREF_PRESET,'hoy');
-      document.getElementById('presetRango').value=prefPreset;
-      document.getElementById('filtroFecha').disabled = (prefPreset!=='dia');
-      const prefFecha=readPref(PREF_FFECHA,''); if(prefFecha) document.getElementById('filtroFecha').value=prefFecha;
+      presetEl.value='hoy';
+      filtroFechaEl.disabled=true;
+      savePref(PREF_PRESET,'hoy');
+      savePref(PREF_FFECHA,'');
     });
   </script>
 </body>
