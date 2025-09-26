@@ -92,6 +92,7 @@ async function loadConfig() {
           items: [
             { label: "New Report", icon: "🧰", href: "reports/newreport.html" },
             { label: "Post-Sale Report", icon: "🚚", href: "reports/psreport.html" },
+            { label: "Delta Report", icon: "𝚫", href: "reports/deltareport.html" },
           ]},
         { type: "group", id: "grp-operaciones", title: "Operaciones",
           items: [
