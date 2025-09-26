@@ -4,125 +4,87 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — Selector de Apoyo 2.0</title>
-    <!-- El shell carga bw.css, fuentes y guard automáticamente -->
-    <script type="module" src="assets/bw/shell.js"></script>
+
+    <!-- Shell del ecosistema (ruta correcta desde /utilities/) -->
+    <script type="module" src="../assets/bw/shell.js"></script>
 
     <style>
       /* ===== Estilos específicos del módulo camprev ===== */
       :root{
         --radius:12px;
-        --table-border: #e5e7eb;
-        --table-head: #000;         /* el shell ya fuerza <thead> oscuro */
-        --table-bg: #fff;
-        --txt: #0f172a;
-        --txt-muted:#64748b;
+        --table-border:#e5e7eb;
+        --table-bg:#fff;
+        --txt:#0f172a; --txt-muted:#64748b;
         --chip-bg:#0f0f0f; --chip-bd:#333;
         --btn:#30478b; --btn-hover:#3f62c5; --btn-alt:#2a3d5e;
       }
-
-      .card{
-        border:1px solid var(--table-border); border-radius:var(--radius);
-        background:#fff; padding:14px;
-      }
+      .card{border:1px solid var(--table-border); border-radius:12px; background:#fff; padding:14px}
       .filters{
         display:grid; grid-template-columns:repeat(5, minmax(180px,1fr));
         gap:12px; align-items:end; border:1px solid var(--table-border);
-        border-radius:var(--radius); padding:12px; margin:10px 0 12px; background:#f8fafc;
+        border-radius:12px; padding:12px; margin:10px 0 12px; background:#f8fafc;
       }
-      .filter-group{ display:flex; flex-direction:column; gap:6px }
-      .filter-group label{ font-size:12px; color:var(--txt-muted) }
-      .filter-group select,
-      .filter-group input[type="text"],
-      .filter-group textarea{
+      .filter-group{display:flex; flex-direction:column; gap:6px}
+      .filter-group label{font-size:12px; color:var(--txt-muted)}
+      .filter-group select,.filter-group input[type="text"],.filter-group textarea{
         padding:10px 12px; border-radius:10px; border:1px solid var(--table-border);
         background:#fff; color:var(--txt); height:40px; outline:none; appearance:none
       }
-      .filter-group textarea{ height:auto; min-height:40px; resize:vertical; line-height:1.2 }
+      .filter-group textarea{height:auto; min-height:40px; resize:vertical; line-height:1.2}
+      .grid-span-3{grid-column:span 3}
 
-      .grid-span-3{ grid-column: span 3 }
-      .rowstats{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px }
-      .chip{
-        background:var(--chip-bg); color:#fff; border:1px solid var(--chip-bd);
-        border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700
-      }
-      .counter{
-        margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px;
-        background:#0f0f0f; color:#fff; border:1px solid #333
-      }
+      .rowstats{display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px}
+      .chip{background:var(--chip-bg); color:#fff; border:1px solid var(--chip-bd); border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700}
+      .counter{margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#0f0f0f; color:#fff; border:1px solid #333}
 
-      /* Botones de la toolbar — estilo sólido (como versión anterior) */
-      .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px }
+      .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px}
       .toolbar button{
         appearance:none; -webkit-appearance:none;
         padding:10px 14px; font-size:14px; cursor:pointer;
         border:1px solid rgba(0,0,0,.15); border-radius:12px;
         background:var(--btn); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25);
-        transition:background .2s, transform .1s, filter .2s;
+        transition:background .2s, transform .1s;
       }
-      .toolbar button:hover{ background:var(--btn-hover) }
-      .toolbar button:active{ transform:translateY(1px) }
-      .toolbar .btn-alt{ background:var(--btn-alt); border-color:rgba(0,0,0,.2) }
+      .toolbar button:hover{background:var(--btn-hover)}
+      .toolbar button:active{transform:translateY(1px)}
+      .toolbar .btn-alt{background:var(--btn-alt)}
 
       table{
         width:100%; border-collapse:separate; border-spacing:0;
         background:var(--table-bg); border:1px solid var(--table-border);
         border-radius:12px; overflow:hidden;
       }
-      thead th{
-        color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer
-      }
-      tbody td{ padding:10px; border-top:1px solid var(--table-border); text-align:center }
-      thead th:first-child, tbody td:first-child{ text-align:left }
-      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy }
+      thead th{background:#000; color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer}
+      tbody td{padding:10px; border-top:1px solid var(--table-border); text-align:center}
+      thead th:first-child, tbody td:first-child{text-align:left}
+      .perop{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy}
 
-      .sort-none::after{ content:"" }
-      .sort-desc::after{ content:" ↓"; font-weight:900 }
-      .sort-asc::after{ content:" ↑"; font-weight:900 }
+      .sort-none::after{content:""}
+      .sort-desc::after{content:" ↓"; font-weight:900}
+      .sort-asc::after{content:" ↑"; font-weight:900}
 
-      .pct{ font-weight:800 }
-      .pct.red{ color:#ef4444 } .pct.orange{ color:#f59e0b } .pct.green{ color:#22c55e }
+      .pct{font-weight:800}
+      .pct.red{color:#ef4444} .pct.orange{color:#f59e0b} .pct.green{color:#22c55e}
 
-      #toast{
-        position:fixed; bottom:18px; right:20px; background:#111827; color:#fff;
-        padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000
-      }
+      #toast{position:fixed; bottom:18px; right:20px; background:#111827; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000}
 
-      /* Responsive */
-      @media (max-width:1080px){
-        .filters{ grid-template-columns:repeat(2, minmax(140px,1fr)) }
-      }
+      @media (max-width:1080px){ .filters{grid-template-columns:repeat(2, minmax(140px,1fr))} }
     </style>
   </head>
   <body>
-    <!-- Usa el shell (sidebar y header del ecosistema).
-         Quitamos hero por pedido (sin subtítulo/fecha). -->
+    <!-- Shell del ecosistema: hero apagado (sin fecha/subtítulo) -->
     <gc-shell hero="off">
       <section class="card" style="margin-bottom:12px">
-        <h1 style="margin:0 0 4px">👥 Selector de Apoyo — Ver 2.0</h1>
+        <h1 style="margin:0">👥 Selector de Apoyo — Ver 2.0</h1>
       </section>
 
       <section class="card">
         <div class="filters">
-          <div class="filter-group">
-            <label for="fltTL">Team Leader</label>
-            <select id="fltTL"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltCamp">Campaña</label>
-            <select id="fltCamp"><option value="">Todas</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltDesc">Descanso</label>
-            <select id="fltDesc"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltTurno">Turno</label>
-            <select id="fltTurno"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-group">
-            <label for="fltSearch">Buscar</label>
-            <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
-          </div>
+          <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltCamp">Campaña</label><select id="fltCamp"><option value="">Todas</option></select></div>
+          <div class="filter-group"><label for="fltDesc">Descanso</label><select id="fltDesc"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltTurno">Turno</label><select id="fltTurno"><option value="">Todos</option></select></div>
+          <div class="filter-group"><label for="fltSearch">Buscar</label><input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/></div>
 
           <div class="filter-group grid-span-3">
             <label for="fltList">Lista PEROP1AM (uno por línea, o separados por , ;)</label>
@@ -184,18 +146,34 @@ PEROP1AM-39726
     </gc-shell>
 
     <script type="module">
-      // ===== Utilidades =====
+      /* =========================================================
+         Camprev — lógica
+         Nota: si por algún motivo el shell no se cargara, calculamos
+         una BASE de respaldo para que los JSON sigan funcionando.
+         ========================================================= */
+      // Fallback BASE (por si shell no inyecta __GC_BASE__)
+      function fallbackBase(){
+        const host  = location.hostname;
+        const parts = location.pathname.split("/").filter(Boolean);
+        const repo  = "Gestion-Center";
+        if (host.endsWith("github.io")){
+          const p0 = parts[0] || repo;
+          return `${location.origin}/${p0}/`;
+        }
+        const idx = parts.indexOf(repo);
+        if (idx !== -1) return `${location.origin}/${parts.slice(0, idx+1).join("/")}/`;
+        return `${location.origin}/${repo}/`;
+      }
+      const BASE = (window.__GC_BASE__ || fallbackBase());
+      const abs  = (p) => new URL(String(p||'').replace(/^\//,''), BASE).href;
+
+      // Utils
       const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2600);setTimeout(()=>{t.style.display='none';t.style.transition='';},3200)}
       const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
       const debounce=(fn,ms=180)=>{let h;return (...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)}}
       const STATE_KEY='selector_apoyo_v2_state';
 
-      // ===== Estado =====
       let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
-
-      // ===== Fetch helpers: usa la BASE del shell =====
-      const BASE = window.__GC_BASE__ || `${location.origin}/`;
-      const abs  = (p) => new URL(String(p||'').replace(/^\//,''), BASE).href;
 
       async function loadJSON(url){
         const sep=url.includes('?')?'&':'?';
@@ -203,7 +181,6 @@ PEROP1AM-39726
         if(!r.ok) throw new Error('HTTP '+r.status);
         return r.json();
       }
-
       async function loadData(){
         try{
           const [distrib,camp]=await Promise.all([
@@ -211,7 +188,6 @@ PEROP1AM-39726
             loadJSON(abs('utilities/datacamprev.json')),
           ]);
           rawDistrib=distrib; rawCamp=camp;
-
           dataFinal=rawCamp.reduce((acc,row)=>{
             const op=rawDistrib.find(o=>String(o.C)===String(row.A));
             if(op){
@@ -233,7 +209,6 @@ PEROP1AM-39726
         }
       }
 
-      // ===== Filtros =====
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
       function fillSelect(sel, values){
         sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
@@ -253,7 +228,6 @@ PEROP1AM-39726
         return { full, digits };
       }
 
-      // ===== Filtrado + orden acumulativo =====
       function applyFiltersAndRender(){
         const vTL = norm(document.getElementById('fltTL').value);
         const vCa = norm(document.getElementById('fltCamp').value);
@@ -268,7 +242,6 @@ PEROP1AM-39726
 
         filtered = dataFinal.filter(r=>{
           const a=norm(r.teamLeader), b=norm(r.nombre), c=norm(r.perop), d=norm(r.campania), e=norm(r.descanso), f=norm(r.turno);
-
           if (vTL && a!==vTL) return false;
           if (vCa && d!==vCa) return false;
           if (vDe && e!==vDe) return false;
@@ -352,38 +325,25 @@ PEROP1AM-39726
         document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
       }
 
-      // ===== Orden acumulativo (click / Shift+click) =====
-      function resetHeadSortClasses(){
-        document.querySelectorAll('#headRow th').forEach(th=>{
-          th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
-        });
-      }
-      function refreshHeadSortClasses(){
-        resetHeadSortClasses();
-        sortState.forEach(({col,mode})=>{
-          const th=document.querySelector(`#headRow th[data-col="${col}"]`);
-          if(th && mode){ th.classList.remove('sort-none'); th.classList.add(mode===1?'sort-desc':'sort-asc'); }
-        });
-      }
+      function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
+      function refreshHeadSortClasses(){ resetHeadSortClasses(); sortState.forEach(({col,mode})=>{ const th=document.querySelector(`#headRow th[data-col="${col}"]`); if(th&&mode){ th.classList.remove('sort-none'); th.classList.add(mode===1?'sort-desc':'sort-asc'); } }); }
       function cycleSort(th, e = { shiftKey:false }){
         const col = th?.dataset?.col; if(!col) return;
         const idx = sortState.findIndex(s => s.col === col);
-        let next = 1; // primer click => DESC
+        let next = 1; // DESC
         if (idx !== -1){
           const was = sortState[idx].mode;
-          if (was === 1) next = 2;         // DESC -> ASC
-          else if (was === 2){             // ASC -> NONE
-            sortState.splice(idx, 1);
-            refreshHeadSortClasses(); applyFiltersAndRender(); return;
+          if (was === 1) next = 2;           // ASC
+          else if (was === 2){               // NONE
+            sortState.splice(idx,1); refreshHeadSortClasses(); applyFiltersAndRender(); return;
           }
-          sortState.splice(idx, 1);        // quitamos para reinstalar con nueva prioridad
+          sortState.splice(idx,1);
         }
         const entry = { col, mode: next };
         if (e.shiftKey) sortState.push(entry); else sortState.unshift(entry);
         refreshHeadSortClasses(); applyFiltersAndRender();
       }
 
-      // ===== Exportar / Copiar =====
       function exportCSV(){
         if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
         const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
@@ -398,12 +358,8 @@ PEROP1AM-39726
         const text=arr.join('\n'); try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }catch{ toast('❌ No se pudo copiar'); }
       }
 
-      // ===== Persistencia =====
       function saveState(){
-        const state={
-          fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value,
-          fltSearch:fltSearch.value, fltList:fltList.value, includeMode:toggleInclude.checked, sortState
-        };
+        const state={ fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value, fltSearch:fltSearch.value, fltList:fltList.value, includeMode:toggleInclude.checked, sortState };
         try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch{}
       }
       function restoreState(){
@@ -417,7 +373,6 @@ PEROP1AM-39726
         }catch{}
       }
 
-      // ===== Eventos UI =====
       const fltTL=document.getElementById('fltTL');
       const fltCamp=document.getElementById('fltCamp');
       const fltDesc=document.getElementById('fltDesc');
@@ -427,11 +382,7 @@ PEROP1AM-39726
       const toggleInclude=document.getElementById('toggleInclude');
       const toggleLabel=document.getElementById('toggleLabel');
 
-      document.getElementById('btnReset').addEventListener('click',()=>{
-        fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value='';
-        fltSearch.value=''; fltList.value=''; toggleInclude.checked=true; toggleLabel.textContent='Incluir lista';
-        sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos');
-      });
+      document.getElementById('btnReset').addEventListener('click',()=>{ fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value=''; fltSearch.value=''; fltList.value=''; toggleInclude.checked=true; toggleLabel.textContent='Incluir lista'; sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos'); });
       document.getElementById('btnExport').addEventListener('click', exportCSV);
       document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
       document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
@@ -440,20 +391,15 @@ PEROP1AM-39726
       [fltTL,fltCamp,fltDesc,fltTurno].forEach(el=>el.addEventListener('change',applyFiltersAndRender));
       [fltSearch,fltList].forEach(el=>el.addEventListener('input',onInput));
       toggleInclude.addEventListener('change',()=>{ toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); });
-
       document.querySelectorAll('#headRow th').forEach(th=> th.addEventListener('click',(e)=>cycleSort(th, e)));
+
+      // Atajo para alternar modo lista
+      document.addEventListener('keydown',(e)=>{ if(e.key.toLowerCase()==='x'){ toggleInclude.checked=!toggleInclude.checked; toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); } });
 
       // Init
       resetHeadSortClasses();
       loadData();
-
-      // Atajo para alternar modo lista
-      document.addEventListener('keydown',(e)=>{
-        if(e.key.toLowerCase()==='x'){ toggleInclude.checked=!toggleInclude.checked; toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista'; applyFiltersAndRender(); }
-      });
-
-      // Seguridad: gcLogout lo expone guard.js (cargado por el shell)
-      if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido en guard.js'); }
+      if(typeof window.gcLogout!=='function'){ console.warn('gcLogout no está definido (lo expone guard.js vía shell)'); }
     </script>
   </body>
 </html>
