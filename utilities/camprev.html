@@ -5,101 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestión Center — Selector de Apoyo 2.0</title>
 
-    <!-- Shell del ecosistema BW (ruta correcta desde /utilities/) -->
+    <!-- Shell del ecosistema BW (desde /utilities/ sube un nivel) -->
     <script type="module" src="../assets/bw/shell.js"></script>
 
     <style>
-      /* ===== Estilos específicos del módulo camprev (compatible con BW) ===== */
-      :root{
-        --radius:12px;
-        --bd:#e5e7eb;
-        --bg:#fff;
-        --bg-soft:#f8fafc;
-        --txt:#0f172a;
-        --txt-muted:#64748b;
+      /* ===== Camprev — estilos mínimos complementarios (el resto viene de bw.css) ===== */
 
-        /* Botones look BW */
-        --btn:#111;           /* base negro */
-        --btn-bd:#2b2b2b;
-        --btn-hover:#000;     /* hover más oscuro */
-        --btn-alt:#1f2937;    /* gris oscuro para los alt */
-        --btn-alt-bd:#374151;
+      :root{
+        --bd: var(--gray-300);
+        --txt-muted: var(--gray-700);
       }
 
-      .card{border:1px solid var(--bd); border-radius:var(--radius); background:var(--bg); padding:14px}
-      .card h1{margin:0; font-size:22px}
+      /* Panel superior con título */
+      .cp-title{ margin:0; font-size:22px }
 
       /* Filtros */
       .filters{
         display:grid; grid-template-columns:repeat(5, minmax(180px,1fr));
-        gap:12px; align-items:end; border:1px solid var(--bd);
-        border-radius:12px; padding:12px; margin:10px 0 12px; background:var(--bg-soft);
+        gap:12px; align-items:end;
       }
-      .filter-group{display:flex; flex-direction:column; gap:6px}
-      .filter-group label{font-size:12px; color:var(--txt-muted)}
-      .filter-group select,.filter-group input[type="text"],.filter-group textarea{
+      .filter-group{ display:flex; flex-direction:column; gap:6px }
+      .filter-group label{ font-size:12px; color:var(--txt-muted) }
+      .filter-group select,
+      .filter-group input[type="text"],
+      .filter-group textarea{
         padding:10px 12px; border-radius:10px; border:1px solid var(--bd);
-        background:#fff; color:var(--txt); height:40px; outline:none; appearance:none
+        background:#fff; height:40px; outline:none; appearance:none;
+        font:inherit; color:inherit;
       }
-      .filter-group textarea{height:auto; min-height:40px; resize:vertical; line-height:1.2}
-      .grid-span-3{grid-column:span 3}
+      .filter-group textarea{ height:auto; min-height:40px; resize:vertical; line-height:1.2 }
+      .grid-span-3{ grid-column: span 3; }
 
-      /* Chips y contador */
-      .rowstats{display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin:4px 0 10px}
-      .chip{background:#0f0f0f; color:#fff; border:1px solid #333; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700}
-      .counter{margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px; background:#0f0f0f; color:#fff; border:1px solid #333}
+      /* Tabla: indicadores de orden */
+      .sort-none::after{ content:"" }
+      .sort-desc::after{ content:" ↓"; font-weight:900 }
+      .sort-asc::after{ content:" ↑"; font-weight:900 }
 
-      /* Toolbar: botones con look BW */
-      .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px}
-      .toolbar button{
-        appearance:none; -webkit-appearance:none;
-        padding:10px 14px; font-size:14px; cursor:pointer;
-        border:1px solid var(--btn-bd); border-radius:12px;
-        background:var(--btn); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25);
-        transition:background .15s, transform .08s, filter .2s;
+      /* Colores de % */
+      .pct{ font-weight:800 }
+      .pct.red{ color:#ef4444 } .pct.orange{ color:#f59e0b } .pct.green{ color:#22c55e }
+
+      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy }
+
+      /* Toast */
+      #toast{
+        position:fixed; bottom:18px; right:20px; background:#111827; color:#fff;
+        padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35);
+        display:none; z-index:1000
       }
-      .toolbar button:hover{background:var(--btn-hover)}
-      .toolbar button:active{transform:translateY(1px)}
-      .toolbar .btn-alt{background:var(--btn-alt); border-color:var(--btn-alt-bd)}
 
-      /* Tabla */
-      table{
-        width:100%; border-collapse:separate; border-spacing:0;
-        background:#fff; border:1px solid var(--bd);
-        border-radius:12px; overflow:hidden;
+      /* Responsivo */
+      @media (max-width:1080px){
+        .filters{ grid-template-columns:repeat(2, minmax(140px,1fr)) }
       }
-      /* el shell ya añade thead negro, pero lo reforzamos */
-      thead th{background:#000; color:#fff; padding:10px; text-align:center; position:sticky; top:0; z-index:2; user-select:none; cursor:pointer}
-      tbody td{padding:10px; border-top:1px solid var(--bd); text-align:center}
-      thead th:first-child, tbody td:first-child{text-align:left}
-      .perop{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; cursor:copy}
-
-      .sort-none::after{content:""}
-      .sort-desc::after{content:" ↓"; font-weight:900}
-      .sort-asc::after{content:" ↑"; font-weight:900}
-
-      .pct{font-weight:800}
-      .pct.red{color:#ef4444} .pct.orange{color:#f59e0b} .pct.green{color:#22c55e}
-
-      #toast{position:fixed; bottom:18px; right:20px; background:#111827; color:#fff; padding:12px 18px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); display:none; z-index:1000}
-
-      @media (max-width:1080px){ .filters{grid-template-columns:repeat(2, minmax(140px,1fr))} }
     </style>
   </head>
   <body>
-    <!-- Shell: hero apagado (sin subtítulo/fecha) -->
+    <!-- Shell sin hero (hero="off") mantiene sidebar BW y aplica bw.css -->
     <gc-shell hero="off">
-      <section class="card" style="margin-bottom:12px">
-        <h1>👥 Selector de Apoyo — Ver 2.0</h1>
+      <!-- ===== Título ===== -->
+      <section class="gc-panel" style="margin-bottom:12px">
+        <h1 class="cp-title">👥 Selector de Apoyo — Ver 2.0</h1>
       </section>
 
-      <section class="card">
-        <div class="filters">
-          <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
-          <div class="filter-group"><label for="fltCamp">Campaña</label><select id="fltCamp"><option value="">Todas</option></select></div>
-          <div class="filter-group"><label for="fltDesc">Descanso</label><select id="fltDesc"><option value="">Todos</option></select></div>
-          <div class="filter-group"><label for="fltTurno">Turno</label><select id="fltTurno"><option value="">Todos</option></select></div>
-          <div class="filter-group"><label for="fltSearch">Buscar</label><input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/></div>
+      <!-- ===== Controles ===== -->
+      <section class="gc-panel" style="margin-bottom:12px">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="filter-group">
+            <label for="fltTL">Team Leader</label>
+            <select id="fltTL"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltCamp">Campaña</label>
+            <select id="fltCamp"><option value="">Todas</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltDesc">Descanso</label>
+            <select id="fltDesc"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltTurno">Turno</label>
+            <select id="fltTurno"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="fltSearch">Buscar</label>
+            <input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/>
+          </div>
 
           <div class="filter-group grid-span-3">
             <label for="fltList">Lista PEROP1AM (uno por línea, o separados por , ;)</label>
@@ -111,43 +102,55 @@ PEROP1AM-39726
 
           <div class="filter-group">
             <label>Modo lista PEROP</label>
-            <label class="toggle" title="Presiona X para alternar" style="display:inline-flex;align-items:center;gap:8px">
+            <label title="Presiona X para alternar" style="display:inline-flex;align-items:center;gap:8px">
               <input type="checkbox" id="toggleInclude" checked style="width:18px;height:18px;accent-color:#16a34a"/>
-              <span id="toggleLabel" style="font-size:13px;color:var(--txt-muted)">Incluir lista</span>
+              <span id="toggleLabel" style="font-size:13px;color:var(--gray-700)">Incluir lista</span>
             </label>
           </div>
 
-          <div class="counter" id="rowCounter">Mostrando 0 registros</div>
+          <div class="u-right">
+            <span class="gc-chip gc-chip--dark" id="rowCounter">Mostrando 0 registros</span>
+          </div>
         </div>
 
-        <div class="rowstats">
-          <div class="chip" id="chipRows">0 filas</div>
-          <div class="chip" id="chipTLs">0 TLs únicos</div>
-          <div class="chip" id="chipCamps">0 campañas</div>
+        <div class="gc-chipset" style="margin-bottom:10px">
+          <span class="gc-chip" id="chipRows">0 filas</span>
+          <span class="gc-chip" id="chipTLs">0 TLs únicos</span>
+          <span class="gc-chip" id="chipCamps">0 campañas</span>
         </div>
 
-        <div class="toolbar">
-          <button id="btnReset">🧹 Restablecer filtros</button>
-          <button id="btnExport">⬇️ Exportar (CSV)</button>
-          <button id="btnCopyPerop" class="btn-alt">📋 Copiar PEROPs filtrados</button>
-          <button id="btnCopyNames" class="btn-alt">📋 Copiar Nombres filtrados</button>
+        <div class="gc-toolbar">
+          <button id="btnReset" class="gc-btn">
+            <span class="gc-icon">🧹</span> Restablecer filtros
+          </button>
+          <button id="btnExport" class="gc-btn gc-btn--primary">
+            <span class="gc-icon">⬇️</span> Exportar (CSV)
+          </button>
+          <button id="btnCopyPerop" class="gc-btn">
+            <span class="gc-icon">📋</span> Copiar PEROPs filtrados
+          </button>
+          <button id="btnCopyNames" class="gc-btn">
+            <span class="gc-icon">📋</span> Copiar Nombres filtrados
+          </button>
         </div>
       </section>
 
-      <section class="card" style="margin-top:12px">
+      <!-- ===== Tabla ===== -->
+      <section class="gc-panel">
         <div style="overflow:auto">
-          <table id="tblCampRev" title="Click: ordenar • Shift+Click: añadir como orden secundario • Clic repetido: descendente → ascendente → quitar">
+          <table id="tblCampRev" class="gc-table gc-table--sticky"
+                 title="Click: ordenar • Shift+Click: añadir como orden secundario • Clic repetido: descendente → ascendente → quitar">
             <thead>
               <tr id="headRow">
                 <th data-col="teamLeader" class="sort-none">Team Leader</th>
                 <th data-col="nombre" class="sort-none">Operador</th>
                 <th data-col="perop" class="sort-none">PEROP1AM</th>
                 <th data-col="campania" class="sort-none">Campaña</th>
-                <th data-col="orders" class="sort-none">Total Orders</th>
-                <th data-col="approve" class="sort-none">%Approve</th>
-                <th data-col="reject" class="sort-none">%Reject</th>
-                <th data-col="trash" class="sort-none">%Trash</th>
-                <th data-col="avg" class="sort-none">Avg Check</th>
+                <th data-col="orders" class="sort-none" style="text-align:right">Total Orders</th>
+                <th data-col="approve" class="sort-none" style="text-align:right">%Approve</th>
+                <th data-col="reject" class="sort-none" style="text-align:right">%Reject</th>
+                <th data-col="trash" class="sort-none" style="text-align:right">%Trash</th>
+                <th data-col="avg" class="sort-none" style="text-align:right">Avg Check</th>
                 <th data-col="descanso" class="sort-none">Descanso</th>
                 <th data-col="turno" class="sort-none">Turno</th>
               </tr>
@@ -162,13 +165,10 @@ PEROP1AM-39726
 
     <script type="module">
       /* =========================================================
-         Camprev — lógica
-         - Espero a que el shell termine de renderizar (mount)
-         - BASE robusta para ubicar JSONs
-         - Eventos con delegación (sort) + wiring después del shell
+         Camprev — lógica con bw.css + gc-shell
          ========================================================= */
 
-      // ===== BASE robusto (usa __GC_BASE__ o detecta /Gestion-Center/) =====
+      // ===== BASE robusto (usa __GC_BASE__ si shell ya lo calculó) =====
       function fallbackBase(){
         const host  = location.hostname;
         const parts = location.pathname.split("/").filter(Boolean);
@@ -191,7 +191,7 @@ PEROP1AM-39726
 
       let rawDistrib=[]; let rawCamp=[]; let dataFinal=[]; let filtered=[]; let sortState=[];
 
-      // ====== Esperar a que exista el DOM final del shell ======
+      // Espera a que el shell haya pintado el contenido (tabla presente)
       function waitFor(sel, timeout=8000){
         return new Promise((res,rej)=>{
           const t0=performance.now();
@@ -204,7 +204,7 @@ PEROP1AM-39726
         });
       }
 
-      // ====== Carga de datos ======
+      // ===== Carga =====
       async function loadJSON(url){
         const sep=url.includes('?')?'&':'?';
         const r=await fetch(url+sep+'t='+(Date.now()));
@@ -231,7 +231,7 @@ PEROP1AM-39726
         },[]);
       }
 
-      // ====== Filtros ======
+      // ===== Filtros =====
       function uniqSorted(arr){ return [...new Set(arr.filter(v=>v!=null && String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es')); }
       function fillSelect(sel, values){
         sel.innerHTML='<option value="">'+(sel.id==='fltCamp'?'Todas':'Todos')+'</option>'+
@@ -251,7 +251,7 @@ PEROP1AM-39726
         return { full, digits };
       }
 
-      // ====== Render ======
+      // ===== Render =====
       function colorPct(val,type){
         const n=parseFloat(String(val).replace('%',''))||0;
         if(type==="approve"){ if(n<=24) return "red"; if(n<=29) return "orange"; return "green"; }
@@ -268,11 +268,11 @@ PEROP1AM-39726
             <td>${r.nombre}</td>
             <td class="perop" data-copy="${r.perop}">${r.perop}</td>
             <td>${r.campania}</td>
-            <td>${r.orders}</td>
-            <td class="pct ${colorPct(r.approve,'approve')}">${r.approve}</td>
-            <td class="pct ${colorPct(r.reject,'reject')}">${r.reject}</td>
-            <td class="pct ${colorPct(r.trash,'trash')}">${r.trash}</td>
-            <td>$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
+            <td style="text-align:right">${r.orders}</td>
+            <td class="pct ${colorPct(r.approve,'approve')}" style="text-align:right">${r.approve}</td>
+            <td class="pct ${colorPct(r.reject,'reject')}" style="text-align:right">${r.reject}</td>
+            <td class="pct ${colorPct(r.trash,'trash')}" style="text-align:right">${r.trash}</td>
+            <td style="text-align:right">$${(Number(r.avg)||0).toLocaleString('en-US',{minimumFractionDigits:0})}</td>
             <td>${r.descanso}</td>
             <td>${r.turno}</td>`;
           frag.appendChild(tr);
@@ -295,7 +295,27 @@ PEROP1AM-39726
         document.getElementById('chipCamps').textContent=`${campSet.size} campaña${campSet.size===1?'':'s'}`;
       }
 
-      // ====== Aplicar filtros + multicolumn sort ======
+      // ===== Orden acumulativo =====
+      function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
+      function refreshHeadSortClasses(){ resetHeadSortClasses(); sortState.forEach(({col,mode})=>{ const th=document.querySelector(`#headRow th[data-col="${col}"]`); if(th&&mode){ th.classList.remove('sort-none'); th.classList.add(mode===1?'sort-desc':'sort-asc'); } }); }
+      function cycleSort(th, e = { shiftKey:false }){
+        const col = th?.dataset?.col; if(!col) return;
+        const idx = sortState.findIndex(s => s.col === col);
+        let next = 1; // DESC
+        if (idx !== -1){
+          const was = sortState[idx].mode;
+          if (was === 1) next = 2;           // ASC
+          else if (was === 2){               // NONE
+            sortState.splice(idx,1); refreshHeadSortClasses(); applyFiltersAndRender(); return;
+          }
+          sortState.splice(idx,1);
+        }
+        const entry = { col, mode: next };
+        if (e.shiftKey) sortState.push(entry); else sortState.unshift(entry);
+        refreshHeadSortClasses(); applyFiltersAndRender();
+      }
+
+      // ===== Aplicar filtros =====
       function applyFiltersAndRender(){
         const vTL = norm(document.getElementById('fltTL').value);
         const vCa = norm(document.getElementById('fltCamp').value);
@@ -303,7 +323,8 @@ PEROP1AM-39726
         const vTu = norm(document.getElementById('fltTurno').value);
 
         const qRaw = norm(document.getElementById('fltSearch').value);
-        const qTokens = qRaw.split(/\s+/).filter(Boolean);
+        theTokens = qRaw.split(/\s+/).filter(Boolean);
+        const qTokens = theTokens;
 
         const includeMode = document.getElementById('toggleInclude').checked;
         const lists = parsePeropList(document.getElementById('fltList').value);
@@ -350,27 +371,81 @@ PEROP1AM-39726
         saveState();
       }
 
-      // ====== Sort (delegation) ======
-      function resetHeadSortClasses(){ document.querySelectorAll('#headRow th').forEach(th=>{ th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none'); }); }
-      function refreshHeadSortClasses(){ resetHeadSortClasses(); sortState.forEach(({col,mode})=>{ const th=document.querySelector(`#headRow th[data-col="${col}"]`); if(th&&mode){ th.classList.remove('sort-none'); th.classList.add(mode===1?'sort-desc':'sort-asc'); } }); }
-      function cycleSort(th, e = { shiftKey:false }){
-        const col = th?.dataset?.col; if(!col) return;
-        const idx = sortState.findIndex(s => s.col === col);
-        let next = 1; // DESC
-        if (idx !== -1){
-          const was = sortState[idx].mode;
-          if (was === 1) next = 2;           // ASC
-          else if (was === 2){               // NONE
-            sortState.splice(idx,1); refreshHeadSortClasses(); applyFiltersAndRender(); return;
-          }
-          sortState.splice(idx,1);
-        }
-        const entry = { col, mode: next };
-        if (e.shiftKey) sortState.push(entry); else sortState.unshift(entry);
-        refreshHeadSortClasses(); applyFiltersAndRender();
+      // ===== Persistencia =====
+      function saveState(){
+        const s={
+          fltTL:fltTL.value, fltCamp:fltCamp.value, fltDesc:fltDesc.value, fltTurno:fltTurno.value,
+          fltSearch:fltSearch.value, fltList:fltList.value, includeMode:toggleInclude.checked, sortState
+        };
+        try{ localStorage.setItem(STATE_KEY, JSON.stringify(s)); }catch{}
+      }
+      function restoreState(){
+        try{
+          const raw=localStorage.getItem(STATE_KEY); if(!raw) return;
+          const s=JSON.parse(raw);
+          fltTL.value=s.fltTL??''; fltCamp.value=s.fltCamp??''; fltDesc.value=s.fltDesc??''; fltTurno.value=s.fltTurno??'';
+          fltSearch.value=s.fltSearch??''; fltList.value=s.fltList??'';
+          toggleInclude.checked=!!s.includeMode; toggleLabel.textContent=s.includeMode?'Incluir lista':'Excluir lista';
+          sortState=Array.isArray(s.sortState)?s.sortState:[]; refreshHeadSortClasses();
+        }catch{}
       }
 
-      // ====== Exportar / Copiar ======
+      // ===== Boot =====
+      (async function boot(){
+        await waitFor('#tblCampRev');
+
+        try{
+          await loadData();
+          buildFilters(dataFinal);
+          restoreState();
+          applyFiltersAndRender();
+          toast('✅ Datos cargados');
+        }catch(e){
+          console.error(e); toast('❌ No se pudieron cargar los JSON');
+        }
+
+        // Delegación sort
+        document.getElementById('headRow').addEventListener('click', (e)=>{
+          const th = e.target.closest('th[data-col]');
+          if(!th) return;
+          cycleSort(th, e);
+        });
+
+        // Filtros
+        const onInput=debounce(applyFiltersAndRender,160);
+        ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>{
+          document.getElementById(id).addEventListener('change', applyFiltersAndRender);
+        });
+        ['fltSearch','fltList'].forEach(id=>{
+          document.getElementById(id).addEventListener('input', onInput);
+        });
+        toggleInclude.addEventListener('change', ()=>{
+          toggleLabel.textContent = toggleInclude.checked?'Incluir lista':'Excluir lista';
+          applyFiltersAndRender();
+        });
+
+        // Acciones
+        document.getElementById('btnReset').addEventListener('click', ()=>{
+          fltTL.value=''; fltCamp.value=''; fltDesc.value=''; fltTurno.value='';
+          fltSearch.value=''; fltList.value='';
+          toggleInclude.checked=true; toggleLabel.textContent='Incluir lista';
+          sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos');
+        });
+        document.getElementById('btnExport').addEventListener('click', exportCSV);
+        document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
+        document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
+
+        // Atajo: X alterna modo lista
+        document.addEventListener('keydown',(e)=>{
+          if(e.key.toLowerCase()==='x'){
+            toggleInclude.checked=!toggleInclude.checked;
+            toggleLabel.textContent=toggleInclude.checked?'Incluir lista':'Excluir lista';
+            applyFiltersAndRender();
+          }
+        });
+      })();
+
+      // ===== Exportar / Copiar =====
       function exportCSV(){
         if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
         const headers=['Team Leader','Operador','PEROP1AM','Campaña','Total Orders','%Approve','%Reject','%Trash','Avg Check','Descanso','Turno'];
@@ -384,96 +459,6 @@ PEROP1AM-39726
         const arr=filtered.map(getter).filter(Boolean); if(!arr.length){ toast('ℹ️ Nada para copiar'); return; }
         const text=arr.join('\n'); try{ await navigator.clipboard.writeText(text); toast(`📋 ${label} copiad${arr.length===1?'o':'os'} (${arr.length})`); }catch{ toast('❌ No se pudo copiar'); }
       }
-
-      // ====== Persistencia ======
-      function saveState(){
-        const s={
-          fltTL:document.getElementById('fltTL').value,
-          fltCamp:document.getElementById('fltCamp').value,
-          fltDesc:document.getElementById('fltDesc').value,
-          fltTurno:document.getElementById('fltTurno').value,
-          fltSearch:document.getElementById('fltSearch').value,
-          fltList:document.getElementById('fltList').value,
-          includeMode:document.getElementById('toggleInclude').checked,
-          sortState
-        };
-        try{ localStorage.setItem(STATE_KEY, JSON.stringify(s)); }catch{}
-      }
-      function restoreState(){
-        try{
-          const raw=localStorage.getItem(STATE_KEY); if(!raw) return;
-          const s=JSON.parse(raw);
-          document.getElementById('fltTL').value=s.fltTL??'';
-          document.getElementById('fltCamp').value=s.fltCamp??'';
-          document.getElementById('fltDesc').value=s.fltDesc??'';
-          document.getElementById('fltTurno').value=s.fltTurno??'';
-          document.getElementById('fltSearch').value=s.fltSearch??'';
-          document.getElementById('fltList').value=s.fltList??'';
-          document.getElementById('toggleInclude').checked=!!s.includeMode;
-          document.getElementById('toggleLabel').textContent = (document.getElementById('toggleInclude').checked?'Incluir lista':'Excluir lista');
-          sortState=Array.isArray(s.sortState)?s.sortState:[];
-          refreshHeadSortClasses();
-        }catch{}
-      }
-
-      // ====== Boot: esperar shell, cargar datos y wirear eventos ======
-      (async function boot(){
-        // esperar a que exista la tabla (render del shell + contenido)
-        await waitFor('#tblCampRev');
-
-        // Cargar datos + filtros
-        try{
-          await loadData();
-          buildFilters(dataFinal);
-          restoreState();
-          applyFiltersAndRender();
-          toast('✅ Datos cargados');
-        }catch(e){
-          console.error(e);
-          toast('❌ No se pudieron cargar los JSON');
-        }
-
-        // Delegación de sort
-        document.getElementById('headRow').addEventListener('click', (e)=>{
-          const th = e.target.closest('th[data-col]');
-          if(!th) return;
-          cycleSort(th, e);
-        });
-
-        // Filtros (ya con nodos definitivos)
-        const onInput=debounce(applyFiltersAndRender,160);
-        ['fltTL','fltCamp','fltDesc','fltTurno'].forEach(id=>{
-          document.getElementById(id).addEventListener('change', applyFiltersAndRender);
-        });
-        ['fltSearch','fltList'].forEach(id=>{
-          document.getElementById(id).addEventListener('input', onInput);
-        });
-        document.getElementById('toggleInclude').addEventListener('change', ()=>{
-          document.getElementById('toggleLabel').textContent = (document.getElementById('toggleInclude').checked?'Incluir lista':'Excluir lista');
-          applyFiltersAndRender();
-        });
-
-        // Acciones
-        document.getElementById('btnReset').addEventListener('click', ()=>{
-          ['fltTL','fltCamp','fltDesc','fltTurno','fltSearch','fltList'].forEach(id=>document.getElementById(id).value='');
-          document.getElementById('toggleInclude').checked=true;
-          document.getElementById('toggleLabel').textContent='Incluir lista';
-          sortState=[]; resetHeadSortClasses(); applyFiltersAndRender(); toast('🔄 Filtros restablecidos');
-        });
-        document.getElementById('btnExport').addEventListener('click', exportCSV);
-        document.getElementById('btnCopyPerop').addEventListener('click',()=>copyList(r=>r.perop,'PEROPs'));
-        document.getElementById('btnCopyNames').addEventListener('click',()=>copyList(r=>r.nombre,'Nombres'));
-
-        // Atajo: X alterna modo lista
-        document.addEventListener('keydown',(e)=>{
-          if(e.key.toLowerCase()==='x'){
-            const t=document.getElementById('toggleInclude');
-            t.checked=!t.checked;
-            document.getElementById('toggleLabel').textContent=t.checked?'Incluir lista':'Excluir lista';
-            applyFiltersAndRender();
-          }
-        });
-      })();
     </script>
   </body>
 </html>
