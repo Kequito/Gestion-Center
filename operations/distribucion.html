@@ -1,31 +1,147 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>📋 Distribución — Gestión Center</title>
+    <title>Gestión Center — v2.0 · Distribución</title>
 
-    <!-- Base absoluto para el ecosistema -->
+    <!-- Base absoluto para que el shell calcule rutas correctas (GH Pages / dominio propio) -->
     <meta name="gc-base" content="/Gestion-Center/">
 
-    <!-- Shell (inyecta bw.css + guard.js + sidebar) -->
+    <!-- Shell BW: inyecta bw.css, guard.js, sidebar y utilidades -->
     <script type="module" src="../assets/bw/shell.js"></script>
+
+    <!-- ====== Estilos propios de la página (conservamos tu look & feel v2.0) ====== -->
+    <style>
+      :root{
+        --radius:16px; --radius-sm:12px; --radius-xs:10px;
+        --font-title:'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --font-body:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --t-fast:.15s; --t-med:.25s; --t-slow:.6s; --curve:cubic-bezier(.2,.7,.2,1);
+        --elev-1:0 6px 20px rgba(0,0,0,.25); --elev-2:0 12px 34px rgba(0,0,0,.35);
+
+        /* Controles oscuros legibles (para select/option) */
+        --ctl-bg: rgba(255,255,255,.06); --ctl-bd: rgba(255,255,255,.10);
+        --menu-bg:#0f182f; --menu-hov:#1b2544; --menu-txt:#e9f1ff; --menu-muted:#b8c6de;
+      }
+      [data-theme="dark"]{
+        --bg-app:#070b1a; --bg-aside:#0c1228;
+        --bg-card:linear-gradient(160deg, rgba(17,24,49,.88), rgba(17,24,49,.7));
+        --txt:#e9f1ff; --txt-muted:#b8c6de; --stroke:rgba(255,255,255,.10);
+        --primary:#5b8bff; --accent:#7ae3ff;
+      }
+      *{box-sizing:border-box}
+      body{font-family:var(--font-body); color:var(--txt); background:var(--bg-app)}
+
+      @media (prefers-reduced-motion:no-preference){
+        .reveal{opacity:0; transform:translateY(8px); will-change:transform,opacity; transition:opacity var(--t-slow) ease, transform var(--t-slow) ease}
+        .reveal.show{opacity:1; transform:none}
+      }
+
+      /* ====== Contenido principal (dentro del <gc-shell>) ====== */
+      .hero{
+        position:relative; border-radius:var(--radius); padding:18px 18px 18px 20px;
+        background:linear-gradient(135deg, color-mix(in oklab, var(--primary) 14%, transparent),
+                                         color-mix(in oklab, var(--accent) 12%, transparent));
+        border:1px solid var(--stroke); overflow:hidden; margin-bottom:16px;
+      }
+      .hero h1{margin:0 0 6px; font:700 24px/1.2 var(--font-title)}
+      .hero p{margin:0; color:var(--txt-muted); font-size:14px}
+      .pill{
+        display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+        background:linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 50%, white));
+        color:#0b1022; font-weight:700; border:1px solid color-mix(in oklab, var(--accent) 65%, white);
+        box-shadow:0 8px 24px color-mix(in oklab, var(--accent) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.6);
+      }
+
+      .section-card{
+        position:relative; border-radius:var(--radius); padding:16px; overflow:hidden; isolation:isolate;
+        background:var(--bg-card); border:1px solid var(--stroke); box-shadow:var(--elev-1);
+        margin-top:16px;
+      }
+      .section-card h2{margin:0 0 8px; font:700 18px/1.15 var(--font-title)}
+      .inline-controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin:10px 0 14px; }
+      .filter-group{ display:flex; flex-direction:column; gap:6px; }
+      .filter-group label{ font-size:12px; color:var(--txt-muted); }
+
+      /* Inputs/selects oscuros legibles */
+      .filter-group input[type="text"], .filter-group input[type="date"]{
+        padding:8px 12px; border-radius:12px; border:1px solid var(--ctl-bd);
+        background:var(--ctl-bg); color:var(--menu-txt); min-width:170px; height:38px; outline:none;
+      }
+      .filter-group select{
+        padding:8px 12px; border-radius:12px; border:1px solid var(--ctl-bd);
+        background:var(--ctl-bg); color:var(--menu-txt); min-width:170px; height:38px; outline:none;
+        color-scheme: dark; appearance:none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--menu-txt) 50%),
+          linear-gradient(135deg, var(--menu-txt) 50%, transparent 50%);
+        background-position: calc(100% - 18px) 16px, calc(100% - 12px) 16px;
+        background-size:6px 6px, 6px 6px; background-repeat:no-repeat;
+      }
+      .filter-group select option,
+      .filter-group select optgroup{ background:var(--menu-bg); color:var(--menu-txt); }
+      .filter-group select option:checked{ background:var(--menu-hov) !important; color:var(--menu-txt) }
+      .filter-group select option:hover{ background:var(--menu-hov) !important }
+      .filter-group select:focus{
+        box-shadow:0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent);
+        border-color: color-mix(in oklab, var(--primary) 45%, var(--ctl-bd));
+      }
+
+      .counter{ margin-left:auto; font-weight:800; font-size:14px; padding:8px 12px; border-radius:999px;
+        background:rgba(255,255,255,.06); border:1px solid var(--stroke); color:var(--menu-txt) }
+
+      /* Tiles por país */
+      .grid-tiles{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+      @media (max-width:1100px){ .grid-tiles{ grid-template-columns:repeat(2,1fr);} }
+      @media (max-width:720px){ .grid-tiles{ grid-template-columns:1fr;} }
+      .country-tile{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px;
+        background:rgba(255,255,255,.04); border:1px solid var(--stroke); border-radius:12px; }
+      .country-left{ display:flex; align-items:center; gap:10px; }
+      .bandera{ width:28px; height:auto; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+      .cname{ font-weight:700; }
+      .badge{ min-width:46px; height:46px; border-radius:12px; background:#fff; color:#0b1022;
+        display:grid; place-items:center; font-weight:900; font-size:18px; border:2px solid #cfe1ff; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+
+      .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 14px; }
+      .btn{ padding:10px 14px; font-size:14px; cursor:pointer; border:none; border-radius:12px;
+        background:var(--primary); color:#0b1022; font-weight:700; box-shadow:var(--elev-1); }
+      .btn:hover{ filter:brightness(1.05) } .btn:active{ transform:translateY(1px) }
+
+      table{ width:100%; border-collapse:separate; border-spacing:0; background:rgba(255,255,255,.035);
+             border:1px solid var(--stroke); border-radius:12px; overflow:hidden; box-shadow:var(--elev-1); }
+      thead th{ position:sticky; top:0; z-index:1; background:linear-gradient(0deg, rgba(91,139,255,.25), rgba(91,139,255,.15));
+        color:#fff; padding:10px; text-align:center; user-select:none; cursor:pointer; letter-spacing:.2px; border-bottom:1px solid var(--stroke); }
+      tbody td{ padding:10px; border-top:1px solid var(--stroke); text-align:center; }
+      thead th:first-child, tbody td:first-child{ text-align:left; }
+      .perop{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; opacity:.9; }
+      .sort-none::after{ content:""; } .sort-desc::after{ content:" ↓"; font-weight:900; } .sort-asc::after{ content:" ↑"; font-weight:900; }
+      .sort-index{ font-size:10px; margin-left:6px; padding:1px 5px; border-radius:999px; background:rgba(255,255,255,.15); }
+      #empty{ padding:18px; text-align:center; color:var(--txt-muted); }
+
+      #toast{ position:fixed; bottom:18px; right:20px; background:#111827; color:#fff; padding:12px 18px;
+        border-radius:12px; box-shadow:var(--elev-2); display:none; z-index:1000; border:1px solid var(--stroke) }
+    </style>
   </head>
   <body>
-    <!-- Contenedor del ecosistema -->
-    <gc-shell hero-title="📋 Distribución de Operadores" hero-subtitle="Filtros rápidos · Orden 3 estados (⇧ multi-columna)">
-      <!-- ================== CONTENIDO ================== -->
-
-      <!-- Hero lo pinta el shell -->
+    <!-- Todo el contenido de la página va DENTRO del shell -->
+    <gc-shell hero="off">
+      <!-- HERO propio (con tu pill de fecha/hora) -->
+      <section class="hero reveal">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+          <div>
+            <h1>📋 Distribución de Operadores</h1>
+            <p>Mismo look & feel v2.0 · Filtros rápidos · Orden 3 estados (⇧ para multi-columna)</p>
+          </div>
+          <div class="pill" id="fechaHora">Cargando...</div>
+        </div>
+      </section>
 
       <!-- Programados por país -->
-      <section class="gc-panel">
+      <section class="section-card reveal" style="--delay:.05s" id="programadosCard">
         <h2>🗓️ Operadores programados por país</h2>
-        <div class="gc-toolbar">
-          <div class="filter-group">
-            <label for="progFecha">Fecha</label>
-            <input type="date" id="progFecha" />
-          </div>
+        <div class="inline-controls">
+          <div class="filter-group"><label for="progFecha">Fecha</label><input type="date" id="progFecha"></div>
           <div class="filter-group">
             <label for="progTurno">Turno</label>
             <select id="progTurno">
@@ -35,31 +151,31 @@
               <option value="noche">Noche (22:00–07:00)</option>
             </select>
           </div>
-          <div class="gc-chip u-right" id="progTotal">Total: 0</div>
+          <div class="counter" id="progTotal">Total: 0</div>
         </div>
-        <div class="grid" id="progGrid"></div>
+        <div class="grid-tiles" id="progGrid"></div>
       </section>
 
       <!-- Filtros y tabla -->
-      <section class="gc-panel" style="margin-top:16px">
+      <section class="section-card reveal" style="--delay:.1s">
         <h2>📑 Base de distribución</h2>
 
-        <div class="gc-toolbar">
+        <div class="inline-controls" style="margin-top:6px">
           <div class="filter-group"><label for="fltTL">Team Leader</label><select id="fltTL"><option value="">Todos</option></select></div>
           <div class="filter-group"><label for="fltCampania">Campaña</label><select id="fltCampania"><option value="">Todas</option></select></div>
           <div class="filter-group"><label for="fltDescanso">Descanso</label><select id="fltDescanso"><option value="">Todos</option></select></div>
           <div class="filter-group"><label for="fltTurno">Turno</label><select id="fltTurno"><option value="">Todos</option></select></div>
           <div class="filter-group" style="min-width:260px"><label for="fltSearch">Buscar</label><input id="fltSearch" type="text" placeholder="Operador o PEROP1AM"/></div>
-          <div class="gc-chip u-right" id="opCounter">Mostrando 0 operadores</div>
+          <div class="counter" id="opCounter">Mostrando 0 operadores</div>
         </div>
 
-        <div class="gc-toolbar" style="margin:12px 0">
-          <button class="gc-btn" id="btnReset">🧹 Restablecer filtros</button>
-          <button class="gc-btn" id="btnExport">⬇️ Exportar (CSV)</button>
+        <div class="toolbar">
+          <button class="btn" id="btnReset">🧹 Restablecer filtros</button>
+          <button class="btn" id="btnExport">⬇️ Exportar (CSV)</button>
         </div>
 
         <div style="overflow:auto; border-radius:12px">
-          <table id="tablaDistribucion" class="gc-table gc-table--striped gc-table--sticky">
+          <table id="tablaDistribucion">
             <thead>
               <tr id="headRow">
                 <th data-col="A" class="sort-none">Team Leader</th>
@@ -73,100 +189,306 @@
             </thead>
             <tbody></tbody>
           </table>
-          <div id="empty" style="display:none; padding:16px; text-align:center; color:#666">Sin resultados con los filtros actuales.</div>
+          <div id="empty" style="display:none">Sin resultados con los filtros actuales.</div>
         </div>
       </section>
 
-      <!-- ================== /CONTENIDO ================== -->
+      <div id="toast"></div>
     </gc-shell>
 
-    <!-- ========= JS principal de distribución ========= -->
+    <!-- ========= Scripts de interacción locales ========= -->
     <script type="module">
-      import { abs } from "../assets/bw/shell.js";
+      // El shell ya cargó guard y estilos. Aquí solo UI nice-to-have.
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(!reduced && 'IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries)=>{
+          for(const e of entries){
+            if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target); }
+          }
+        }, {threshold:.12, rootMargin:'0px 0px -10% 0px'});
+        document.querySelectorAll('.reveal').forEach(el=>{
+          const delay = el.style.getPropertyValue('--delay') || '0s';
+          el.style.transitionDelay = delay; io.observe(el);
+        });
+      } else { document.querySelectorAll('.reveal').forEach(el=>el.classList.add('show')); }
 
-      // Helpers
-      const norm = s => (s||"").toString().normalize("NFD").replace(/\p{Diacritic}/gu,"").trim().toLowerCase();
-      const todayISO = () => new Date().toISOString().split("T")[0];
+      // Pill de fecha/hora
+      const fechaHora = document.getElementById('fechaHora');
+      function ahoraTick(){
+        const a=new Date();
+        fechaHora.textContent=`📅 ${a.toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} · 🕒 ${a.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+      }
+      ahoraTick(); setInterval(ahoraTick,1000);
+    </script>
 
-      // Data
-      let dataRaw = [];
-      const tabla = document.querySelector("#tablaDistribucion tbody");
-      const empty = document.getElementById("empty");
+    <!-- ========= Lógica principal (idéntica a la tuya, con solo 1 cambio en la ruta del JSON) ========= -->
+    <script>
+      // ---------- Utilidades ----------
+      const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';t.style.opacity=1;
+        setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity=0;},2200);
+        setTimeout(()=>{t.style.display='none';t.style.transition='';},2800)};
+      const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+      const collator = new Intl.Collator('es', {numeric:true, sensitivity:'base'});
+      const pad2=n=>String(n).padStart(2,'0');
+      const todayISO = () => { const t=new Date(); return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`; };
 
-      // Cargar JSON
+      // ---------- Estado ----------
+      let dataRaw=[], filtered=[], originalIndexMap=new WeakMap();
+      let sortPriority=[]; // [{col:'F', dir:1|-1}] 1=desc, -1=asc
+      const STORAGE_KEY='dist_state_v2';
+
+      // ---------- Datos: RUTA ABSOLUTA vía base del shell ----------
+      const BASE = window.__GC_BASE__ || (location.origin + '/Gestion-Center/');
+      const DATA_URL = new URL('operations/datadistribucion.json', BASE).href;
+
       async function loadData(){
         try{
-          const res = await fetch(abs("operations/datadistribucion.json"), { cache:"no-store" });
-          dataRaw = await res.json();
-          render();
-          renderProg();
-        }catch(e){ console.error("Error cargando JSON", e); }
+          const res=await fetch(DATA_URL, {cache:'no-store'});
+          if(!res.ok) throw new Error(`HTTP ${res.status}`);
+          dataRaw=await res.json();
+          dataRaw.forEach((r,i)=>originalIndexMap.set(r,i));
+          buildFilters(dataRaw);
+          initProgramadosUI();
+          restoreState();
+          computeProgramados();
+          applyFiltersAndRender();
+          toast('✅ Datos de distribución cargados');
+        }catch(e){ console.error(e); toast('❌ No se pudo cargar datadistribucion.json'); }
       }
 
-      // Render tabla
-      function render(){
-        const fltTL = document.getElementById("fltTL").value;
-        const fltCamp = document.getElementById("fltCampania").value;
-        const fltDesc = document.getElementById("fltDescanso").value;
-        const fltTurn = document.getElementById("fltTurno").value;
-        const q = norm(document.getElementById("fltSearch").value);
-
-        const filtered = dataRaw.filter(op=>{
-          if(fltTL && norm(op.teamLeader)!==norm(fltTL)) return false;
-          if(fltCamp && norm(op.campania)!==norm(fltCamp)) return false;
-          if(fltDesc && norm(op.descanso)!==norm(fltDesc)) return false;
-          if(fltTurn && norm(op.turno)!==norm(fltTurn)) return false;
-          if(q && !(norm(op.operador).includes(q) || norm(op.perop).includes(q))) return false;
-          return true;
+      // ---------- Filtros/tabla ----------
+      function uniqSorted(a){ return [...new Set(a.filter(v=>v!=null && String(v).trim()!==''))].sort((x,y)=>String(x).localeCompare(String(y),'es')); }
+      function fillSelect(sel, vals){
+        sel.innerHTML='<option value="">'+(sel.id==='fltCampania'?'Todas':'Todos')+'</option>'+
+          vals.map(v=>`<option value="${String(v).replaceAll('"','&quot;')}">${v}</option>`).join('');
+      }
+      function buildFilters(rows){
+        fillSelect(fltTL,uniqSorted(rows.map(r=>r.A)));
+        fillSelect(fltCampania,uniqSorted(rows.map(r=>r.D)));
+        fillSelect(fltDescanso,uniqSorted(rows.map(r=>r.E)));
+        fillSelect(fltTurno,uniqSorted(rows.map(r=>r.F)));
+      }
+      function applyFiltersAndRender(){
+        const vTL=norm(fltTL.value), vCa=norm(fltCampania.value), vDe=norm(fltDescanso.value), vTu=norm(fltTurno.value), vQ=norm(fltSearch.value);
+        filtered = dataRaw.filter(r=>{
+          const sA=norm(r.A), sB=norm(r.B), sC=norm(r.C), sD=norm(r.D), sE=norm(r.E), sF=norm(r.F);
+          return (!vTL||sA===vTL)&&(!vCa||sD===vCa)&&(!vDe||sE===vDe)&&(!vTu||sF===vTu)&&(!vQ||sB.includes(vQ)||sC.includes(vQ));
         });
 
-        tabla.innerHTML = filtered.map(op=>`
-          <tr>
-            <td>${op.teamLeader}</td>
-            <td>${op.operador}</td>
-            <td class="perop">${op.perop}</td>
-            <td>${op.campania}</td>
-            <td>${op.descanso}</td>
-            <td>${op.turno}</td>
-            <td>${op.empresa||""}</td>
-          </tr>
-        `).join("");
-
-        document.getElementById("opCounter").textContent = "Mostrando "+filtered.length+" operadores";
-        empty.style.display = filtered.length? "none":"block";
+        if(sortPriority.length){
+          filtered.sort((a,b)=>{
+            for(const {col,dir} of sortPriority){
+              const av = a[col] ?? '', bv = b[col] ?? '';
+              const c = collator.compare(String(av), String(bv));
+              if(c !== 0) return c * dir;
+            }
+            return originalIndexMap.get(a) - originalIndexMap.get(b);
+          });
+        }
+        renderTable(filtered);
+        saveState();
       }
-
-      // Programados por país
-      function renderProg(){
-        const grid = document.getElementById("progGrid");
-        const selFecha = document.getElementById("progFecha").value || todayISO();
-        const selTurno = document.getElementById("progTurno").value;
-
-        const dia = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"][new Date(selFecha).getDay()];
-
-        const counts = {};
-        dataRaw.forEach(op=>{
-          if(norm(op.descanso)===dia) return;
-          if(selTurno!=="ambos" && norm(op.turno)!==selTurno) return;
-          counts[op.campania] = (counts[op.campania]||0)+1;
+      function renderTable(rows){
+        const tb=document.querySelector('#tablaDistribucion tbody'); tb.innerHTML='';
+        document.getElementById('empty').style.display = rows.length? 'none':'block';
+        rows.forEach(r=>{
+          const pais = paisDesdeCampania(r.D||'');
+          const flag = flagImg(pais);
+          const tr=document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.A||''}</td>
+            <td>${r.B||''}</td>
+            <td class="perop">${r.C||''}</td>
+            <td>${flag?`${flag} `:''}${r.D||''}</td>
+            <td>${r.E||''}</td>
+            <td>${r.F||''}</td>
+            <td>${r.G||''}</td>`;
+          tb.appendChild(tr);
         });
-
-        grid.innerHTML = Object.entries(counts).map(([pais,n])=>`
-          <div class="gc-chip">${pais}: <strong>${n}</strong></div>
-        `).join("");
-
-        document.getElementById("progTotal").textContent = "Total: "+Object.values(counts).reduce((a,b)=>a+b,0);
+        opCounter.textContent=`Mostrando ${rows.length} operador${rows.length===1?'':'es'}`;
       }
 
-      // Eventos
-      document.querySelectorAll("#fltTL,#fltCampania,#fltDescanso,#fltTurno").forEach(el=>el.addEventListener("change", render));
-      document.getElementById("fltSearch").addEventListener("input", ()=>render());
-      document.getElementById("btnReset").addEventListener("click", ()=>{document.querySelectorAll("select,input[type=text]").forEach(el=>el.value=""); render();});
-      document.getElementById("progFecha").addEventListener("change", renderProg);
-      document.getElementById("progTurno").addEventListener("change", renderProg);
+      // ---------- Orden 3 estados + multi (Shift) ----------
+      function resetHeadSortClasses(){
+        document.querySelectorAll('#headRow th').forEach(th=>{
+          th.classList.remove('sort-asc','sort-desc'); th.classList.add('sort-none');
+          const badge = th.querySelector('.sort-index'); if(badge) badge.remove();
+        });
+      }
+      function repaintSortBadges(){
+        resetHeadSortClasses();
+        const mapIndex = new Map(sortPriority.map((s,i)=>[s.col, i+1]));
+        document.querySelectorAll('#headRow th').forEach(th=>{
+          const col=th.dataset.col;
+          const entry = sortPriority.find(s=>s.col===col);
+          if(entry){
+            th.classList.remove('sort-none');
+            th.classList.add(entry.dir===1?'sort-desc':'sort-asc');
+            const sup=document.createElement('span'); sup.className='sort-index'; sup.textContent=mapIndex.get(col);
+            th.appendChild(sup);
+          }
+        });
+      }
+      function toggleSort(th, additive){
+        const col=th.dataset.col;
+        const idx = sortPriority.findIndex(s=>s.col===col);
+        if(!additive) sortPriority = (idx>-1) ? [sortPriority[idx]] : [];
+        if(idx===-1){ sortPriority.push({col, dir:1}); }
+        else{
+          const cur = sortPriority[idx];
+          if(cur.dir===1){ cur.dir=-1; } else { sortPriority.splice(idx,1); }
+        }
+        repaintSortBadges(); applyFiltersAndRender();
+      }
 
-      // Init
-      document.getElementById("progFecha").value = todayISO();
+      // ---------- Export ----------
+      function exportCSV(){
+        if(!filtered.length){ toast('ℹ️ No hay filas para exportar'); return; }
+        const headers=['Team Leader','Operador','PEROP1AM','Campaña','Descanso','Turno','Empresa'];
+        const rows=filtered.map(r=>[r.A||'',r.B||'',r.C||'',r.D||'',r.E||'',r.F||'',r.G||'']);
+        const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+        const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=url; a.download=`distribucion_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      }
+
+      // ---------- País / banderas ----------
+      const ISO2 = { 'Chile':'cl','Colombia':'co','Costa Rica':'cr','Ecuador':'ec','Mexico':'mx','Paraguay':'py','Peru':'pe','Uruguay':'uy','Venezuela':'ve' };
+      const MATCH = {
+        'Chile':[/\bchile\b/], 'Colombia':[/colom/], 'Costa Rica':[/costa\s*rica|costarica/],
+        'Ecuador':[/ecuad/], 'Mexico':[/\bmexic|\bmx\b/], 'Paraguay':[/paragu/],
+        'Peru':[/\bper[uú]|\bpe\b/], 'Uruguay':[/urug/], 'Venezuela':[/venez/]
+      };
+      function paisDesdeCampania(camp){
+        const s = norm(camp);
+        for(const [pais, regs] of Object.entries(MATCH)){
+          if(regs.some(rx=>rx.test(s))) return pais;
+        }
+        return null;
+      }
+      function flagImg(pais){ const code = ISO2[pais||'']; return code ? `<img class="bandera" src="https://flagcdn.com/w40/${code}.png" alt="${pais}">` : ''; }
+
+      // ---------- Programados por país (con fix de turnos) ----------
+      const SEL_WINDOWS = { am:[7*60,16*60], pm:[13*60,22*60], noche:[22*60,31*60] };
+      function parseShiftMinutes(s){
+        if(!s) return null;
+        const txt = String(s).replace(/[–—]/g,'-');
+        const re  = /(\d{1,2})[:.](\d{2})/g;
+        const t   = [...txt.matchAll(re)].map(m => (+m[1])*60 + (+m[2]));
+        if(t.length >= 2){
+          let [ini, fin] = [t[0], t[1]];
+          if(fin < ini) fin += 24*60; // cruza medianoche
+          return [ini, fin];
+        }
+        const n = norm(txt);
+        if(/\bam\b/.test(n)) return [7*60,16*60];
+        if(/\bpm\b/.test(n)) return [13*60,22*60];
+        if(/\bnoche|night\b/.test(n)) return [22*60,31*60];
+        return null;
+      }
+      function overlapLen([s1,e1],[s2,e2]){ return Math.max(0, Math.min(e1, e2) - Math.max(s1, s2)); }
+      function classifyShiftKey(shift, rawText){
+        const n = (String(rawText||'').toLowerCase());
+        if(/\bnoche|night\b/.test(n)) return 'noche';
+        if(/\bam\b/.test(n)) return 'am';
+        if(/\bpm\b/.test(n)) return 'pm';
+        if(!shift) return 'indef';
+        const [s,e] = shift, dur=Math.max(1,e-s);
+        const am = overlapLen(shift, SEL_WINDOWS.am);
+        const pm = overlapLen(shift, SEL_WINDOWS.pm);
+        const no = overlapLen(shift, SEL_WINDOWS.noche);
+        const max = Math.max(am, pm, no);
+        if(max/dur >= 0.5) return (max===am?'am':max===pm?'pm':'noche');
+        if(s >= 22*60 || e > 24*60) return 'noche';
+        if(s < 12*60) return 'am';
+        return 'pm';
+      }
+      function initProgramadosUI(){
+        // Siempre hoy por defecto
+        progFecha.value = todayISO();
+        const orden = ['Chile','Colombia','Costa Rica','Ecuador','Mexico','Paraguay','Peru','Uruguay','Venezuela'];
+        progGrid.innerHTML = orden.map(p=>`
+          <div class="country-tile" id="tile-${ISO2[p]}">
+            <div class="country-left">${flagImg(p)}<div class="cname">${p}</div></div>
+            <div class="badge" data-count>0</div>
+          </div>`).join('');
+        progFecha.addEventListener('change', computeProgramados);
+        progTurno.addEventListener('change', computeProgramados);
+      }
+      function computeProgramados(){
+        if(!dataRaw.length) return;
+        const fecha = new Date((progFecha.value || todayISO()) + 'T00:00:00');
+        const dias = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+        const dia  = dias[fecha.getDay()].toUpperCase();
+        const turnoSel = document.getElementById('progTurno').value; // ambos|am|pm|noche
+        const counts = {Chile:0,Colombia:0,'Costa Rica':0,Ecuador:0,Mexico:0,Paraguay:0,Peru:0,Uruguay:0,Venezuela:0};
+
+        for(const r of dataRaw){
+          const pais = paisDesdeCampania(r.D||''); if(!pais) continue;
+          const descanso = (String(r.E||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')).toUpperCase();
+          const trabajaHoy = (descanso !== dia);
+          if(!trabajaHoy) continue;
+
+          const shift = parseShiftMinutes(r.F||'');
+          const key   = classifyShiftKey(shift, r.F||''); // 'am' | 'pm' | 'noche' | 'indef'
+
+          if(turnoSel === 'ambos'){ counts[pais] += 1; }
+          else if(key === turnoSel){ counts[pais] += 1; }
+        }
+
+        let total=0;
+        for(const [pais, n] of Object.entries(counts)){
+          total += n;
+          const el = document.querySelector(`#tile-${ISO2[pais]} [data-count]`);
+          if(el) el.textContent = n;
+        }
+        progTotal.textContent = `Total: ${total}`;
+      }
+
+      // ---------- Persistencia ----------
+      function saveState(){
+        const state = {
+          filters:{ tl: fltTL.value, ca: fltCampania.value, de: fltDescanso.value, tu: fltTurno.value, q: fltSearch.value },
+          sort: sortPriority
+        };
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch{}
+      }
+      function restoreState(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return;
+          const s = JSON.parse(raw);
+          if(s.filters){
+            fltTL.value = s.filters.tl ?? '';
+            fltCampania.value = s.filters.ca ?? '';
+            fltDescanso.value = s.filters.de ?? '';
+            fltTurno.value = s.filters.tu ?? '';
+            fltSearch.value = s.filters.q ?? '';
+          }
+          if(Array.isArray(s.sort)) sortPriority = s.sort.filter(x=>x && x.col && (x.dir===1||x.dir===-1));
+          repaintSortBadges();
+        }catch{}
+      }
+
+      // ---------- Eventos ----------
+      btnReset.addEventListener('click',()=>{
+        fltTL.value=''; fltCampania.value=''; fltDescanso.value=''; fltTurno.value=''; fltSearch.value='';
+        sortPriority=[]; repaintSortBadges(); applyFiltersAndRender();
+        try{ localStorage.removeItem(STORAGE_KEY);}catch{}
+      });
+      btnExport.addEventListener('click',exportCSV);
+      document.querySelectorAll('#headRow th').forEach(th=>{
+        th.addEventListener('click',(ev)=>toggleSort(th, ev.shiftKey));
+      });
+      let qTimer=null;
+      fltSearch.addEventListener('input',()=>{
+        clearTimeout(qTimer); qTimer=setTimeout(applyFiltersAndRender, 180);
+      });
+      ['fltTL','fltCampania','fltDescanso','fltTurno'].forEach(id=>{
+        const el=document.getElementById(id); el.addEventListener('change',applyFiltersAndRender);
+      });
+
+      // Kickoff
       loadData();
     </script>
   </body>
