@@ -3,379 +3,329 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <meta name="gc-base" content="/Gestion-Center/"/>
   <title>Delta Report 2</title>
-  <script defer src="../assets/bw/shell.js"></script>
+  <!-- El shell inyecta bw.css y tipografías -->
+  <meta name="gc-base" content="/Gestion-Center/"/>
   <style>
-    /* ---- Ajustes propios de la página ---- */
-    .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0 12px }
-    .toolbar .grow{ flex:1 1 320px }
-    .gc-panel h3{ margin:0 0 8px }
-
-    textarea#raw{ width:100%; min-height:220px; resize:vertical; font-family:ui-monospace,Menlo,Consolas,monospace }
-
-    /* Chips info */
-    .legend{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 }
-    .legend .gc-chip--ok{ background:#10b981; border-color:#10b981; color:#fff }
-    .legend .gc-chip--warn{ background:#ef4444; border-color:#ef4444; color:#fff }
-
-    /* Barras en celdas */
-    .bar-wrap{ position:relative; height:22px; background:#f3f4f6; border-radius:6px; overflow:hidden }
-    .bar{ position:absolute; inset:0 0 0 0; transform-origin:left center; background:#ef4444; opacity:.25 }
-    .bar.green{ background:#10b981; opacity:.25 }
-
-    /* ===== Vista "Por país" (cards) ===== */
-    .country-card{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; margin-bottom:14px }
-    .country-hd{
-      background:#000; color:#fff; padding:8px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap
+    /* ======= Estilos locales del reporte ======= */
+    .gc-toolbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px }
+    .gc-input{
+      display:flex; align-items:center; gap:8px; border:1px solid var(--gray-300);
+      border-radius:12px; padding:10px 12px; min-width:320px; background:var(--white)
     }
-    .country-hd .name{ font-weight:800; text-transform:capitalize }
-    .country-hd .pill{ background:#111; border:1px solid #222; border-radius:999px; padding:4px 8px; font-weight:700 }
-    .country-table{ width:100%; border-collapse:separate; border-spacing:0 }
-    .country-table th, .country-table td{ padding:10px 12px; border-bottom:1px solid var(--gray-200) }
-    .country-table thead th{ background:#000; color:#fff; text-align:left }
-    .country-table tfoot td{ font-weight:800; background:var(--gray-100) }
+    .gc-input input{ border:0; outline:0; width:100%; font:inherit }
+    .gc-chipset{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px }
+    .gc-chip{ border:1px solid var(--gray-300); border-radius:999px; padding:6px 10px; font-weight:700; background:var(--white) }
+    .gc-chip--dark{ background:#000; color:#fff; border-color:#000 }
+    .gc-btn{ appearance:none; border:1px solid var(--gray-300); background:#fff; padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer }
+    .gc-btn--primary{ background:#000; color:#fff; border-color:#000 }
+    .gc-btn[aria-pressed="true"]{ background:#000; color:#fff; border-color:#000 }
+    .gc-btn:active{ transform:translateY(1px) }
 
-    /* ===== Vista global 2 columnas ===== */
+    textarea.textmono{
+      width:100%; min-height:220px; resize:vertical;
+      border:1px solid var(--gray-300); border-radius:12px; padding:12px;
+      background:#fff; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      line-height:1.25; white-space:pre; overflow:auto;
+    }
+
+    /* Barras */
+    .bar-wrap{
+      position:relative; height:28px; border:1px solid var(--gray-200);
+      border-radius:10px; overflow:hidden; background:#fff; display:flex; align-items:center;
+    }
+    .bar{
+      position:absolute; inset:0 auto 0 0; width:100%;
+      background:#f3b3b3; transform-origin:left center; transform:scaleX(0);
+    }
+    .bar.green{ background:#cfe9cf }
+
+    /* Cards por País */
+    .country-card{ border:1px solid var(--gray-300); border-radius:12px; background:#fff; margin:12px 0 }
+    .country-hd{
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+      padding:10px 12px; border-bottom:1px solid var(--gray-200); background:var(--gray-100);
+      border-top-left-radius:12px; border-top-right-radius:12px;
+    }
+    .country-hd .name{ font-weight:900 }
+    .pill{ border:1px solid var(--gray-300); border-radius:999px; padding:4px 10px; font-size:12px; background:#fff; font-weight:700 }
+    .country-table{ width:100%; border-collapse:separate; border-spacing:0 }
+    .country-table thead th{
+      background:#000; color:#fff; padding:10px 12px; text-align:left;
+    }
+    .country-table td{ border-bottom:1px solid var(--gray-200); padding:10px 12px }
+    .country-table tfoot td{ background:var(--gray-100); font-weight:800; }
+
+    /* Vista global 2 columnas */
     .global-grid{
-      display:grid; gap:14px;
-      grid-template-columns:repeat(2, minmax(420px, 1fr));
+      display:grid; grid-template-columns:repeat(2, minmax(420px,1fr)); gap:14px;
     }
     @media (max-width:1200px){ .global-grid{ grid-template-columns:1fr } }
-
-    .gcard{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden }
-    .ghead{
-      display:grid; grid-template-columns:120px 1fr; align-items:stretch; min-height:48px;
-    }
+    .gcard{ border:1px solid var(--gray-300); border-radius:12px; background:#fff; overflow:hidden }
+    .ghead{ display:flex; gap:12px; align-items:center; padding:10px; background:var(--gray-100) }
     .ghead .tag{
-      display:flex; align-items:center; justify-content:center;
-      font-weight:900; font-size:14px; color:#111; text-transform:uppercase;
-      background:linear-gradient(180deg,#e5e7eb,#cbd5e1);
-      border-right:1px solid var(--gray-300);
+      min-width:140px; padding:10px; border-radius:10px; text-align:center; font-weight:900; background:#e5e7eb;
     }
-    .ghead .title{
-      background:#000; color:#fff; padding:8px 12px; font-weight:800;
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .gsmall{ font-size:12px; opacity:.8 }
-
+    .ghead .title{ display:flex; flex-direction:column; gap:4px; font-weight:800 }
+    .ghead .gsmall{ font-weight:700; color:var(--gray-700); font-size:12px }
     .gtable{ width:100%; border-collapse:separate; border-spacing:0 }
-    .gtable th,.gtable td{ padding:8px 10px; border-bottom:1px solid var(--gray-200) }
-    .gtable thead th{ background:#000; color:#fff; font-size:12px }
+    .gtable thead th{ background:#000; color:#fff; padding:8px 10px; text-align:left }
+    .gtable td{ padding:8px 10px; border-bottom:1px solid var(--gray-200) }
     .gtable tfoot td{ background:var(--gray-100); font-weight:800 }
-
-    /* Botón activo negro (no “se vuelve blanco”) heredando GC */
-    .gc-btn--primary[aria-pressed="true"]{
-      filter:brightness(1.05); outline:2px solid var(--black)
-    }
   </style>
 </head>
 <body>
-<gc-shell hero-title="Delta Report 2" hero-subtitle="Deltas en formato GC — ignora PS y PS-Auto">
-  <section class="gc-panel">
-    <div class="toolbar">
-      <input id="q" class="grow gc-btn gc-btn--ghost" placeholder="🔎 Buscar país o cola… (ej: Peru, 3-3)"/>
-      <button id="btnProcess" class="gc-btn gc-btn--primary">⚙️ Procesar texto</button>
-      <button id="btnClear" class="gc-btn">🧹 Limpiar</button>
-      <a class="gc-btn gc-btn--ghost" target="_blank" rel="noopener"
-         href="https://panel.2wcall.com/queue/control/index?QueueSearch%5Bid%5D=&QueueSearch%5Bname%5D=&QueueSearch%5Bpartner_id%5D=&QueueSearch%5Bcountry_id%5D%5B0%5D=26&QueueSearch%5Bcountry_id%5D%5B1%5D=28&QueueSearch%5Bcountry_id%5D%5B2%5D=67&QueueSearch%5Bcountry_id%5D%5B3%5D=88&QueueSearch%5Bcountry_id%5D%5B4%5D=3&QueueSearch%5Bcountry_id%5D%5B5%5D=84&QueueSearch%5Bcountry_id%5D%5B6%5D=39&QueueSearch%5Bcountry_id%5D%5B7%5D=96&QueueSearch%5Bcountry_id%5D%5B8%5D=103&QueueSearch%5Bpriorities%5D=&QueueSearch%5Btype_primary%5D=&QueueSearch%5Bis_primary%5D=0&per-page=500">🔗 Fuente (Panel)</a>
-      <span class="u-right"></span>
-      <button id="viewCountry" class="gc-btn gc-btn--primary" aria-pressed="true">Vista por país</button>
-      <button id="viewGlobal"  class="gc-btn">Vista global (2 columnas)</button>
-    </div>
+  <gc-shell hero-title="Delta Report 2" hero-subtitle="Datos en formato GC — ignora PS y PS-Auto">
+    <section class="gc-panel" style="margin-top:14px">
+      <!-- Toolbar -->
+      <div class="gc-toolbar">
+        <label class="gc-input" title="Buscar">
+          <span>🔎</span>
+          <input id="q" type="search" placeholder="Buscar país o cola... (ej: Peru, 3-3)"/>
+        </label>
 
-    <div class="legend">
-      <span class="gc-chip gc-chip--dark">verde = mayor</span>
-      <span class="gc-chip">rojo = menor</span>
-      <span class="gc-chip">click en cabeceras para ordenar</span>
-      <span class="gc-chip gc-chip--ok" id="chipAvail">Full Total (Avail): 0</span>
-      <span class="gc-chip gc-chip--ok" id="chipOrders">Full Total (Orders): 0</span>
-    </div>
+        <button id="btnProcess" class="gc-btn gc-btn--primary">▶️ Procesar texto</button>
+        <button id="btnClear" class="gc-btn">🧹 Limpiar</button>
 
-    <div class="gc-panel">
-      <h3>Entrada</h3>
-      <textarea id="raw" placeholder="Pega aquí el bloque con encabezados (tabulado). Se ignoran PS y PS-Auto."></textarea>
-    </div>
+        <a id="btnSource" class="gc-btn" target="_blank" rel="noopener"
+           href="https://panel.2wcall.com/queue/control/index?QueueSearch%5Bid%5D=&QueueSearch%5Bname%5D=&QueueSearch%5Bpartner_id%5D=&QueueSearch%5Bcountry_id%5D%5B0%5D=26&QueueSearch%5Bcountry_id%5D%5B1%5D=28&QueueSearch%5Bcountry_id%5D%5B2%5D=67&QueueSearch%5Bcountry_id%5D%5B3%5D=88&QueueSearch%5Bcountry_id%5D%5B4%5D=3&QueueSearch%5Bcountry_id%5D%5B5%5D=84&QueueSearch%5Bcountry_id%5D%5B6%5D=39&QueueSearch%5Bcountry_id%5D%5B7%5D=96&QueueSearch%5Bcountry_id%5D%5B8%5D=103&QueueSearch%5Bpriorities%5D=&QueueSearch%5Btype_primary%5D=&QueueSearch%5Bis_primary%5D=0&per-page=500">🔗 Fuente (Panel)</a>
 
-    <div class="gc-panel" id="out">
-      <h3 id="resume">Resultados — 0 filas · 0 países</h3>
+        <button id="viewCountry" class="gc-btn" aria-pressed="true">Vista por país</button>
+        <button id="viewGlobal"  class="gc-btn">Vista global (2 columnas)</button>
+
+        <span class="u-right"></span>
+      </div>
+
+      <!-- Chips -->
+      <div class="gc-chipset">
+        <span class="gc-chip gc-chip--dark">verde = mayor</span>
+        <span class="gc-chip">rojo = menor</span>
+        <span class="gc-chip">click en cabeceras para ordenar</span>
+        <span id="chipAvail" class="gc-chip">Full Total (Avail): 0</span>
+        <span id="chipOrders" class="gc-chip">Full Total (Orders): 0</span>
+      </div>
+
+      <!-- Entrada -->
+      <h3 style="margin:8px 0">Entrada</h3>
+      <textarea id="raw" class="textmono" spellcheck="false"
+        placeholder="Pega el bloque tal como lo copia el sistema (con encabezados). Se ignoran PS y PS-Auto."></textarea>
+
+      <!-- Resultados -->
+      <h3 id="resume" style="margin:16px 0 8px">Resultados — 0 filas · 0 países</h3>
       <div id="result"></div>
-    </div>
-  </section>
-</gc-shell>
+    </section>
+  </gc-shell>
 
-<script>
-/* ================== Utils ================== */
-const orderMap = {"1-1":0, "2-2":1, "3-3":2, "4-4":3, "5-2":4, "5-5":5};
-function queueOrderKey(q){
-  const m = /(\d)\s*-\s*(\d)/.exec(q || "");
-  if (!m) return 999;
-  const key = `${m[1]}-${m[2]}`;
-  if (key in orderMap) return orderMap[key];
-  // fallback: numérico para otros patrones
-  return 500 + (+m[1])*10 + (+m[2]);
-}
-function clean(s){ return String(s||"").trim(); }
-function num(s){
-  if (s == null) return 0;
-  const m = String(s).match(/-?\d+/g);
-  return m ? parseInt(m[0],10) : 0;
-}
-function splitPipePair(s, sep="|"){ // "53 | 8" -> [53,8]
-  const parts = String(s||"").split(sep);
-  const a = num(parts[0]), b = num(parts[1]);
-  return [a,b];
-}
-function leftOfArrow(s){ // "0 -> 2" -> 0
-  const m = String(s||"").match(/-?\d+/);
-  return m ? parseInt(m[0],10) : 0;
-}
-function barHTML(value, max, green=false){
-  const pct = max > 0 ? Math.min(1, value/max) : 0;
-  return `
-    <div class="bar-wrap" title="${value}">
+  <script>
+  /* ================== Utils ================== */
+  const orderMap = {"1-1":0, "2-2":1, "3-3":2, "4-4":3, "5-2":4, "5-5":5};
+  function queueOrderKey(q){
+    const m = /(\d)\s*-\s*(\d)/.exec(q || "");
+    if (!m) return 999;
+    const key = `${m[1]}-${m[2]}`;
+    if (key in orderMap) return orderMap[key];
+    return 500 + (+m[1])*10 + (+m[2]);
+  }
+  function clean(s){ return String(s||"").trim(); }
+  function num(s){ const m = String(s??"").match(/-?\d+/g); return m ? parseInt(m[0],10) : 0; }
+  function splitPair(s){ const p=String(s||"").split("|"); return [num(p[0]), num(p[1])]; }
+  function leftOfArrow(s){ const m = String(s||"").match(/-?\d+/); return m?parseInt(m[0],10):0; }
+  function barHTML(value,max,green=false){
+    const pct = max>0 ? Math.min(1, value/max) : 0;
+    return `<div class="bar-wrap" title="${value}">
       <div class="bar ${green?'green':''}" style="transform:scaleX(${pct})"></div>
       <div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${value}</div>
     </div>`;
-}
+  }
 
-/* ================== Parser ================== */
-function parseInput(txt){
-  if (!txt) return [];
-  const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
-  // detectar encabezados (primera línea con TABs >= 6)
-  let headerIdx = lines.findIndex(l => l.includes("\t") && /Country/i.test(l));
-  if (headerIdx === -1) headerIdx = 0;
-  const headers = lines[headerIdx].split("\t").map(h => h.trim());
-  const rows = [];
+  /* ================== Parser ================== */
+  function parseInput(txt){
+    if (!txt) return [];
+    const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
+    let headerIdx = lines.findIndex(l => l.includes("\t") && /Country/i.test(l));
+    if (headerIdx === -1) headerIdx = 0;
+    const headers = lines[headerIdx].split("\t").map(h => h.trim());
+    const out = [];
 
-  for (let i = headerIdx + 1; i < lines.length; i++){
-    let line = lines[i];
-    if (!line || !line.includes("\t")) continue;
-    // ignorar separadores ☰ y similares
-    if (/^[☰=]+$/.test(line.trim())) continue;
+    for (let i = headerIdx + 1; i < lines.length; i++){
+      const line = lines[i];
+      if (!line || !line.includes("\t")) continue;
+      if (/^[☰=]+$/.test(line.trim())) continue;
 
-    const cells = line.split("\t");
-    const map = Object.create(null);
-    headers.forEach((h,idx)=> map[h] = cells[idx]);
+      const cells = line.split("\t");
+      const m = Object.create(null);
+      headers.forEach((h,idx)=> m[h] = cells[idx]);
 
-    const name = clean(map["Name"] || map["Description"] || "");
-    // ignorar PS/PS-Auto
-    if (/post[- ]?sale/i.test(map["Order type"] || "") || /post[- ]?sale/i.test(name) || /PS[- ]?Auto/i.test(name)) {
-      continue;
+      // Excluir Post-sale y PS-Auto
+      const name = clean(m["Name"] || m["Description"] || "");
+      if (/post[- ]?sale/i.test(m["Order type"] || "") || /post[- ]?sale/i.test(name) || /PS[- ]?Auto/i.test(name)) continue;
+
+      const country = clean((m["Country"] || "").replace(/^\d+\.\s*/,""));
+      const queue   = clean(name);
+      const [, opsY] = splitPair(m["Number of operators"] || "");
+      const avail   = leftOfArrow(m["Capacity"] || "");
+      const orders  = (m["Orders"] || "").split("|")[0] || "0";
+      const ordersN = num(orders);
+
+      out.push({ country, queue, opsY, avail, orders: ordersN });
     }
+    return out;
+  }
 
-    const country = clean((map["Country"] || "").replace(/^\d+\.\s*/,""));
-    const queue   = clean(name);
-    const [opsX, opsY] = splitPipePair(map["Number of operators"] || "");
-    const capacityAvail = leftOfArrow(map["Capacity"] || "");
-    const totalOrders   = splitPipePair(map["Orders"] || "")[0];
+  /* ============== Transformaciones ============== */
+  function groupByCountry(rows){
+    const map = new Map();
+    for (const r of rows){ if(!map.has(r.country)) map.set(r.country, []); map.get(r.country).push(r); }
+    for (const arr of map.values()){
+      arr.sort((a,b)=> {
+        const ka=queueOrderKey(a.queue), kb=queueOrderKey(b.queue);
+        return ka===kb ? a.queue.localeCompare(b.queue) : ka-kb;
+      });
+    }
+    return map;
+  }
 
-    rows.push({
-      country,
-      queue,
-      opsY, // number of operators (segunda parte)
-      avail: capacityAvail,
-      orders: totalOrders
+  /* ============== Render: País (cards) ============== */
+  function barOps(y){
+    return `<div class="bar-wrap"><div class="bar green" style="transform:scaleX(0)"></div>
+            <div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${y}</div></div>`;
+  }
+  function renderCountryCards(rows){
+    const root = document.getElementById("result"); root.innerHTML = "";
+    const g = groupByCountry(rows); const countries = [...g.keys()].sort((a,b)=>a.localeCompare(b));
+    let fullAvail=0, fullOrders=0;
+
+    countries.forEach(cty=>{
+      const items = g.get(cty);
+      const sumA = items.reduce((s,x)=>s+x.avail,0);
+      const sumO = items.reduce((s,x)=>s+x.orders,0);
+      fullAvail += sumA; fullOrders += sumO;
+      const mA = Math.max(1,...items.map(x=>x.avail));
+      const mO = Math.max(1,...items.map(x=>x.orders));
+
+      const html = `
+        <section class="country-card">
+          <div class="country-hd">
+            <span class="name">${cty}</span>
+            <span class="pill">Queues: ${items.length}</span>
+            <span class="pill">Full Total (Avail): ${sumA}</span>
+            <span class="pill">Full Total (Orders): ${sumO}</span>
+          </div>
+          <table class="country-table">
+            <thead>
+              <tr><th>Queue</th><th style="width:170px">Operators (Y)</th>
+                  <th style="width:220px">Orders available</th>
+                  <th style="width:220px">Total orders</th></tr>
+            </thead>
+            <tbody>
+              ${items.map(x=>`
+                <tr>
+                  <td>${x.queue}</td>
+                  <td>${barOps(x.opsY)}</td>
+                  <td>${barHTML(x.avail,mA,false)}</td>
+                  <td>${barHTML(x.orders,mO,true)}</td>
+                </tr>`).join("")}
+            </tbody>
+            <tfoot><tr><td><strong>Totales país</strong></td><td></td><td>${sumA}</td><td>${sumO}</td></tr></tfoot>
+          </table>
+        </section>`;
+      root.insertAdjacentHTML("beforeend", html);
     });
-  }
-  return rows;
-}
 
-/* ============== Transformaciones ============== */
-function groupByCountry(rows){
-  const map = new Map();
-  for (const r of rows){
-    if (!map.has(r.country)) map.set(r.country, []);
-    map.get(r.country).push(r);
+    document.getElementById("chipAvail").textContent  = `Full Total (Avail): ${fullAvail}`;
+    document.getElementById("chipOrders").textContent = `Full Total (Orders): ${fullOrders}`;
+    document.getElementById("resume").textContent     = `Resultados — ${rows.length} filas · ${countries.length} países`;
   }
-  // ordenar colas según key
-  for (const arr of map.values()){
-    arr.sort((a,b)=>{
-      const ka = queueOrderKey(a.queue);
-      const kb = queueOrderKey(b.queue);
-      if (ka !== kb) return ka - kb;
-      return a.queue.localeCompare(b.queue);
+
+  /* ============== Render: Global 2 columnas ============== */
+  function renderGlobalTwoCol(rows){
+    const root = document.getElementById("result"); root.innerHTML = "";
+    const g = groupByCountry(rows); const countries = [...g.keys()].sort((a,b)=>a.localeCompare(b));
+    let fullAvail=0, fullOrders=0;
+    const grid = document.createElement("div"); grid.className = "global-grid";
+    const maxA = Math.max(1, ...rows.map(x=>x.avail)); const maxO = Math.max(1, ...rows.map(x=>x.orders));
+
+    countries.forEach(cty=>{
+      const items = g.get(cty);
+      const sumA = items.reduce((s,x)=>s+x.avail,0);
+      const sumO = items.reduce((s,x)=>s+x.orders,0);
+      fullAvail+=sumA; fullOrders+=sumO;
+
+      grid.insertAdjacentHTML("beforeend", `
+        <section class="gcard">
+          <div class="ghead">
+            <div class="tag">${cty.toUpperCase()}</div>
+            <div class="title"><span>Queues: ${items.length}</span>
+              <span class="gsmall">Avail: ${sumA} · Orders: ${sumO}</span></div>
+          </div>
+          <table class="gtable">
+            <thead><tr>
+              <th>Queues</th><th style="width:110px">Number of operators</th>
+              <th style="width:160px">Orders available</th>
+              <th style="width:160px">Total orders</th></tr></thead>
+            <tbody>
+              ${items.map(x=>`
+                <tr>
+                  <td>${x.queue}</td>
+                  <td style="text-align:center">${x.opsY}</td>
+                  <td>${barHTML(x.avail,maxA,false)}</td>
+                  <td>${barHTML(x.orders,maxO,true)}</td>
+                </tr>`).join("")}
+            </tbody>
+            <tfoot><tr><td><strong>Totales país</strong></td><td></td><td>${sumA}</td><td>${sumO}</td></tr></tfoot>
+          </table>
+        </section>`);
     });
+
+    root.appendChild(grid);
+    document.getElementById("chipAvail").textContent  = `Full Total (Avail): ${fullAvail}`;
+    document.getElementById("chipOrders").textContent = `Full Total (Orders): ${fullOrders}`;
+    document.getElementById("resume").textContent     = `Resultados — ${rows.length} filas · ${countries.length} países`;
   }
-  return map;
-}
 
-/* ============== Render: País (cards) ============== */
-function renderCountryCards(rows){
-  const root = document.getElementById("result");
-  root.innerHTML = "";
-  const g = groupByCountry(rows);
-  const countries = [...g.keys()].sort((a,b)=> a.localeCompare(b));
-  let fullAvail = 0, fullOrders = 0;
+  /* ============== Control / Estado (DELEGACIÓN) ============== */
+  let CURRENT_ROWS = [];
+  let CURRENT_VIEW = "country";
 
-  countries.forEach(country=>{
-    const items = g.get(country);
-    const sumAvail = items.reduce((s,x)=> s + x.avail, 0);
-    const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
-    fullAvail += sumAvail; fullOrders += sumOrders;
+  function applyFilterAndRender(){
+    const term = (document.getElementById("q")?.value || "").trim().toLowerCase();
+    const data = term ? CURRENT_ROWS.filter(r =>
+        r.country.toLowerCase().includes(term) || r.queue.toLowerCase().includes(term)
+      ) : CURRENT_ROWS;
+    (CURRENT_VIEW === "country" ? renderCountryCards : renderGlobalTwoCol)(data);
+  }
 
-    // máximos locales para barras
-    const mAvail = Math.max(1, ...items.map(x=>x.avail));
-    const mOrders = Math.max(1, ...items.map(x=>x.orders));
-
-    const table = `
-      <table class="country-table gc-table--compact" role="grid">
-        <thead>
-          <tr>
-            <th>Queue</th>
-            <th style="width:170px">Operators (Y)</th>
-            <th style="width:220px">Orders available</th>
-            <th style="width:220px">Total orders</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map(x=>`
-            <tr>
-              <td>${x.queue}</td>
-              <td><div class="bar-wrap"><div class="bar green" style="transform:scaleX(0)"></div><div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${x.opsY}</div></div></td>
-              <td>${barHTML(x.avail,  mAvail, false)}</td>
-              <td>${barHTML(x.orders, mOrders, true)}</td>
-            </tr>`).join("")}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td><strong>Totales país</strong></td>
-            <td><!-- sin suma de ops --></td>
-            <td>${sumAvail}</td>
-            <td>${sumOrders}</td>
-          </tr>
-        </tfoot>
-      </table>`;
-
-    const card = document.createElement("section");
-    card.className = "country-card";
-    card.innerHTML = `
-      <div class="country-hd">
-        <span class="name">${country}</span>
-        <span class="pill">Queues: ${items.length}</span>
-        <span class="pill">Full Total (Avail): ${sumAvail}</span>
-        <span class="pill">Full Total (Orders): ${sumOrders}</span>
-      </div>
-      ${table}
-    `;
-    root.appendChild(card);
+  // Delegación segura para funcionar dentro del shell
+  document.addEventListener("click", (ev)=>{
+    const btnProc   = ev.target.closest("#btnProcess");
+    const btnClear  = ev.target.closest("#btnClear");
+    const btnVC     = ev.target.closest("#viewCountry");
+    const btnVG     = ev.target.closest("#viewGlobal");
+    if (btnProc){
+      const txt = document.getElementById("raw")?.value || "";
+      CURRENT_ROWS = parseInput(txt);
+      applyFilterAndRender();
+    } else if (btnClear){
+      const ta = document.getElementById("raw"); if (ta) ta.value = "";
+      CURRENT_ROWS = []; applyFilterAndRender();
+    } else if (btnVC){
+      CURRENT_VIEW = "country";
+      document.getElementById("viewCountry")?.setAttribute("aria-pressed","true");
+      document.getElementById("viewGlobal")?.setAttribute("aria-pressed","false");
+      applyFilterAndRender();
+    } else if (btnVG){
+      CURRENT_VIEW = "global2";
+      document.getElementById("viewCountry")?.setAttribute("aria-pressed","false");
+      document.getElementById("viewGlobal")?.setAttribute("aria-pressed","true");
+      applyFilterAndRender();
+    }
   });
 
-  document.getElementById("chipAvail").textContent  = `Full Total (Avail): ${fullAvail}`;
-  document.getElementById("chipOrders").textContent = `Full Total (Orders): ${fullOrders}`;
-  document.getElementById("resume").textContent = `Resultados — ${rows.length} filas · ${countries.length} países`;
-}
-
-/* ============== Render: Global 2 columnas ============== */
-function renderGlobalTwoCol(rows){
-  const root = document.getElementById("result");
-  root.innerHTML = "";
-  const g = groupByCountry(rows);
-  const countries = [...g.keys()].sort((a,b)=> a.localeCompare(b));
-  let fullAvail = 0, fullOrders = 0;
-
-  const grid = document.createElement("div");
-  grid.className = "global-grid";
-
-  // máximos globales para barras (para que comparen entre países)
-  const maxAvailGlobal  = Math.max(1, ...rows.map(x=>x.avail));
-  const maxOrdersGlobal = Math.max(1, ...rows.map(x=>x.orders));
-
-  countries.forEach(country=>{
-    const items = g.get(country);
-    const sumAvail = items.reduce((s,x)=> s + x.avail, 0);
-    const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
-    fullAvail += sumAvail; fullOrders += sumOrders;
-
-    const card = document.createElement("section");
-    card.className = "gcard";
-    card.innerHTML = `
-      <div class="ghead">
-        <div class="tag">${country.toUpperCase()}</div>
-        <div class="title">
-          <span>Queues: ${items.length}</span>
-          <span class="gsmall">Avail: ${sumAvail} · Orders: ${sumOrders}</span>
-        </div>
-      </div>
-      <table class="gtable" role="grid">
-        <thead>
-          <tr>
-            <th>Queues</th>
-            <th style="width:110px">Number of operators</th>
-            <th style="width:160px">Orders available</th>
-            <th style="width:160px">Total orders</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map(x=>`
-            <tr>
-              <td>${x.queue}</td>
-              <td style="text-align:center">${x.opsY}</td>
-              <td>${barHTML(x.avail,  maxAvailGlobal,  false)}</td>
-              <td>${barHTML(x.orders, maxOrdersGlobal, true)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td><strong>Totales país</strong></td>
-            <td><!-- sin suma de ops --></td>
-            <td>${sumAvail}</td>
-            <td>${sumOrders}</td>
-          </tr>
-        </tfoot>
-      </table>
-    `;
-    grid.appendChild(card);
+  document.addEventListener("input", (ev)=>{
+    if (ev.target && ev.target.id === "q") applyFilterAndRender();
   });
 
-  root.appendChild(grid);
-  document.getElementById("chipAvail").textContent  = `Full Total (Avail): ${fullAvail}`;
-  document.getElementById("chipOrders").textContent = `Full Total (Orders): ${fullOrders}`;
-  document.getElementById("resume").textContent = `Resultados — ${rows.length} filas · ${countries.length} países`;
-}
-
-/* ============== Control / Estado ============== */
-let CURRENT_ROWS = [];
-let CURRENT_VIEW = "country"; // "country" | "global2"
-
-function applyFilterAndRender(){
-  const term = document.getElementById("q").value.trim().toLowerCase();
-  const rows = term
-    ? CURRENT_ROWS.filter(r =>
-        r.country.toLowerCase().includes(term) ||
-        r.queue.toLowerCase().includes(term))
-    : CURRENT_ROWS.slice();
-
-  if (CURRENT_VIEW === "country") renderCountryCards(rows);
-  else renderGlobalTwoCol(rows);
-}
-
-document.getElementById("btnProcess").addEventListener("click", ()=>{
-  const txt = document.getElementById("raw").value;
-  CURRENT_ROWS = parseInput(txt);
-  applyFilterAndRender();
-});
-document.getElementById("btnClear").addEventListener("click", ()=>{
-  document.getElementById("raw").value = "";
-  CURRENT_ROWS = [];
-  applyFilterAndRender();
-});
-document.getElementById("q").addEventListener("input", applyFilterAndRender);
-
-document.getElementById("viewCountry").addEventListener("click", (e)=>{
-  CURRENT_VIEW = "country";
-  document.getElementById("viewCountry").setAttribute("aria-pressed","true");
-  document.getElementById("viewGlobal").setAttribute("aria-pressed","false");
-  applyFilterAndRender();
-});
-document.getElementById("viewGlobal").addEventListener("click", (e)=>{
-  CURRENT_VIEW = "global2";
-  document.getElementById("viewCountry").setAttribute("aria-pressed","false");
-  document.getElementById("viewGlobal").setAttribute("aria-pressed","true");
-  applyFilterAndRender();
-});
-</script>
+  window.addEventListener("load", ()=> applyFilterAndRender());
+  </script>
 </body>
 </html>
