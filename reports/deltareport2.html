@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="gc-base" content="/Gestion-Center/"/>
   <title>Delta Report 2</title>
-  <script defer src="../assets/bw/shell.js"></script>
+
+  <!-- cache-busting para evitar versiones viejas del shell -->
+  <script defer src="../assets/bw/shell.js?v=2"></script>
+
   <style>
     /* ---- Ajustes propios de la página ---- */
     .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0 12px }
@@ -17,6 +20,7 @@
     /* Chips info */
     .legend{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 }
     .legend .gc-chip--ok{ background:#10b981; border-color:#10b981; color:#fff }
+    .legend .gc-chip--warn{ background:#ef4444; border-color:#ef4444; color:#fff }
 
     /* Barras en celdas */
     .bar-wrap{ position:relative; height:22px; background:#f3f4f6; border-radius:6px; overflow:hidden }
@@ -24,12 +28,12 @@
     .bar.green{ background:#10b981; opacity:.25 }
 
     /* ===== Vista "Por país" (cards) ===== */
-    .country-card{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; margin-bottom:14px; background:var(--white) }
+    .country-card{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; margin-bottom:14px }
     .country-hd{
       background:#000; color:#fff; padding:8px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap
     }
-    .flag{ width:20px; height:14px; object-fit:cover; border-radius:2px; border:1px solid rgba(255,255,255,.25) }
     .country-hd .name{ font-weight:800; text-transform:capitalize; display:flex; align-items:center; gap:8px }
+    .country-hd .name img{ width:18px; height:12px; object-fit:cover; border:1px solid rgba(255,255,255,.3) }
     .country-hd .pill{ background:#111; border:1px solid #222; border-radius:999px; padding:4px 8px; font-weight:700 }
     .country-table{ width:100%; border-collapse:separate; border-spacing:0 }
     .country-table th, .country-table td{ padding:10px 12px; border-bottom:1px solid var(--gray-200) }
@@ -39,22 +43,23 @@
     /* ===== Vista global 3 columnas ===== */
     .global-grid{
       display:grid; gap:14px;
-      grid-template-columns:repeat(3, minmax(360px, 1fr));
+      grid-template-columns:repeat(3, minmax(320px, 1fr));
     }
-    @media (max-width:1500px){ .global-grid{ grid-template-columns:repeat(2, minmax(360px,1fr)) } }
-    @media (max-width:1080px){ .global-grid{ grid-template-columns:1fr } }
+    @media (max-width:1400px){ .global-grid{ grid-template-columns:repeat(2, minmax(320px, 1fr)); } }
+    @media (max-width:960px){ .global-grid{ grid-template-columns:1fr; } }
 
-    .gcard{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; background:var(--white); display:flex; flex-direction:column }
+    .gcard{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden }
     .ghead{
-      display:grid; grid-template-columns:110px 1fr; align-items:stretch; min-height:48px;
+      display:grid; grid-template-columns:140px 1fr; align-items:stretch; min-height:48px;
     }
     .ghead .tag{
-      display:flex; align-items:center; justify-content:center;
-      font-weight:900; font-size:13px; color:#111; text-transform:uppercase;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      font-weight:900; font-size:14px; color:#111; text-transform:uppercase;
       background:linear-gradient(180deg,#e5e7eb,#cbd5e1);
       border-right:1px solid var(--gray-300);
-      gap:8px;
+      padding:0 8px;
     }
+    .ghead .tag img{ width:18px; height:12px; object-fit:cover; border:1px solid rgba(0,0,0,.15) }
     .ghead .title{
       background:#000; color:#fff; padding:8px 12px; font-weight:800;
       display:flex; align-items:center; justify-content:space-between;
@@ -65,11 +70,7 @@
     .gtable th,.gtable td{ padding:8px 10px; border-bottom:1px solid var(--gray-200) }
     .gtable thead th{ background:#000; color:#fff; font-size:12px }
     .gtable tfoot td{ background:var(--gray-100); font-weight:800 }
-    .gtable td:first-child, .gtable th:first-child{ width:42% } /* para nombres largos */
-    .gtable td:nth-child(2), .gtable th:nth-child(2){ width:18%; text-align:center }
-    .gtable td:nth-child(3), .gtable th:nth-child(3){ width:20% }
-    .gtable td:nth-child(4), .gtable th:nth-child(4){ width:20% }
-    .truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+    .gtable td:first-child{ word-break:break-word; }
 
     /* Botón activo negro (no “se vuelve blanco”) heredando GC */
     .gc-btn--primary[aria-pressed="true"]{
@@ -112,19 +113,6 @@
 </gc-shell>
 
 <script>
-/* ============ Config banderas ============ */
-const FLAG_BY_COUNTRY = {
-  "mexico":"images/flags/mx.svg",
-  "colombia":"images/flags/co.svg",
-  "chile":"images/flags/cl.svg",
-  "peru":"images/flags/pe.svg",
-  "costa rica":"images/flags/cr.svg",
-  "paraguay":"images/flags/py.svg",
-  "ecuador":"images/flags/ec.svg",
-  "uruguay":"images/flags/uy.svg",
-  "venezuela":"images/flags/ve.svg",
-};
-
 /* ================== Utils ================== */
 const orderMap = {"1-1":0, "2-2":1, "3-3":2, "4-4":3, "5-2":4, "5-5":5};
 function queueOrderKey(q){
@@ -135,19 +123,19 @@ function queueOrderKey(q){
   return 500 + (+m[1])*10 + (+m[2]);
 }
 function clean(s){ return String(s||"").trim(); }
-function numFirstInt(s){
+function num(s){
   if (s == null) return 0;
-  const m = String(s).match(/-?\d+/);
+  const m = String(s).match(/-?\d+/g);
   return m ? parseInt(m[0],10) : 0;
 }
-function splitPipePair(s){ // "53 | 15" -> [53,15]
-  const parts = String(s||"").split("|");
-  const a = numFirstInt(parts[0]);
-  const b = numFirstInt(parts[1]);
+function splitPipePair(s, sep="|"){ // "53 | 8" -> [53,8]
+  const parts = String(s||"").split(sep);
+  const a = num(parts[0]), b = num(parts[1]);
   return [a,b];
 }
-function leftOfArrow(s){ // "0 -> 11" -> 0
-  return numFirstInt(s);
+function leftOfArrow(s){ // "0 -> 2" -> 0
+  const m = String(s||"").match(/-?\d+/);
+  return m ? parseInt(m[0],10) : 0;
 }
 function barHTML(value, max, green=false){
   const pct = max > 0 ? Math.min(1, value/max) : 0;
@@ -159,69 +147,77 @@ function barHTML(value, max, green=false){
 }
 
 /* ================== Parser ================== */
-const COL_ALIASES = {
-  country: ["country"],
-  name: ["name","description"],
-  ops: ["number of operators", "operators", "agents"],
-  capacity: ["capacity"],
-  orders: ["orders"],
-  orderType: ["order type","type"]
+// Aliases de encabezados (insensible a mayus/espacios)
+const COL_ALIAS = {
+  country: [/^country$/i],
+  name: [/^name$/i, /^description$/i],
+  numOps: [/^number\s*of\s*operators$/i],
+  capacity: [/^capacity$/i],
+  orders: [/^orders$/i],
+  otype: [/^order\s*type$/i],
 };
-function findIndexByAliases(headers, aliases){
-  const lc = headers.map(h => h.toLowerCase().replace(/\s+/g," ").trim());
-  for (let i=0;i<lc.length;i++){
-    for (const a of aliases){
-      const an = a.toLowerCase();
-      if (lc[i] === an) return i;
-      if (lc[i].includes(an)) return i; // relajado
-    }
+function findColIndex(headers, aliasList){
+  const norm = (s)=> String(s||"").replace(/\s+/g," ").trim();
+  for (let i=0;i<headers.length;i++){
+    const h = norm(headers[i]);
+    for (const rx of aliasList){ if (rx.test(h)) return i; }
   }
   return -1;
 }
 function parseInput(txt){
   if (!txt) return [];
   const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
-
-  // detectar fila de encabezado por tener varias tabs y palabra "Country"
   let headerIdx = lines.findIndex(l => l.includes("\t") && /Country/i.test(l));
   if (headerIdx === -1) headerIdx = 0;
 
-  const headers = lines[headerIdx].split("\t");
-
+  const headers = lines[headerIdx].split("\t").map(h => h.trim());
   const idx = {
-    country : findIndexByAliases(headers, COL_ALIASES.country),
-    name    : findIndexByAliases(headers, COL_ALIASES.name),
-    ops     : findIndexByAliases(headers, COL_ALIASES.ops),
-    capacity: findIndexByAliases(headers, COL_ALIASES.capacity),
-    orders  : findIndexByAliases(headers, COL_ALIASES.orders),
-    type    : findIndexByAliases(headers, COL_ALIASES.orderType),
+    country:  findColIndex(headers, COL_ALIAS.country),
+    name:     findColIndex(headers, COL_ALIAS.name),
+    numOps:   findColIndex(headers, COL_ALIAS.numOps),
+    capacity: findColIndex(headers, COL_ALIAS.capacity),
+    orders:   findColIndex(headers, COL_ALIAS.orders),
+    otype:    findColIndex(headers, COL_ALIAS.otype),
   };
 
-  const rows = [];
+  const out = [];
   for (let i = headerIdx + 1; i < lines.length; i++){
-    const raw = lines[i];
-    if (!raw.includes("\t")) continue;
-    if (/^[☰=]+$/.test(raw.trim())) continue;
+    const line = lines[i];
+    if (!line || !line.includes("\t")) continue;
+    if (/^[☰=]+$/.test(line.trim())) continue;
 
-    const cells = raw.split("\t");
+    const cells = line.split("\t");
 
-    const orderType = clean(cells[idx.type] || "");
-    const name = clean(cells[idx.name] || "");
+    const rawCountry = cells[idx.country] ?? "";
+    const country = clean(String(rawCountry).replace(/^\d+\.\s*/,""));
+    const name = clean(cells[idx.name] ?? "");
+    const otype = clean(cells[idx.otype] ?? "");
 
-    // Ignorar PS / PS-Auto por nombre o tipo
-    if (/post[- ]?sale/i.test(orderType) || /post[- ]?sale/i.test(name) || /ps[- ]?auto/i.test(name)) continue;
+    // Ignorar PS / PS Auto por nombre o tipo
+    const nameLC = name.toLowerCase();
+    const typeLC = otype.toLowerCase();
+    if (nameLC.includes("post-sale") || nameLC.includes("ps-auto") || typeLC.includes("post-sale")){
+      continue;
+    }
 
-    // Country sin prefijo "NN. "
-    const country = clean((cells[idx.country]||"").replace(/^\d+\.\s*/,""));
+    const numOpsRaw = cells[idx.numOps] ?? "";
+    const [opsX, opsY] = splitPipePair(numOpsRaw);
 
-    const queue   = clean(name);
-    const [, opsY] = splitPipePair(cells[idx.ops] || "");             // segunda parte
-    const avail   = leftOfArrow(cells[idx.capacity] || "");           // izquierda de Capacity
-    const total   = splitPipePair(cells[idx.orders] || "")[0];        // primera de Orders
+    const capRaw = cells[idx.capacity] ?? "";
+    const avail = leftOfArrow(capRaw);
 
-    rows.push({ country, queue, opsY, avail, orders: total });
+    const ordRaw = cells[idx.orders] ?? "";
+    const totalOrders = splitPipePair(ordRaw)[0];
+
+    out.push({
+      country,
+      queue: name,
+      opsY,
+      avail,
+      orders: totalOrders
+    });
   }
-  return rows;
+  return out;
 }
 
 /* ============== Transformaciones ============== */
@@ -231,7 +227,6 @@ function groupByCountry(rows){
     if (!map.has(r.country)) map.set(r.country, []);
     map.get(r.country).push(r);
   }
-  // ordenar colas según key
   for (const arr of map.values()){
     arr.sort((a,b)=>{
       const ka = queueOrderKey(a.queue);
@@ -243,11 +238,19 @@ function groupByCountry(rows){
   return map;
 }
 
-/* ============== Render: País (cards) ============== */
-function flagHTML(country){
-  const src = FLAG_BY_COUNTRY[country.toLowerCase()];
-  return src ? `<img class="flag" src="${src}" alt="${country}" onerror="this.remove()">` : "";
+/* ====== banderitas (ruta ejemplo en /images/flags/XX.png) ====== */
+const FLAG_MAP = {
+  "Mexico":"mx","Colombia":"co","Chile":"cl","Peru":"pe","Costa Rica":"cr",
+  "Paraguay":"py","Ecuador":"ec","Uruguay":"uy","Venezuela":"ve"
+};
+function flagImg(country){
+  const code = FLAG_MAP[country] || "";
+  if(!code) return "";
+  const src = `../images/flags/${code}.png`; /* ajusta si tu carpeta varía */
+  return `<img alt="${country}" src="${src}" />`;
 }
+
+/* ============== Render: País (cards) ============== */
 function renderCountryCards(rows){
   const root = document.getElementById("result");
   root.innerHTML = "";
@@ -261,7 +264,6 @@ function renderCountryCards(rows){
     const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
     fullAvail += sumAvail; fullOrders += sumOrders;
 
-    // máximos locales para barras
     const mAvail = Math.max(1, ...items.map(x=>x.avail));
     const mOrders = Math.max(1, ...items.map(x=>x.orders));
 
@@ -278,9 +280,9 @@ function renderCountryCards(rows){
         <tbody>
           ${items.map(x=>`
             <tr>
-              <td class="truncate" title="${x.queue}">${x.queue}</td>
-              <td style="text-align:center;"><strong>${x.opsY}</strong></td>
-              <td>${barHTML(x.avail,  mAvail,  false)}</td>
+              <td>${x.queue}</td>
+              <td style="text-align:center">${x.opsY}</td>
+              <td>${barHTML(x.avail,  mAvail, false)}</td>
               <td>${barHTML(x.orders, mOrders, true)}</td>
             </tr>`).join("")}
         </tbody>
@@ -298,10 +300,10 @@ function renderCountryCards(rows){
     card.className = "country-card";
     card.innerHTML = `
       <div class="country-hd">
-        <span class="name">${flagHTML(country)}<span>${country}</span></span>
+        <span class="name">${flagImg(country)} ${country}</span>
         <span class="pill">Queues: ${items.length}</span>
-        <span class="pill">Full Total (Avail): ${sumAvail}</span>
-        <span class="pill">Full Total (Orders): ${sumOrders}</span>
+        <span class="pill">Avail: ${sumAvail}</span>
+        <span class="pill">Orders: ${sumOrders}</span>
       </div>
       ${table}
     `;
@@ -319,15 +321,13 @@ function renderGlobalThreeCol(rows){
   root.innerHTML = "";
   const g = groupByCountry(rows);
   const countries = [...g.keys()].sort((a,b)=> a.localeCompare(b));
+  let fullAvail = 0, fullOrders = 0;
 
   const grid = document.createElement("div");
   grid.className = "global-grid";
 
-  // máximos globales para barras (para comparar entre países)
   const maxAvailGlobal  = Math.max(1, ...rows.map(x=>x.avail));
   const maxOrdersGlobal = Math.max(1, ...rows.map(x=>x.orders));
-
-  let fullAvail = 0, fullOrders = 0;
 
   countries.forEach(country=>{
     const items = g.get(country);
@@ -339,7 +339,7 @@ function renderGlobalThreeCol(rows){
     card.className = "gcard";
     card.innerHTML = `
       <div class="ghead">
-        <div class="tag">${flagHTML(country)}<span>${country.toUpperCase()}</span></div>
+        <div class="tag">${flagImg(country)} <span>${country.toUpperCase()}</span></div>
         <div class="title">
           <span>Queues: ${items.length}</span>
           <span class="gsmall">Avail: ${sumAvail} · Orders: ${sumOrders}</span>
@@ -348,16 +348,16 @@ function renderGlobalThreeCol(rows){
       <table class="gtable" role="grid">
         <thead>
           <tr>
-            <th class="truncate">Queues</th>
-            <th>Number of operators</th>
-            <th>Orders available</th>
-            <th>Total orders</th>
+            <th>Queues</th>
+            <th style="width:110px">Number of operators</th>
+            <th style="width:160px">Orders available</th>
+            <th style="width:160px">Total orders</th>
           </tr>
         </thead>
         <tbody>
           ${items.map(x=>`
             <tr>
-              <td class="truncate" title="${x.queue}">${x.queue}</td>
+              <td>${x.queue}</td>
               <td style="text-align:center">${x.opsY}</td>
               <td>${barHTML(x.avail,  maxAvailGlobal,  false)}</td>
               <td>${barHTML(x.orders, maxOrdersGlobal, true)}</td>
@@ -398,39 +398,45 @@ function applyFilterAndRender(){
   if (CURRENT_VIEW === "country") renderCountryCards(rows);
   else renderGlobalThreeCol(rows);
 }
+</script>
 
-/* ============== Bind con hook del shell ============== */
-function bindUI(){
-  const $ = (id)=>document.getElementById(id);
+<!-- ============== Bind con hook del shell ============== -->
+<script>
+  function bindUI(){
+    const $ = (id)=>document.getElementById(id);
+    // Si el shell aún no terminó de inyectar el DOM, reintenta
+    if (!$("btnProcess")) { setTimeout(bindUI, 50); return; }
 
-  $("btnProcess").addEventListener("click", ()=>{
-    const txt = $("raw").value;
-    CURRENT_ROWS = parseInput(txt);
-    applyFilterAndRender();
-  });
-  $("btnClear").addEventListener("click", ()=>{
-    $("raw").value = "";
-    CURRENT_ROWS = [];
-    applyFilterAndRender();
-  });
-  $("q").addEventListener("input", applyFilterAndRender);
+    $("btnProcess").addEventListener("click", ()=>{
+      const txt = $("raw").value;
+      CURRENT_ROWS = parseInput(txt);
+      applyFilterAndRender();
+    });
+    $("btnClear").addEventListener("click", ()=>{
+      $("raw").value = "";
+      CURRENT_ROWS = [];
+      applyFilterAndRender();
+    });
+    $("q").addEventListener("input", applyFilterAndRender);
 
-  $("viewCountry").addEventListener("click", ()=>{
-    CURRENT_VIEW = "country";
-    $("viewCountry").setAttribute("aria-pressed","true");
-    $("viewGlobal").setAttribute("aria-pressed","false");
-    applyFilterAndRender();
-  });
-  $("viewGlobal").addEventListener("click", ()=>{
-    CURRENT_VIEW = "global3";
-    $("viewCountry").setAttribute("aria-pressed","false");
-    $("viewGlobal").setAttribute("aria-pressed","true");
-    applyFilterAndRender();
-  });
-}
+    $("viewCountry").addEventListener("click", ()=>{
+      CURRENT_VIEW = "country";
+      $("viewCountry").setAttribute("aria-pressed","true");
+      $("viewGlobal").setAttribute("aria-pressed","false");
+      applyFilterAndRender();
+    });
+    $("viewGlobal").addEventListener("click", ()=>{
+      CURRENT_VIEW = "global3";
+      $("viewCountry").setAttribute("aria-pressed","false");
+      $("viewGlobal").setAttribute("aria-pressed","true");
+      applyFilterAndRender();
+    });
+  }
 
-// Importante: nos enganchamos a gcOnReady para no perder listeners
-gcOnReady(bindUI);
+  // Hook seguro: si gcOnReady aún no existe, encola y el shell lo ejecutará
+  (window.gcOnReady || function(fn){
+    (window.gcPendingReady = window.gcPendingReady || []).push(fn);
+  })(bindUI);
 </script>
 </body>
 </html>
