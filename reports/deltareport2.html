@@ -9,70 +9,36 @@
   <style>
     :root{
       --font:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      --bg:#0a0a0a; --panel:#111; --card:#0f1115; --muted:#2a2e37;
       --text:#e8e8e8; --sub:#b5b8bf; --border:#20242c;
-      --ok:#89d47f; --warn:#ffd27a; --bad:#ff7a7a;
-      --radius:14px; --radius-sm:10px; --gap:14px; --shadow:0 10px 30px rgba(0,0,0,.35);
-      --country-w:170px;
+      --radius:14px; --gap:14px; --shadow:0 10px 30px rgba(0,0,0,.35)
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; background:#0b0d10; color:var(--text); font-family:var(--font);
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    }
-    header{
-      position:sticky; top:0; z-index:10; backdrop-filter:saturate(1.2) blur(6px);
-      background:linear-gradient(180deg, rgba(11,13,16,.9), rgba(11,13,16,.4));
-      border-bottom:1px solid var(--border);
-    }
-    .wrap{max-width:1300px; margin:0 auto; padding:18px 18px;}
-    h1{margin:0; font-weight:700; letter-spacing:.3px; font-size:22px}
-    .tools{display:flex; gap:12px; margin-top:14px; flex-wrap:wrap}
-    textarea{
-      width:100%; min-height:160px; background:#0e1218; color:var(--text); border:1px solid var(--border);
-      border-radius:var(--radius); padding:12px 14px; resize:vertical; box-shadow:var(--shadow);
-    }
-    .btn{
-      appearance:none; border:1px solid var(--border); background:#151a21; color:var(--text);
-      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
-    }
+    body{margin:0;background:#0b0d10;color:var(--text);font-family:var(--font)}
+    header{position:sticky;top:0;background:linear-gradient(180deg,rgba(11,13,16,.9),rgba(11,13,16,.4));border-bottom:1px solid var(--border)}
+    .wrap{max-width:1300px;margin:0 auto;padding:18px}
+    h1{margin:0;font-size:22px;font-weight:700}
+    .tools{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+    .input{background:#10151b;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:12px}
+    textarea{width:100%;min-height:220px;background:#0e1218;color:var(--text);border:1px solid var(--border);border-radius:14px;padding:12px 14px;resize:vertical;box-shadow:var(--shadow)}
+    .btn{appearance:none;border:1px solid var(--border);background:#151a21;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
     .btn.primary{background:#1e2630}
-    .btn:disabled{opacity:.6; cursor:not-allowed}
-    .input{background:#10151b; border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:12px}
-    .hint{color:var(--sub); font-size:12px}
-    .grid{display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); margin-top:18px}
-    @media (max-width:1024px){.grid{grid-template-columns:1fr}}
-    .card{background:#0e1218; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow)}
-    .card h3{margin:0; padding:12px 14px; border-bottom:1px solid var(--border); font-size:16px}
-    .status{padding:12px 14px; color:var(--sub); font-size:13px}
+    .hint{color:var(--sub);font-size:12px}
+    .card{background:#0e1218;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);margin-top:14px}
+    .card h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);font-size:16px}
+    .status{padding:12px 14px;color:var(--sub);font-size:13px}
 
-    /* ====== Tabla ====== */
-    .table-wrap{overflow:auto; border-top:1px solid var(--border); border-bottom:1px solid var(--border); border-radius:0 0 var(--radius) var(--radius)}
-    table{width:100%; border-collapse:separate; border-spacing:0}
-    thead th{
-      position:sticky; top:0; background:#0c1016; border-bottom:1px solid var(--border);
-      text-align:left; font-weight:700; font-size:13px; padding:10px;
-    }
-    th, td{padding:10px; font-size:13px; border-bottom:1px solid #141921}
+    .table-wrap{overflow:auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0 0 14px 14px}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    thead th{position:sticky;top:0;background:#0c1016;border-bottom:1px solid var(--border);text-align:left;font-weight:700;font-size:13px;padding:10px}
+    th,td{padding:10px;font-size:13px;border-bottom:1px solid #141921}
     tbody tr:hover td{background:#0f141b}
-    .sticky-country{position:sticky; left:0; background:#0e1218; box-shadow:1px 0 0 var(--border)}
-    .country-chip{
-      display:inline-flex; align-items:center; font-weight:700; padding:8px 10px; border-radius:12px;
-    }
-    .country-row{background:#0b0f15}
-    .country-toggle{cursor:pointer; user-select:none}
-    .pill{font-variant-numeric:tabular-nums; font-weight:700; padding:6px 10px; border-radius:10px; display:inline-block}
-    .bad{background:rgba(255,0,0,.1)}
-    .ok{background:rgba(0,255,0,.1)}
-    .muted{color:var(--sub)}
-    .right{text-align:right}
     .center{text-align:center}
+    .muted{color:var(--sub)}
     .sort{cursor:pointer}
-    .kpi{font-weight:700}
-    .fade{opacity:.7}
-
-    /* Heatmap via CSS variable --h */
+    .pill{display:inline-block;padding:6px 10px;border-radius:10px;font-weight:700}
+    .ok{background:rgba(0,255,0,.1)}
+    .bad{background:rgba(255,0,0,.1)}
     td[data-h]{background:linear-gradient(90deg, rgba(56,142,60,.18) var(--h,0%), transparent 0)}
     td.badmap[data-h]{background:linear-gradient(90deg, rgba(183,28,28,.25) var(--h,0%), transparent 0)}
   </style>
@@ -85,7 +51,7 @@
         <input id="search" class="input" placeholder="Buscar país o cola…" />
         <button id="btnProcess" class="btn primary">Procesar texto</button>
         <button id="btnClear" class="btn">Limpiar</button>
-        <span id="loadHint" class="hint">Pega el bloque de texto tal como sale del sistema. Se ignorarán filas PS y PS-Auto.</span>
+        <span class="hint">Pega el bloque con encabezados (tabulado). Se ignorarán PS y PS-Auto.</span>
       </div>
     </div>
   </header>
@@ -94,17 +60,17 @@
     <div class="card">
       <h3>Entrada</h3>
       <div class="status">
-        <textarea id="raw" placeholder="Pega aquí el texto…"></textarea>
+        <textarea id="raw" placeholder="Pega aquí el texto con encabezados y filas separadas por TABs…"></textarea>
       </div>
     </div>
 
-    <div id="out" class="card" style="margin-top:14px; display:none;">
+    <div id="out" class="card" style="display:none;">
       <h3>Resultados <span id="resume" class="muted"></span></h3>
       <div class="table-wrap">
         <table id="tbl">
           <thead>
             <tr>
-              <th class="sticky-country">Country</th>
+              <th class="sort" data-sort="country">Country</th>
               <th class="sort" data-sort="queue">Queues</th>
               <th class="center sort" data-sort="ops">Number of operators</th>
               <th class="center sort" data-sort="avail">Orders available</th>
@@ -115,10 +81,10 @@
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="status" id="legend">
+      <div class="status">
         <span class="pill ok">verde = mayor</span> ·
         <span class="pill bad">rojo = menor</span> ·
-        Click en cabeceras para ordenar · Click en el **país** para colapsar/expandir.
+        Click en cabeceras para ordenar.
       </div>
     </div>
   </main>
@@ -132,42 +98,68 @@
     const resume = $('#resume');
 
     const queueAllow = /(?:^|\\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\\s|$)/;
-    const isPS = /(PS|Post-sale|Post-sale_Auto)/i;
+    const isPS = /(\\bPS\\b|Post-sale|Post-sale_Auto|\\-PS\\b)/i;
 
-    function parse(){
+    // —— Utilidades
+    const fmt = n => Number(n||0).toLocaleString('en-US');
+    const cleanCountry = s => String(s||'').replace(/^\\d+\\.\\s*/,'').trim();
+    const secondNum = s => {
+      const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/);
+      return m ? parseInt(m[2],10) : 0;
+    };
+    const firstNum = s => {
+      const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/);
+      return m ? parseInt(m[1],10) : 0;
+    };
+
+    // —— Parser robusto por encabezados TSV
+    function parseTSVWithHeader() {
       const text = rawEl.value.replace(/\\r/g,'').trim();
-      if(!text){ tbody.innerHTML=''; out.style.display='none'; return; }
-      const lines = text.split(/\\n/).filter(l=>l.trim());
+      if (!text) return [];
+
+      // Partir por líneas útiles (ignorar separadores "☰" y vacías)
+      const lines = text.split(/\\n/).map(l=>l.trim()).filter(l => l && l !== '☰');
+
+      // Localizar encabezado (línea que contiene varias columnas conocidas)
+      const headIdx = lines.findIndex(l =>
+        /\\bCountry\\b\\t\\bName\\b\\t\\bDescription\\b\\t\\bNumber of operators\\b/i.test(l)
+      );
+      if (headIdx === -1) return [];
+
+      const headers = lines[headIdx].split('\\t');
+      const idx = (name) => headers.findIndex(h => h.trim().toLowerCase() === name.toLowerCase());
+
+      const iCountry = idx('Country');
+      const iName    = idx('Name');
+      const iOps     = idx('Number of operators');
+      const iOrders  = idx('Orders');
+
+      if ([iCountry,iName,iOps,iOrders].some(v => v === -1)) return [];
+
       const rows = [];
-      for(const line of lines){
-        // Split by tabs first; if not, split by multiple spaces
-        const parts = line.split(/\\t+/);
-        if(parts.length < 10) continue;
 
-        const countryRaw = parts[1] || '';
-        const name = (parts[2] || parts[3] || '').trim();
-        if(!name) continue;
+      for (let i = headIdx + 1; i < lines.length; i++) {
+        const l = lines[i];
+        if (!l || l === '☰') continue;
 
-        if(isPS.test(name)) continue;                 // Excluir PS
-        if(!queueAllow.test(name)) continue;          // Solo colas objetivo
+        const cols = l.split('\\t');
 
-        // Country: "28. Colombia" -> "Colombia"
-        const country = countryRaw.replace(/^\\d+\\.\\s*/,'').trim();
+        // Filas que no tienen suficientes columnas → saltar
+        if (cols.length < headers.length) continue;
 
-        // Number of operators: "17 | 4" => 4 (disponibles / activo)
-        const opsRaw = (parts[4]||'').trim();
-        const ops = parseInt((opsRaw.split('|')[1]||'').trim()||'0',10);
+        const name = (cols[iName] || '').trim();
+        if (!name) continue;
+        if (isPS.test(name)) continue;             // Excluir PS/PS-Auto
+        if (!queueAllow.test(name)) continue;      // Mantener colas objetivo
 
-        // Orders: "A | B"
-        // En el dump está en la columna "Orders", que suele ser parts[9] (puede moverse).
-        // Buscamos la primera celda que contenga el patrón "x | y"
-        let ordersCell = parts.find(c => /\\d+\\s*\\|\\s*\\d+/.test(c)) || '';
-        const [totalStr, availStr] = ordersCell.split('|').map(s=>s? s.replace(/[^\\d]/g,'') : '0');
-        const total = parseInt(totalStr||'0',10);
-        const avail = parseInt(availStr||'0',10);
+        const country = cleanCountry(cols[iCountry]);
+        const ops    = secondNum(cols[iOps]);      // X | Y  → Y
+        const total  = firstNum(cols[iOrders]);    // A | B  → A
+        const avail  = secondNum(cols[iOrders]);   // A | B  → B
 
-        rows.push({country, queue:name, ops, avail, total});
+        rows.push({ country, queue:name, ops, avail, total });
       }
+
       return rows;
     }
 
@@ -178,116 +170,71 @@
         map.get(r.country).rows.push(r);
         map.get(r.country).full += r.total;
       }
-      // Ordenar países por full desc
       return Array.from(map.values()).sort((a,b)=>b.full-a.full);
     }
 
     function render(rows){
       const groups = groupByCountry(rows);
-      const allOps   = rows.map(r=>r.ops);
-      const allAvail = rows.map(r=>r.avail);
-      const allTotal = rows.map(r=>r.total);
-      const minMax = a => ({min:Math.min(...a,0), max:Math.max(...a,1)});
-      const mmOps=minMax(allOps), mmAvail=minMax(allAvail), mmTotal=minMax(allTotal);
+      const allOps=rows.map(r=>r.ops), allAvail=rows.map(r=>r.avail), allTotal=rows.map(r=>r.total);
+      const mm = a => ({min:Math.min(...a,0), max:Math.max(...a,1)});
+      const mmOps=mm(allOps), mmAvail=mm(allAvail), mmTotal=mm(allTotal);
 
-      tbody.innerHTML = '';
+      const scale=(v,{min,max})=> max===min ? 0 : Math.round(((v-min)/(max-min))*100);
+
+      tbody.innerHTML='';
       for(const g of groups){
-        // Fila de país (resumen)
-        const trC = document.createElement('tr');
-        trC.className='country-row';
-        trC.innerHTML = `
-          <td class="sticky-country country-toggle" colspan="5">
-            <span class="country-chip">🇨🇱🇨🇴🇨🇷🇪🇨🇲🇽🇵🇪🇵🇾🇺🇾🇻🇪`.replace('🇨🇱','') + `</span>
-            <strong style="font-size:14px">${g.country}</strong>
-          </td>
-          <td class="center kpi">${g.full.toLocaleString()}</td>`;
-        trC.dataset.country = g.country;
-        tbody.appendChild(trC);
-
-        // Filas hijas
         for(const r of g.rows){
-          const tr = document.createElement('tr');
-          tr.dataset.country = g.country;
-
-          const hOps   = scale(r.ops, mmOps);
-          const hAvail = scale(r.avail, mmAvail);
-          const hTotal = scale(r.total, mmTotal);
-
-          tr.innerHTML = `
-            <td class="sticky-country muted">${g.country}</td>
-            <td>${r.queue}</td>
-            <td class="center" data-h style="--h:${hOps}%">${fmt(r.ops)}</td>
-            <td class="center badmap" data-h style="--h:${hAvail}%">${fmt(r.avail)}</td>
-            <td class="center" data-h style="--h:${hTotal}%">${fmt(r.total)}</td>
-            <td class="center muted">${fmt(g.full)}</td>
-          `;
+          const tr=document.createElement('tr');
+          tr.innerHTML = \`
+            <td>\${g.country}</td>
+            <td>\${r.queue}</td>
+            <td class="center" data-h style="--h:\${scale(r.ops,mmOps)}%">\${fmt(r.ops)}</td>
+            <td class="center badmap" data-h style="--h:\${scale(r.avail,mmAvail)}%">\${fmt(r.avail)}</td>
+            <td class="center" data-h style="--h:\${scale(r.total,mmTotal)}%">\${fmt(r.total)}</td>
+            <td class="center muted">\${fmt(g.full)}</td>\`;
           tbody.appendChild(tr);
         }
       }
-      out.style.display='';
-      resume.textContent = `— ${rows.length} filas · ${new Set(rows.map(r=>r.country)).size} países`;
-      attachCountryToggle();
+      $('#out').style.display='';
+      resume.textContent = \`— \${rows.length} filas · \${new Set(rows.map(r=>r.country)).size} países\`;
     }
 
-    function scale(v, {min,max}){
-      if(max===min) return 0;
-      return Math.round(((v-min)/(max-min))*100);
-    }
-    const fmt = n => Number(n||0).toLocaleString('en-US');
-
-    function attachCountryToggle(){
-      // Colapsar/expandir
-      const rows = $$('#tbody tr.country-row');
-      rows.forEach(row=>{
-        row.addEventListener('click', ()=>{
-          const c = row.dataset.country;
-          const open = row.classList.toggle('fade');
-          $$('#tbody tr').forEach(r=>{
-            if(r!==row && r.dataset.country===c) r.style.display = (open ? 'none' : '');
-          });
-        });
-      });
-    }
-
-    // Sort (simple, por columna)
-    let sortKey = null, sortDir = 1;
+    // —— Sort & Search
+    let sortKey=null, sortDir=1;
     $$('#tbl thead th.sort').forEach(th=>{
       th.addEventListener('click', ()=>{
         const key = th.dataset.sort;
-        if(sortKey===key) sortDir*=-1; else { sortKey=key; sortDir=1; }
-        const rows = parse() || [];
+        sortDir = (sortKey===key) ? -sortDir : 1; sortKey=key;
+        const rows = parseTSVWithHeader();
         rows.sort((a,b)=>{
-          const A = key==='queue' ? a.queue.localeCompare(b.queue) :
-                    key==='ops'   ? a.ops :
-                    key==='avail' ? a.avail :
-                    key==='total' ? a.total : 0;
-          const B = key==='queue' ? b.queue.localeCompare(a.queue) :
-                    key==='ops'   ? b.ops :
-                    key==='avail' ? b.avail :
-                    key==='total' ? b.total : 0;
+          const A = key==='country'? a.country.localeCompare(b.country)
+                  : key==='queue' ? a.queue.localeCompare(b.queue)
+                  : key==='ops'   ? a.ops
+                  : key==='avail' ? a.avail
+                  : key==='total' ? a.total
+                  : 0;
+          const B = key==='country'? b.country.localeCompare(a.country)
+                  : key==='queue' ? b.queue.localeCompare(a.queue)
+                  : key==='ops'   ? b.ops
+                  : key==='avail' ? b.avail
+                  : key==='total' ? b.total
+                  : 0;
           return (A-B)*sortDir;
         });
         render(rows);
       });
     });
 
-    // Search
-    $('#search').addEventListener('input', (e)=>{
+    $('#search').addEventListener('input', e=>{
       const q = e.target.value.toLowerCase().trim();
-      const rows = (parse() || []).filter(r =>
+      const rows = parseTSVWithHeader().filter(r =>
         r.country.toLowerCase().includes(q) || r.queue.toLowerCase().includes(q)
       );
       render(rows);
     });
 
-    // Buttons
-    $('#btnProcess').addEventListener('click', ()=>{
-      const rows = parse() || [];
-      render(rows);
-    });
-    $('#btnClear').addEventListener('click', ()=>{
-      rawEl.value=''; out.style.display='none'; $('#search').value='';
-    });
+    $('#btnProcess').addEventListener('click', ()=> render(parseTSVWithHeader()));
+    $('#btnClear').addEventListener('click', ()=>{ rawEl.value=''; out.style.display='none'; $('#search').value=''; });
   </script>
 </body>
 </html>
