@@ -7,40 +7,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --font:'Lexend', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      --text:#e8e8e8; --sub:#b5b8bf; --border:#20242c;
-      --radius:14px; --gap:14px; --shadow:0 10px 30px rgba(0,0,0,.35)
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    :root{ --font:'Lexend',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; --text:#e8e8e8; --sub:#b5b8bf; --border:#20242c; --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35) }
+    *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;background:#0b0d10;color:var(--text);font-family:var(--font)}
     header{position:sticky;top:0;background:linear-gradient(180deg,rgba(11,13,16,.9),rgba(11,13,16,.4));border-bottom:1px solid var(--border)}
     .wrap{max-width:1300px;margin:0 auto;padding:18px}
     h1{margin:0;font-size:22px;font-weight:700}
     .tools{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
     .input{background:#10151b;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:12px}
-    textarea{width:100%;min-height:220px;background:#0e1218;color:var(--text);border:1px solid var(--border);border-radius:14px;padding:12px 14px;resize:vertical;box-shadow:var(--shadow)}
+    textarea{width:100%;min-height:220px;background:#0e1218;color:var(--text);border:1px solid var(--border);border-radius:14px;padding:12px 14px;resize:vertical;box-shadow:var(--shadow);white-space:pre}
     .btn{appearance:none;border:1px solid var(--border);background:#151a21;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
     .btn.primary{background:#1e2630}
     .hint{color:var(--sub);font-size:12px}
     .card{background:#0e1218;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);margin-top:14px}
     .card h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);font-size:16px}
     .status{padding:12px 14px;color:var(--sub);font-size:13px}
-
     .table-wrap{overflow:auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0 0 14px 14px}
     table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{position:sticky;top:0;background:#0c1016;border-bottom:1px solid var(--border);text-align:left;font-weight:700;font-size:13px;padding:10px}
     th,td{padding:10px;font-size:13px;border-bottom:1px solid #141921}
     tbody tr:hover td{background:#0f141b}
-    .center{text-align:center}
-    .muted{color:var(--sub)}
-    .sort{cursor:pointer}
+    .center{text-align:center}.muted{color:var(--sub)}.sort{cursor:pointer}
     .pill{display:inline-block;padding:6px 10px;border-radius:10px;font-weight:700}
-    .ok{background:rgba(0,255,0,.1)}
-    .bad{background:rgba(255,0,0,.1)}
+    .ok{background:rgba(0,255,0,.1)} .bad{background:rgba(255,0,0,.1)}
     td[data-h]{background:linear-gradient(90deg, rgba(56,142,60,.18) var(--h,0%), transparent 0)}
     td.badmap[data-h]{background:linear-gradient(90deg, rgba(183,28,28,.25) var(--h,0%), transparent 0)}
+    .error{color:#ff8b8b}
   </style>
 </head>
 <body>
@@ -51,7 +43,7 @@
         <input id="search" class="input" placeholder="Buscar país o cola…" />
         <button id="btnProcess" class="btn primary">Procesar texto</button>
         <button id="btnClear" class="btn">Limpiar</button>
-        <span class="hint">Pega el bloque con encabezados (tabulado). Se ignorarán PS y PS-Auto.</span>
+        <span class="hint">Pega el bloque con encabezados. Acepta TABs o espacios. Se ignoran PS y PS-Auto.</span>
       </div>
     </div>
   </header>
@@ -60,7 +52,7 @@
     <div class="card">
       <h3>Entrada</h3>
       <div class="status">
-        <textarea id="raw" placeholder="Pega aquí el texto con encabezados y filas separadas por TABs…"></textarea>
+        <textarea id="raw" placeholder="Pega aquí el texto con encabezados (#, Country, Name, …)"></textarea>
       </div>
     </div>
 
@@ -81,92 +73,88 @@
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="status">
+      <div class="status" id="legend">
         <span class="pill ok">verde = mayor</span> ·
         <span class="pill bad">rojo = menor</span> ·
         Click en cabeceras para ordenar.
       </div>
+      <div class="status error" id="msg" style="display:none;"></div>
     </div>
   </main>
 
   <script>
-    const $ = (s,p=document)=>p.querySelector(s);
+    const $  = (s,p=document)=>p.querySelector(s);
     const $$ = (s,p=document)=>Array.from(p.querySelectorAll(s));
-    const rawEl = $('#raw');
-    const out = $('#out');
-    const tbody = $('#tbody');
-    const resume = $('#resume');
+    const rawEl = $('#raw'), out = $('#out'), tbody = $('#tbody'), resume = $('#resume'), msg = $('#msg');
 
     const queueAllow = /(?:^|\\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\\s|$)/;
     const isPS = /(\\bPS\\b|Post-sale|Post-sale_Auto|\\-PS\\b)/i;
 
-    // —— Utilidades
+    // —— utils
     const fmt = n => Number(n||0).toLocaleString('en-US');
     const cleanCountry = s => String(s||'').replace(/^\\d+\\.\\s*/,'').trim();
-    const secondNum = s => {
-      const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/);
-      return m ? parseInt(m[2],10) : 0;
-    };
-    const firstNum = s => {
-      const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/);
-      return m ? parseInt(m[1],10) : 0;
-    };
+    const secondNum = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[2],10) : 0; };
+    const firstNum  = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[1],10) : 0; };
 
-    // —— Parser robusto por encabezados TSV
-    function parseTSVWithHeader() {
+    // separador flexible: usa TAB si existe; si no, 2+ espacios
+    function smartSplit(line){
+      return line.includes('\\t') ? line.split('\\t') : line.trim().split(/\\s{2,}/);
+    }
+
+    // detectar header de forma laxa
+    function findHeaderIndex(lines){
+      return lines.findIndex(l=>{
+        const low = l.toLowerCase();
+        return low.includes('country') && low.includes('name') &&
+               low.includes('number of operators') && low.includes('orders');
+      });
+    }
+
+    function parseRows(){
       const text = rawEl.value.replace(/\\r/g,'').trim();
-      if (!text) return [];
+      if(!text) return [];
 
-      // Partir por líneas útiles (ignorar separadores "☰" y vacías)
-      const lines = text.split(/\\n/).map(l=>l.trim()).filter(l => l && l !== '☰');
+      // limpiar líneas, quitar separadores "☰"
+      const lines = text.split(/\\n/).map(l=>l.trim()).filter(l=>l && l !== '☰');
 
-      // Localizar encabezado (línea que contiene varias columnas conocidas)
-      const headIdx = lines.findIndex(l =>
-        /\\bCountry\\b\\t\\bName\\b\\t\\bDescription\\b\\t\\bNumber of operators\\b/i.test(l)
-      );
+      const headIdx = findHeaderIndex(lines);
       if (headIdx === -1) return [];
 
-      const headers = lines[headIdx].split('\\t');
-      const idx = (name) => headers.findIndex(h => h.trim().toLowerCase() === name.toLowerCase());
+      const headers = smartSplit(lines[headIdx]).map(h=>h.trim());
+      const getIdx = (name) => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
 
-      const iCountry = idx('Country');
-      const iName    = idx('Name');
-      const iOps     = idx('Number of operators');
-      const iOrders  = idx('Orders');
+      const iCountry = getIdx('Country');
+      const iName    = getIdx('Name');
+      const iOps     = getIdx('Number of operators');
+      const iOrders  = getIdx('Orders');
 
       if ([iCountry,iName,iOps,iOrders].some(v => v === -1)) return [];
 
       const rows = [];
+      for (let i = headIdx + 1; i < lines.length; i++){
+        const cols = smartSplit(lines[i]);
 
-      for (let i = headIdx + 1; i < lines.length; i++) {
-        const l = lines[i];
-        if (!l || l === '☰') continue;
-
-        const cols = l.split('\\t');
-
-        // Filas que no tienen suficientes columnas → saltar
-        if (cols.length < headers.length) continue;
+        if (!cols.length) continue;
 
         const name = (cols[iName] || '').trim();
         if (!name) continue;
-        if (isPS.test(name)) continue;             // Excluir PS/PS-Auto
-        if (!queueAllow.test(name)) continue;      // Mantener colas objetivo
+        if (isPS.test(name)) continue;
+        if (!queueAllow.test(name)) continue;
 
-        const country = cleanCountry(cols[iCountry]);
-        const ops    = secondNum(cols[iOps]);      // X | Y  → Y
-        const total  = firstNum(cols[iOrders]);    // A | B  → A
-        const avail  = secondNum(cols[iOrders]);   // A | B  → B
+        const country = cleanCountry(cols[iCountry] || '');
+        const ops     = secondNum(cols[iOps] || '');
+        const total   = firstNum (cols[iOrders] || '');
+        const avail   = secondNum(cols[iOrders] || '');
 
         rows.push({ country, queue:name, ops, avail, total });
       }
-
       return rows;
     }
 
     function groupByCountry(rows){
       const map = new Map();
-      for(const r of rows){
-        if(!map.has(r.country)) map.set(r.country, {country:r.country, rows:[], full:0});
+      for (const r of rows){
+        if (!map.has(r.country)) map.set(r.country, {country:r.country, rows:[], full:0});
         map.get(r.country).rows.push(r);
         map.get(r.country).full += r.total;
       }
@@ -176,13 +164,12 @@
     function render(rows){
       const groups = groupByCountry(rows);
       const allOps=rows.map(r=>r.ops), allAvail=rows.map(r=>r.avail), allTotal=rows.map(r=>r.total);
-      const mm = a => ({min:Math.min(...a,0), max:Math.max(...a,1)});
+      const mm=a=>({min:Math.min(...a,0),max:Math.max(...a,1)});
       const mmOps=mm(allOps), mmAvail=mm(allAvail), mmTotal=mm(allTotal);
-
-      const scale=(v,{min,max})=> max===min ? 0 : Math.round(((v-min)/(max-min))*100);
+      const scale=(v,{min,max})=> max===min?0:Math.round(((v-min)/(max-min))*100);
 
       tbody.innerHTML='';
-      for(const g of groups){
+      for (const g of groups){
         for(const r of g.rows){
           const tr=document.createElement('tr');
           tr.innerHTML = \`
@@ -195,30 +182,31 @@
           tbody.appendChild(tr);
         }
       }
-      $('#out').style.display='';
-      resume.textContent = \`— \${rows.length} filas · \${new Set(rows.map(r=>r.country)).size} países\`;
+      out.style.display='';
+      const countries = new Set(rows.map(r=>r.country)).size;
+      resume.textContent = \`— \${rows.length} filas · \${countries} países\`;
+      msg.style.display = rows.length ? 'none':'';
+      if (!rows.length) msg.textContent = 'No se detectaron filas válidas. Revisa encabezados y separadores (TABs o espacios múltiples).';
     }
 
-    // —— Sort & Search
+    // sort + search
     let sortKey=null, sortDir=1;
     $$('#tbl thead th.sort').forEach(th=>{
       th.addEventListener('click', ()=>{
         const key = th.dataset.sort;
         sortDir = (sortKey===key) ? -sortDir : 1; sortKey=key;
-        const rows = parseTSVWithHeader();
+        const rows = parseRows();
         rows.sort((a,b)=>{
           const A = key==='country'? a.country.localeCompare(b.country)
                   : key==='queue' ? a.queue.localeCompare(b.queue)
                   : key==='ops'   ? a.ops
                   : key==='avail' ? a.avail
-                  : key==='total' ? a.total
-                  : 0;
+                  : key==='total' ? a.total : 0;
           const B = key==='country'? b.country.localeCompare(a.country)
                   : key==='queue' ? b.queue.localeCompare(a.queue)
                   : key==='ops'   ? b.ops
                   : key==='avail' ? b.avail
-                  : key==='total' ? b.total
-                  : 0;
+                  : key==='total' ? b.total : 0;
           return (A-B)*sortDir;
         });
         render(rows);
@@ -227,14 +215,20 @@
 
     $('#search').addEventListener('input', e=>{
       const q = e.target.value.toLowerCase().trim();
-      const rows = parseTSVWithHeader().filter(r =>
+      const rows = parseRows().filter(r =>
         r.country.toLowerCase().includes(q) || r.queue.toLowerCase().includes(q)
       );
       render(rows);
     });
 
-    $('#btnProcess').addEventListener('click', ()=> render(parseTSVWithHeader()));
-    $('#btnClear').addEventListener('click', ()=>{ rawEl.value=''; out.style.display='none'; $('#search').value=''; });
+    $('#btnProcess').addEventListener('click', ()=>{
+      try{ render(parseRows()); }
+      catch(err){ msg.style.display=''; msg.textContent='Error al procesar: '+err.message; out.style.display=''; console.error(err); }
+    });
+
+    $('#btnClear').addEventListener('click', ()=>{
+      rawEl.value=''; out.style.display='none'; $('#search').value=''; msg.style.display='none';
+    });
   </script>
 </body>
 </html>
