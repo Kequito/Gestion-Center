@@ -32,7 +32,6 @@
     .ok{background:rgba(0,255,0,.1)} .bad{background:rgba(255,0,0,.1)}
     td[data-h]{background:linear-gradient(90deg, rgba(56,142,60,.18) var(--h,0%), transparent 0)}
     td.badmap[data-h]{background:linear-gradient(90deg, rgba(183,28,28,.25) var(--h,0%), transparent 0)}
-    .error{color:#ff8b8b}
   </style>
 </head>
 <body>
@@ -73,68 +72,80 @@
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="status" id="legend">
+      <div class="status">
         <span class="pill ok">verde = mayor</span> ·
         <span class="pill bad">rojo = menor</span> ·
         Click en cabeceras para ordenar.
       </div>
-      <div class="status error" id="msg" style="display:none;"></div>
     </div>
   </main>
 
   <script>
     const $  = (s,p=document)=>p.querySelector(s);
     const $$ = (s,p=document)=>Array.from(p.querySelectorAll(s));
-    const rawEl = $('#raw'), out = $('#out'), tbody = $('#tbody'), resume = $('#resume'), msg = $('#msg');
+    const rawEl = $('#raw'), out = $('#out'), tbody = $('#tbody'), resume = $('#resume');
 
-    const queueAllow = /(?:^|\\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\\s|$)/;
-    const isPS = /(\\bPS\\b|Post-sale|Post-sale_Auto|\\-PS\\b)/i;
+    const queueAllow = /(?:^|\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\s|$)/;
+    const isPS = /(\bPS\b|Post-sale|Post-sale_Auto|\-PS\b)/i;
 
-    // —— utils
+    // utils
     const fmt = n => Number(n||0).toLocaleString('en-US');
-    const cleanCountry = s => String(s||'').replace(/^\\d+\\.\\s*/,'').trim();
-    const secondNum = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[2],10) : 0; };
-    const firstNum  = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[1],10) : 0; };
+    const cleanCountry = s => String(s||'').replace(/^\d+\.\s*/,'').trim();
+    const secondNum = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/); return m ? parseInt(m[2],10) : 0; };
+    const firstNum  = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/);  return m ? parseInt(m[1],10) : 0; };
 
-    // separador flexible: usa TAB si existe; si no, 2+ espacios
+    // separador flexible (TABs o 2+ espacios)
     function smartSplit(line){
-      return line.includes('\\t') ? line.split('\\t') : line.trim().split(/\\s{2,}/);
+      return line.includes('\t') ? line.split('\t') : line.trim().split(/\s{2,}/);
     }
 
-    // detectar header de forma laxa
-    function findHeaderIndex(lines){
-      return lines.findIndex(l=>{
+    // localizar header (laxo) y cortar en chunks por “☰”
+    function findHeaderAndChunks(lines){
+      const headIdx = lines.findIndex(l=>{
         const low = l.toLowerCase();
-        return low.includes('country') && low.includes('name') &&
-               low.includes('number of operators') && low.includes('orders');
+        return low.includes('country') && low.includes('name')
+            && low.includes('number of operators') && low.includes('orders');
       });
+      if (headIdx === -1) return { headers:[], chunks:[] };
+
+      const headers = smartSplit(lines[headIdx]).map(h=>h.trim());
+
+      const rest = lines.slice(headIdx+1);
+      const chunks = [];
+      let buf = [];
+      for(const ln of rest){
+        if (ln.trim() === '☰'){
+          if (buf.length) { chunks.push(buf.join(' ')); buf = []; }
+          continue;
+        }
+        if (ln.trim()) buf.push(ln.trim());
+      }
+      if (buf.length) chunks.push(buf.join(' '));
+
+      return { headers, chunks };
     }
 
     function parseRows(){
-      const text = rawEl.value.replace(/\\r/g,'').trim();
+      const text = rawEl.value.replace(/\r/g,'').trim();
       if(!text) return [];
 
-      // limpiar líneas, quitar separadores "☰"
-      const lines = text.split(/\\n/).map(l=>l.trim()).filter(l=>l && l !== '☰');
+      // mantener '☰' pero quitar líneas completamente vacías
+      const all = text.split(/\n/).map(l=>l.replace(/\s+$/,''));
+      const lines = all.filter(l=>l.trim() || l.trim()==='☰');
 
-      const headIdx = findHeaderIndex(lines);
-      if (headIdx === -1) return [];
+      const { headers, chunks } = findHeaderAndChunks(lines);
+      if (!headers.length || !chunks.length) return [];
 
-      const headers = smartSplit(lines[headIdx]).map(h=>h.trim());
-      const getIdx = (name) => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
-
-      const iCountry = getIdx('Country');
-      const iName    = getIdx('Name');
-      const iOps     = getIdx('Number of operators');
-      const iOrders  = getIdx('Orders');
-
+      const idx = (name) => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+      const iCountry = idx('Country');
+      const iName    = idx('Name');
+      const iOps     = idx('Number of operators');
+      const iOrders  = idx('Orders');
       if ([iCountry,iName,iOps,iOrders].some(v => v === -1)) return [];
 
       const rows = [];
-      for (let i = headIdx + 1; i < lines.length; i++){
-        const cols = smartSplit(lines[i]);
-
-        if (!cols.length) continue;
+      for(const ch of chunks){
+        const cols = smartSplit(ch);
 
         const name = (cols[iName] || '').trim();
         if (!name) continue;
@@ -172,21 +183,18 @@
       for (const g of groups){
         for(const r of g.rows){
           const tr=document.createElement('tr');
-          tr.innerHTML = \`
-            <td>\${g.country}</td>
-            <td>\${r.queue}</td>
-            <td class="center" data-h style="--h:\${scale(r.ops,mmOps)}%">\${fmt(r.ops)}</td>
-            <td class="center badmap" data-h style="--h:\${scale(r.avail,mmAvail)}%">\${fmt(r.avail)}</td>
-            <td class="center" data-h style="--h:\${scale(r.total,mmTotal)}%">\${fmt(r.total)}</td>
-            <td class="center muted">\${fmt(g.full)}</td>\`;
+          tr.innerHTML = `
+            <td>${g.country}</td>
+            <td>${r.queue}</td>
+            <td class="center" data-h style="--h:${scale(r.ops,mmOps)}%">${fmt(r.ops)}</td>
+            <td class="center badmap" data-h style="--h:${scale(r.avail,mmAvail)}%">${fmt(r.avail)}</td>
+            <td class="center" data-h style="--h:${scale(r.total,mmTotal)}%">${fmt(r.total)}</td>
+            <td class="center muted">${fmt(g.full)}</td>`;
           tbody.appendChild(tr);
         }
       }
       out.style.display='';
-      const countries = new Set(rows.map(r=>r.country)).size;
-      resume.textContent = \`— \${rows.length} filas · \${countries} países\`;
-      msg.style.display = rows.length ? 'none':'';
-      if (!rows.length) msg.textContent = 'No se detectaron filas válidas. Revisa encabezados y separadores (TABs o espacios múltiples).';
+      resume.textContent = `— ${rows.length} filas · ${new Set(rows.map(r=>r.country)).size} países`;
     }
 
     // sort + search
@@ -221,14 +229,8 @@
       render(rows);
     });
 
-    $('#btnProcess').addEventListener('click', ()=>{
-      try{ render(parseRows()); }
-      catch(err){ msg.style.display=''; msg.textContent='Error al procesar: '+err.message; out.style.display=''; console.error(err); }
-    });
-
-    $('#btnClear').addEventListener('click', ()=>{
-      rawEl.value=''; out.style.display='none'; $('#search').value=''; msg.style.display='none';
-    });
+    $('#btnProcess').addEventListener('click', ()=> render(parseRows()));
+    $('#btnClear').addEventListener('click', ()=>{ rawEl.value=''; out.style.display='none'; $('#search').value=''; });
   </script>
 </body>
 </html>
