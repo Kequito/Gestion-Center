@@ -14,6 +14,21 @@
 const HOME_ABS = "https://kequito.github.io/Gestion-Center/";
 const PREFERRED_REPO = "Gestion-Center";
 
+/* ---------------- Ready hook global (nuevo) ----------------
+   Permite a las páginas ejecutar código cuando el shell terminó
+   de pintar el DOM definitivo sin perder listeners.
+---------------------------------------------------------------- */
+window.__GC_READY__ = false;
+const __gcReadyQueue = [];
+window.gcOnReady = function (fn) {
+  if (typeof fn !== "function") return;
+  if (window.__GC_READY__) {
+    try { fn(); } catch (e) { console.error("[gc-shell] ready fn error:", e); }
+  } else {
+    __gcReadyQueue.push(fn);
+  }
+};
+
 /* ---------------- BASE ---------------- */
 function readMetaBase(){ const m = document.querySelector('meta[name="gc-base"]'); return m?.content || ""; }
 function ensureSlash(u){ return u.endsWith("/") ? u : (u + "/"); }
@@ -447,6 +462,17 @@ class GCShell extends HTMLElement {
     }
 
     try { document.documentElement.style.visibility = "visible"; } catch {}
+
+    // ---- NUEVO: Señalizar ready y ejecutar cola de callbacks ----
+    try {
+      window.__GC_READY__ = true;
+      const q = __gcReadyQueue.splice(0);
+      for (const fn of q) { try { fn(); } catch (e) { console.error("[gc-shell] ready fn error:", e); } }
+      // Evento por si alguien prefiere escuchar con addEventListener
+      window.dispatchEvent(new CustomEvent("gc:shell-ready", { detail: { base: BASE } }));
+    } catch (e) {
+      console.warn("[gc-shell] error al disparar ready:", e);
+    }
   }
 }
 customElements.define("gc-shell", GCShell);
