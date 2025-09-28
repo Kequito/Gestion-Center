@@ -66,7 +66,8 @@
               <th class="center sort" data-sort="ops">Number of operators</th>
               <th class="center sort" data-sort="avail">Orders available</th>
               <th class="center sort" data-sort="total">Total orders</th>
-              <th class="center sort" data-sort="full">Full Total</th>
+              <th class="center sort" data-sort="fullAvail">Full Total (Avail)</th>
+              <th class="center sort" data-sort="fullOrders">Full Total (Orders)</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -93,6 +94,7 @@
     const cleanCountry = s => String(s||'').replace(/^\d+\.\s*/,'').trim();
     const secondNum = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/); return m ? parseInt(m[2],10) : 0; };
     const firstNum  = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/);  return m ? parseInt(m[1],10) : 0; };
+    const firstArrow = s => { const m = String(s||'').match(/(\d+)\s*->\s*\d+/);   return m ? parseInt(m[1],10) : 0; };
 
     // separador flexible (TABs o 2+ espacios)
     function smartSplit(line){
@@ -141,7 +143,8 @@
       const iName    = idx('Name');
       const iOps     = idx('Number of operators');
       const iOrders  = idx('Orders');
-      if ([iCountry,iName,iOps,iOrders].some(v => v === -1)) return [];
+      const iCap     = idx('Capacity');
+      if ([iCountry,iName,iOps,iOrders,iCap].some(v => v === -1)) return [];
 
       const rows = [];
       for(const ch of chunks){
@@ -153,9 +156,9 @@
         if (!queueAllow.test(name)) continue;
 
         const country = cleanCountry(cols[iCountry] || '');
-        const ops     = secondNum(cols[iOps] || '');
-        const total   = firstNum (cols[iOrders] || '');
-        const avail   = secondNum(cols[iOrders] || '');
+        const ops     = secondNum(cols[iOps] || '');      // 2º de "X | Y"
+        const total   = firstNum (cols[iOrders] || '');   // 1º de "A | B"
+        const avail   = firstArrow(cols[iCap] || '');     // 1º de "a -> b" (Capacity)
 
         rows.push({ country, queue:name, ops, avail, total });
       }
@@ -165,11 +168,13 @@
     function groupByCountry(rows){
       const map = new Map();
       for (const r of rows){
-        if (!map.has(r.country)) map.set(r.country, {country:r.country, rows:[], full:0});
-        map.get(r.country).rows.push(r);
-        map.get(r.country).full += r.total;
+        if (!map.has(r.country)) map.set(r.country, {country:r.country, rows:[], fullAvail:0, fullOrders:0});
+        const g = map.get(r.country);
+        g.rows.push(r);
+        g.fullAvail  += r.avail;
+        g.fullOrders += r.total;
       }
-      return Array.from(map.values()).sort((a,b)=>b.full-a.full);
+      return Array.from(map.values()).sort((a,b)=>b.fullOrders-a.fullOrders);
     }
 
     function render(rows){
@@ -189,7 +194,8 @@
             <td class="center" data-h style="--h:${scale(r.ops,mmOps)}%">${fmt(r.ops)}</td>
             <td class="center badmap" data-h style="--h:${scale(r.avail,mmAvail)}%">${fmt(r.avail)}</td>
             <td class="center" data-h style="--h:${scale(r.total,mmTotal)}%">${fmt(r.total)}</td>
-            <td class="center muted">${fmt(g.full)}</td>`;
+            <td class="center muted">${fmt(g.fullAvail)}</td>
+            <td class="center muted">${fmt(g.fullOrders)}</td>`;
           tbody.appendChild(tr);
         }
       }
@@ -197,13 +203,23 @@
       resume.textContent = `— ${rows.length} filas · ${new Set(rows.map(r=>r.country)).size} países`;
     }
 
-    // sort + search
+    // sort + search (ahora con fullAvail y fullOrders)
     let sortKey=null, sortDir=1;
     $$('#tbl thead th.sort').forEach(th=>{
       th.addEventListener('click', ()=>{
         const key = th.dataset.sort;
         sortDir = (sortKey===key) ? -sortDir : 1; sortKey=key;
         const rows = parseRows();
+        // Para ordenar por "full..." necesitamos agrupar primero
+        if (key==='fullAvail' || key==='fullOrders'){
+          const groups = groupByCountry(rows);
+          groups.sort((a,b)=> (key==='fullAvail' ? (a.fullAvail-b.fullAvail) : (a.fullOrders-b.fullOrders)) * sortDir);
+          // rearmar rows en nuevo orden de países
+          const ordered = [];
+          for(const g of groups) ordered.push(...g.rows);
+          render(ordered);
+          return;
+        }
         rows.sort((a,b)=>{
           const A = key==='country'? a.country.localeCompare(b.country)
                   : key==='queue' ? a.queue.localeCompare(b.queue)
