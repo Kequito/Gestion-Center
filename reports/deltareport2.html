@@ -146,20 +146,17 @@ function barHTML(value, max, green=false){
 }
 
 /* ================== Parser ================== */
-// Detectar variantes PS / Post-Sale / Auto-Post Sale
 function isPSLike(str){
   const s = String(str||"");
   return /post\s*-?\s*sale/i.test(s)           // Post sale / Post-sale
       || /auto\s*-?\s*post\s*-?\s*sale/i.test(s) // Auto-Post Sale
-      || /\bps\b/i.test(s)                    // PS, PS 2...
-      || /ps[-_\s]*auto/i.test(s);            // PS-Auto / PS_Auto
+      || /\bps\b/i.test(s)                    // PS
+      || /ps[-_\s]*auto/i.test(s);            // PS-Auto
 }
-// Si la cola es "Chile 1-1", devuelve "Chile"
 function inferCountryFromQueue(queue){
   const m = String(queue||"").match(/^(.+?)\s+\d\s*-\s*\d/);
   return m ? m[1].trim() : "";
 }
-
 function parseInput(txt){
   if (!txt) return [];
   const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
@@ -178,13 +175,12 @@ function parseInput(txt){
     const map = Object.create(null);
     headers.forEach((h,idx)=> map[h] = cells[idx]);
 
-    const name = clean(map["Name"] || map["Description"] || "");
+    const name  = clean(map["Name"] || map["Description"] || "");
     const otype = clean(map["Order type"] || "");
 
-    // Descartar PS/PS-Auto/Post-Sale
+    // ignorar PS/PS-Auto/Post-Sale
     if (isPSLike(otype) || isPSLike(name)) continue;
 
-    // Base
     const queue = clean(name);
 
     // País robusto
@@ -193,10 +189,10 @@ function parseInput(txt){
     const inferred = inferCountryFromQueue(queue);
     const country = (!rawCountry || looksLikeQueue) && inferred ? inferred : rawCountry;
 
-    // Lectura EXACTA (lo que pediste)
+    // Lectura exacta de campos:
     const [, opsY]      = splitPipePair(map["Number of operators"] || ""); // 2ª parte
-    const capacityAvail = leftOfArrow(map["Capacity"] || "");              // izquierda de Capacity
-    const totalOrders   = splitPipePair(map["Orders"] || "")[0];           // 1ª parte de Orders
+    const capacityAvail = leftOfArrow(map["Capacity"] || "");              // capacity (izquierda)
+    const totalOrders   = splitPipePair(map["Orders"] || "")[0];           // orders (1ª parte)
 
     rows.push({ country, queue, opsY, avail: capacityAvail, orders: totalOrders });
   }
@@ -210,7 +206,6 @@ function groupByCountry(rows){
     if (!map.has(r.country)) map.set(r.country, []);
     map.get(r.country).push(r);
   }
-  // ordenar colas según key
   for (const arr of map.values()){
     arr.sort((a,b)=>{
       const ka = queueOrderKey(a.queue);
@@ -232,12 +227,12 @@ function renderCountryCards(rows){
 
   countries.forEach(country=>{
     const items = g.get(country);
-    const sumAvail = items.reduce((s,x)=> s + x.avail, 0);
+    const sumAvail  = items.reduce((s,x)=> s + x.avail,  0);
     const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
-    fullAvail += sumAvail; fullOrders += sumOrders;
+    fullAvail  += sumAvail;
+    fullOrders += sumOrders;
 
-    // máximos locales para barras
-    const mAvail = Math.max(1, ...items.map(x=>x.avail));
+    const mAvail  = Math.max(1, ...items.map(x=>x.avail));
     const mOrders = Math.max(1, ...items.map(x=>x.orders));
 
     const table = `
@@ -255,7 +250,7 @@ function renderCountryCards(rows){
             <tr>
               <td>${x.queue}</td>
               <td style="text-align:center; font-weight:800">${x.opsY}</td>
-              <td>${barHTML(x.avail,  mAvail, false)}</td>
+              <td>${barHTML(x.avail,  mAvail,  false)}</td>
               <td>${barHTML(x.orders, mOrders, true)}</td>
             </tr>`).join("")}
         </tbody>
@@ -299,15 +294,15 @@ function renderGlobalTwoCol(rows){
   const grid = document.createElement("div");
   grid.className = "global-grid";
 
-  // máximos globales para barras
   const maxAvailGlobal  = Math.max(1, ...rows.map(x=>x.avail));
   const maxOrdersGlobal = Math.max(1, ...rows.map(x=>x.orders));
 
   countries.forEach(country=>{
     const items = g.get(country);
-    const sumAvail = items.reduce((s,x)=> s + x.avail, 0);
+    const sumAvail  = items.reduce((s,x)=> s + x.avail,  0);
     const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
-    fullAvail += sumAvail; fullOrders += sumOrders;
+    fullAvail  += sumAvail;
+    fullOrders += sumOrders;
 
     const card = document.createElement("section");
     card.className = "gcard";
@@ -362,7 +357,8 @@ let CURRENT_ROWS = [];
 let CURRENT_VIEW = "country"; // "country" | "global2"
 
 function applyFilterAndRender(){
-  const term = document.getElementById("q").value.trim().toLowerCase();
+  const q = document.getElementById("q");
+  const term = q ? q.value.trim().toLowerCase() : "";
   const rows = term
     ? CURRENT_ROWS.filter(r =>
         r.country.toLowerCase().includes(term) ||
@@ -373,29 +369,45 @@ function applyFilterAndRender(){
   else renderGlobalTwoCol(rows);
 }
 
-document.getElementById("btnProcess").addEventListener("click", ()=>{
-  const txt = document.getElementById("raw").value;
-  CURRENT_ROWS = parseInput(txt);
-  applyFilterAndRender();
-});
-document.getElementById("btnClear").addEventListener("click", ()=>{
-  document.getElementById("raw").value = "";
-  CURRENT_ROWS = [];
-  applyFilterAndRender();
-});
-document.getElementById("q").addEventListener("input", applyFilterAndRender);
+/* ==== Delegación de eventos (resistente al re-render del gc-shell) ==== */
+document.addEventListener("click", (ev)=>{
+  const t = ev.target.closest("#btnProcess, #btnClear, #viewCountry, #viewGlobal");
+  if (!t) return;
 
-document.getElementById("viewCountry").addEventListener("click", ()=>{
-  CURRENT_VIEW = "country";
-  document.getElementById("viewCountry").setAttribute("aria-pressed","true");
-  document.getElementById("viewGlobal").setAttribute("aria-pressed","false");
-  applyFilterAndRender();
+  if (t.id === "btnProcess"){
+    const area = document.getElementById("raw");
+    CURRENT_ROWS = parseInput(area ? area.value : "");
+    applyFilterAndRender();
+  }
+  else if (t.id === "btnClear"){
+    const area = document.getElementById("raw");
+    if (area) area.value = "";
+    CURRENT_ROWS = [];
+    applyFilterAndRender();
+  }
+  else if (t.id === "viewCountry"){
+    CURRENT_VIEW = "country";
+    const a = document.getElementById("viewCountry");
+    const b = document.getElementById("viewGlobal");
+    if (a) a.setAttribute("aria-pressed","true");
+    if (b) b.setAttribute("aria-pressed","false");
+    applyFilterAndRender();
+  }
+  else if (t.id === "viewGlobal"){
+    CURRENT_VIEW = "global2";
+    const a = document.getElementById("viewCountry");
+    const b = document.getElementById("viewGlobal");
+    if (a) a.setAttribute("aria-pressed","false");
+    if (b) b.setAttribute("aria-pressed","true");
+    applyFilterAndRender();
+  }
 });
-document.getElementById("viewGlobal").addEventListener("click", ()=>{
-  CURRENT_VIEW = "global2";
-  document.getElementById("viewCountry").setAttribute("aria-pressed","false");
-  document.getElementById("viewGlobal").setAttribute("aria-pressed","true");
-  applyFilterAndRender();
+
+// Filtro en vivo con delegación
+document.addEventListener("input", (ev)=>{
+  if (ev.target && ev.target.id === "q"){
+    applyFilterAndRender();
+  }
 });
 </script>
 </body>
