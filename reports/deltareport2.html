@@ -112,7 +112,6 @@ function queueOrderKey(q){
   if (!m) return 999;
   const key = `${m[1]}-${m[2]}`;
   if (key in orderMap) return orderMap[key];
-  // fallback: numérico para otros patrones
   return 500 + (+m[1])*10 + (+m[2]);
 }
 function clean(s){ return String(s||"").trim(); }
@@ -121,15 +120,8 @@ function num(s){
   const m = String(s).match(/-?\d+/g);
   return m ? parseInt(m[0],10) : 0;
 }
-function splitPipePair(s, sep="|"){ // "53 | 8" -> [53,8]
-  const parts = String(s||"").split(sep);
-  const a = num(parts[0]), b = num(parts[1]);
-  return [a,b];
-}
-function leftOfArrow(s){ // "0 -> 2" -> 0
-  const m = String(s||"").match(/-?\d+/);
-  return m ? parseInt(m[0],10) : 0;
-}
+function splitPipePair(s, sep="|"){ const parts = String(s||"").split(sep); return [num(parts[0]), num(parts[1])]; }
+function leftOfArrow(s){ const m = String(s||"").match(/-?\d+/); return m ? parseInt(m[0],10) : 0; }
 function barHTML(value, max, green=false){
   const pct = max > 0 ? Math.min(1, value/max) : 0;
   return `
@@ -138,21 +130,24 @@ function barHTML(value, max, green=false){
       <div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${value}</div>
     </div>`;
 }
+/* Helper: si la cola es "Chile 1-1", devuelve "Chile" */
+function inferCountryFromQueue(queue){
+  const m = String(queue||"").match(/^(.+?)\s+\d\s*-\s*\d/);
+  return m ? m[1].trim() : "";
+}
 
-/* ================== Parser ================== */
+/* ================== Parser (robusto) ================== */
 function parseInput(txt){
   if (!txt) return [];
   const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
-  // detectar encabezados (primera línea con TABs >= 6)
   let headerIdx = lines.findIndex(l => l.includes("\t") && /Country/i.test(l));
   if (headerIdx === -1) headerIdx = 0;
   const headers = lines[headerIdx].split("\t").map(h => h.trim());
   const rows = [];
 
   for (let i = headerIdx + 1; i < lines.length; i++){
-    let line = lines[i];
+    const line = lines[i];
     if (!line || !line.includes("\t")) continue;
-    // ignorar separadores ☰ y similares
     if (/^[☰=]+$/.test(line.trim())) continue;
 
     const cells = line.split("\t");
@@ -160,24 +155,23 @@ function parseInput(txt){
     headers.forEach((h,idx)=> map[h] = cells[idx]);
 
     const name = clean(map["Name"] || map["Description"] || "");
-    // ignorar PS/PS-Auto
+    // Ignorar PS / PS-Auto
     if (/post[- ]?sale/i.test(map["Order type"] || "") || /post[- ]?sale/i.test(name) || /PS[- ]?Auto/i.test(name)) {
       continue;
     }
 
-    const country = clean((map["Country"] || "").replace(/^\d+\.\s*/,""));
-    const queue   = clean(name);
-    const [opsX, opsY] = splitPipePair(map["Number of operators"] || "");
-    const capacityAvail = leftOfArrow(map["Capacity"] || "");
-    const totalOrders   = splitPipePair(map["Orders"] || "")[0];
+    const queue = clean(name);
+    let rawCountry = clean((map["Country"] || "").replace(/^\d+\.\s*/,""));
+    // Si el "Country" parece una cola (termina en N-N) o viene vacío, inferimos desde la cola
+    const looksLikeQueue = /\d\s*-\s*\d$/.test(rawCountry);
+    const inferred = inferCountryFromQueue(queue);
+    const country = (!rawCountry || looksLikeQueue) && inferred ? inferred : rawCountry;
 
-    rows.push({
-      country,
-      queue,
-      opsY, // number of operators (segunda parte)
-      avail: capacityAvail,
-      orders: totalOrders
-    });
+    const [, opsY]        = splitPipePair(map["Number of operators"] || "");
+    const capacityAvail   = leftOfArrow(map["Capacity"] || "");
+    const totalOrders     = splitPipePair(map["Orders"] || "")[0];
+
+    rows.push({ country, queue, opsY, avail: capacityAvail, orders: totalOrders });
   }
   return rows;
 }
@@ -189,7 +183,6 @@ function groupByCountry(rows){
     if (!map.has(r.country)) map.set(r.country, []);
     map.get(r.country).push(r);
   }
-  // ordenar colas según key
   for (const arr of map.values()){
     arr.sort((a,b)=>{
       const ka = queueOrderKey(a.queue);
@@ -215,8 +208,7 @@ function renderCountryCards(rows){
     const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
     fullAvail += sumAvail; fullOrders += sumOrders;
 
-    // máximos locales para barras
-    const mAvail = Math.max(1, ...items.map(x=>x.avail));
+    const mAvail  = Math.max(1, ...items.map(x=>x.avail));
     const mOrders = Math.max(1, ...items.map(x=>x.orders));
 
     const table = `
@@ -278,7 +270,6 @@ function renderGlobalTwoCol(rows){
   const grid = document.createElement("div");
   grid.className = "global-grid";
 
-  // máximos globales para barras (para que comparen entre países)
   const maxAvailGlobal  = Math.max(1, ...rows.map(x=>x.avail));
   const maxOrdersGlobal = Math.max(1, ...rows.map(x=>x.orders));
 
@@ -353,29 +344,23 @@ function applyFilterAndRender(){
   else renderGlobalTwoCol(rows);
 }
 
-// Delegación para que funcione aunque el shell repinte el DOM
+// Delegación de eventos
 document.addEventListener("click", (ev)=>{
-  const id = (el)=> el && el.id;
   const t = ev.target;
-  const btnProc = t.closest("#btnProcess");
-  const btnClr  = t.closest("#btnClear");
-  const btnVC   = t.closest("#viewCountry");
-  const btnVG   = t.closest("#viewGlobal");
-
-  if (btnProc){
+  if (t.closest("#btnProcess")){
     const txt = document.getElementById("raw")?.value || "";
     CURRENT_ROWS = parseInput(txt);
     applyFilterAndRender();
-  } else if (btnClr){
+  } else if (t.closest("#btnClear")){
     const ta = document.getElementById("raw"); if (ta) ta.value = "";
     CURRENT_ROWS = [];
     applyFilterAndRender();
-  } else if (btnVC){
+  } else if (t.closest("#viewCountry")){
     CURRENT_VIEW = "country";
     document.getElementById("viewCountry")?.setAttribute("aria-pressed","true");
     document.getElementById("viewGlobal")?.setAttribute("aria-pressed","false");
     applyFilterAndRender();
-  } else if (btnVG){
+  } else if (t.closest("#viewGlobal")){
     CURRENT_VIEW = "global2";
     document.getElementById("viewCountry")?.setAttribute("aria-pressed","false");
     document.getElementById("viewGlobal")?.setAttribute("aria-pressed","true");
@@ -383,12 +368,10 @@ document.addEventListener("click", (ev)=>{
   }
 });
 
-// Filtro en vivo
 document.addEventListener("input", (ev)=>{
   if (ev.target && ev.target.id === "q") applyFilterAndRender();
 });
 
-// Primer pintado seguro
 window.addEventListener("load", applyFilterAndRender);
 </script>
 </body>
