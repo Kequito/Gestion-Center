@@ -3,105 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GC · Deltas de Leads</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <meta name="gc-base" content="/Gestion-Center/"><!-- el shell calcula BASE y fuerza HOME -->
+  <title>Delta Report 2 · Gestión Center</title>
+  <!-- bw.css lo inyecta el shell si falta; igual cargará tipografías y guard -->
   <style>
-    :root{ --font:'Lexend',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; --text:#e8e8e8; --sub:#b5b8bf; --border:#20242c; --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35) }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:#0b0d10;color:var(--text);font-family:var(--font)}
-    header{position:sticky;top:0;background:linear-gradient(180deg,rgba(11,13,16,.9),rgba(11,13,16,.4));border-bottom:1px solid var(--border)}
-    .wrap{max-width:1300px;margin:0 auto;padding:18px}
-    h1{margin:0;font-size:22px;font-weight:700}
-    .tools{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
-    .input{background:#10151b;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:12px}
-    textarea{width:100%;min-height:220px;background:#0e1218;color:var(--text);border:1px solid var(--border);border-radius:14px;padding:12px 14px;resize:vertical;box-shadow:var(--shadow);white-space:pre}
-    .btn{appearance:none;border:1px solid var(--border);background:#151a21;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
-    .btn.primary{background:#1e2630}
-    .hint{color:var(--sub);font-size:12px}
-    .card{background:#0e1218;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);margin-top:14px}
-    .card h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);font-size:16px}
-    .status{padding:12px 14px;color:var(--sub);font-size:13px}
-    .table-wrap{overflow:auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0 0 14px 14px}
-    table{width:100%;border-collapse:separate;border-spacing:0}
-    thead th{position:sticky;top:0;background:#0c1016;border-bottom:1px solid var(--border);text-align:left;font-weight:700;font-size:13px;padding:10px}
-    th,td{padding:10px;font-size:13px;border-bottom:1px solid #141921}
-    tbody tr:hover td{background:#0f141b}
-    .center{text-align:center}.muted{color:var(--sub)}.sort{cursor:pointer}
-    .pill{display:inline-block;padding:6px 10px;border-radius:10px;font-weight:700}
-    .ok{background:rgba(0,255,0,.1)} .bad{background:rgba(255,0,0,.1)}
+    /* Solo reforzamos el heatmap de celdas numéricas (no tocamos la estética BW) */
     td[data-h]{background:linear-gradient(90deg, rgba(56,142,60,.18) var(--h,0%), transparent 0)}
     td.badmap[data-h]{background:linear-gradient(90deg, rgba(183,28,28,.25) var(--h,0%), transparent 0)}
+    .muted{color:var(--gray-700)}
+    .u-gap{height:10px}
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>GC · Deltas de Leads</h1>
-      <div class="tools">
-        <input id="search" class="input" placeholder="Buscar país o cola…" />
-        <button id="btnProcess" class="btn primary">Procesar texto</button>
-        <button id="btnClear" class="btn">Limpiar</button>
-        <span class="hint">Pega el bloque con encabezados. Acepta TABs o espacios. Se ignoran PS y PS-Auto.</span>
-      </div>
-    </div>
-  </header>
+  <!-- 🌟 Shell GC: sidebar + header + hero -->
+  <gc-shell>
+    <!-- Hero AUTO lee este título y oculta este h1 para evitar duplicado -->
+    <h1 class="page-title">Delta Report 2</h1>
 
-  <main class="wrap">
-    <div class="card">
-      <h3>Entrada</h3>
-      <div class="status">
-        <textarea id="raw" placeholder="Pega aquí el texto con encabezados (#, Country, Name, …)"></textarea>
+    <!-- Toolbar superior (GC) -->
+    <div class="gc-panel" style="margin-top:14px;">
+      <div class="gc-toolbar">
+        <input id="search" class="gc-btn gc-btn--ghost" placeholder="🔎 Buscar país o cola…" style="width:280px; text-align:left;" />
+        <button id="btnProcess" class="gc-btn gc-btn--primary">
+          <span class="gc-icon">⚙️</span> Procesar texto
+        </button>
+        <button id="btnClear" class="gc-btn">
+          <span class="gc-icon">🧹</span> Limpiar
+        </button>
+        <div class="u-right gc-chipset">
+          <span class="gc-chip">Se ignoran PS / Post-sale / PS-Auto</span>
+          <span class="gc-chip">Solo 1-1, 2-2, 3-3, 4-4, 5-2, 5-5</span>
+        </div>
       </div>
+      <div class="u-gap"></div>
+      <textarea id="raw" class="gc-panel" placeholder="Pega aquí el texto con encabezados (#, Country, Name, …). Acepta TABs o espacios; separadores '☰' entre filas."
+                style="width:100%; min-height:220px; white-space:pre; border:1px solid var(--gray-300);"></textarea>
     </div>
 
-    <div id="out" class="card" style="display:none;">
-      <h3>Resultados <span id="resume" class="muted"></span></h3>
-      <div class="table-wrap">
-        <table id="tbl">
+    <!-- Resultados -->
+    <div id="out" class="gc-panel" style="margin-top:14px; display:none;">
+      <div style="display:flex; align-items:center; gap:10px; justify-content:space-between; margin-bottom:8px;">
+        <h3 style="margin:0;">Resultados <span id="resume" class="muted"></span></h3>
+        <div class="gc-chipset">
+          <span class="gc-chip gc-chip--dark">verde = mayor</span>
+          <span class="gc-chip">rojo = menor</span>
+          <span class="gc-chip">click en cabeceras para ordenar</span>
+        </div>
+      </div>
+
+      <div class="gc-panel" style="padding:0;">
+        <table id="tbl" class="gc-table gc-table--sticky">
           <thead>
             <tr>
               <th class="sort" data-sort="country">Country</th>
               <th class="sort" data-sort="queue">Queues</th>
-              <th class="center sort" data-sort="ops">Number of operators</th>
-              <th class="center sort" data-sort="avail">Orders available</th>
-              <th class="center sort" data-sort="total">Total orders</th>
-              <th class="center sort" data-sort="fullAvail">Full Total (Avail)</th>
-              <th class="center sort" data-sort="fullOrders">Full Total (Orders)</th>
+              <th class="sort center" data-sort="ops"   style="text-align:center;">Number of operators</th>
+              <th class="sort center" data-sort="avail" style="text-align:center;">Orders available</th>
+              <th class="sort center" data-sort="total" style="text-align:center;">Total orders</th>
+              <th class="sort center" data-sort="fullAvail"  style="text-align:center;">Full Total (Avail)</th>
+              <th class="sort center" data-sort="fullOrders" style="text-align:center;">Full Total (Orders)</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="status">
-        <span class="pill ok">verde = mayor</span> ·
-        <span class="pill bad">rojo = menor</span> ·
-        Click en cabeceras para ordenar.
-      </div>
     </div>
-  </main>
+  </gc-shell>
 
+  <!-- Shell BW (sidebar, head, guard, nav) -->
+  <script type="module" src="../assets/bw/shell.js"></script>
+
+  <!-- Lógica específica de Delta Report 2 -->
   <script>
     const $  = (s,p=document)=>p.querySelector(s);
     const $$ = (s,p=document)=>Array.from(p.querySelectorAll(s));
-    const rawEl = $('#raw'), out = $('#out'), tbody = $('#tbody'), resume = $('#resume');
 
-    const queueAllow = /(?:^|\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\s|$)/;
-    const isPS = /(\bPS\b|Post-sale|Post-sale_Auto|\-PS\b)/i;
+    const rawEl   = $('#raw');
+    const out     = $('#out');
+    const tbody   = $('#tbody');
+    const resume  = $('#resume');
 
-    // utils
+    // Reglas de filtro
+    const queueAllow = /(?:^|\\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\\s|$)/;
+    const isPS = /(\\bPS\\b|Post-sale|Post-sale_Auto|\\-PS\\b)/i;
+
+    // Helpers
     const fmt = n => Number(n||0).toLocaleString('en-US');
-    const cleanCountry = s => String(s||'').replace(/^\d+\.\s*/,'').trim();
-    const secondNum = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/); return m ? parseInt(m[2],10) : 0; };
-    const firstNum  = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/);  return m ? parseInt(m[1],10) : 0; };
-    const firstArrow = s => { const m = String(s||'').match(/(\d+)\s*->\s*\d+/);   return m ? parseInt(m[1],10) : 0; };
+    const cleanCountry = s => String(s||'').replace(/^\\d+\\.\\s*/,'').trim();
+    const secondNum = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[2],10) : 0; };
+    const firstNum  = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[1],10) : 0; };
+    const firstArrow= s => { const m = String(s||'').match(/(\\d+)\\s*->\\s*\\d+/);  return m ? parseInt(m[1],10) : 0; };
 
-    // separador flexible (TABs o 2+ espacios)
+    // Split flexible: TABs o 2+ espacios
     function smartSplit(line){
-      return line.includes('\t') ? line.split('\t') : line.trim().split(/\s{2,}/);
+      return line.includes('\\t') ? line.split('\\t') : line.trim().split(/\\s{2,}/);
     }
 
-    // localizar header (laxo) y cortar en chunks por “☰”
+    // Detectar header y cortar en chunks "☰"
     function findHeaderAndChunks(lines){
       const headIdx = lines.findIndex(l=>{
         const low = l.toLowerCase();
@@ -116,11 +114,12 @@
       const chunks = [];
       let buf = [];
       for(const ln of rest){
-        if (ln.trim() === '☰'){
+        const t = ln.trim();
+        if (t === '☰'){
           if (buf.length) { chunks.push(buf.join(' ')); buf = []; }
           continue;
         }
-        if (ln.trim()) buf.push(ln.trim());
+        if (t) buf.push(t);
       }
       if (buf.length) chunks.push(buf.join(' '));
 
@@ -128,22 +127,23 @@
     }
 
     function parseRows(){
-      const text = rawEl.value.replace(/\r/g,'').trim();
+      const text = rawEl.value.replace(/\\r/g,'').trim();
       if(!text) return [];
 
-      // mantener '☰' pero quitar líneas completamente vacías
-      const all = text.split(/\n/).map(l=>l.replace(/\s+$/,''));
+      const all   = text.split(/\\n/).map(l=>l.replace(/\\s+$/,''));
       const lines = all.filter(l=>l.trim() || l.trim()==='☰');
 
       const { headers, chunks } = findHeaderAndChunks(lines);
       if (!headers.length || !chunks.length) return [];
 
       const idx = (name) => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+
       const iCountry = idx('Country');
       const iName    = idx('Name');
       const iOps     = idx('Number of operators');
       const iOrders  = idx('Orders');
       const iCap     = idx('Capacity');
+
       if ([iCountry,iName,iOps,iOrders,iCap].some(v => v === -1)) return [];
 
       const rows = [];
@@ -156,9 +156,9 @@
         if (!queueAllow.test(name)) continue;
 
         const country = cleanCountry(cols[iCountry] || '');
-        const ops     = secondNum(cols[iOps] || '');      // 2º de "X | Y"
-        const total   = firstNum (cols[iOrders] || '');   // 1º de "A | B"
-        const avail   = firstArrow(cols[iCap] || '');     // 1º de "a -> b" (Capacity)
+        const ops     = secondNum(cols[iOps] || '');     // 2º de "X | Y"
+        const avail   = firstArrow(cols[iCap] || '');    // 1º de "a -> b" (Capacity)
+        const total   = firstNum (cols[iOrders] || '');  // 1º de "A | B" (Orders)
 
         rows.push({ country, queue:name, ops, avail, total });
       }
@@ -174,12 +174,15 @@
         g.fullAvail  += r.avail;
         g.fullOrders += r.total;
       }
+      // Orden default: por Full Orders desc
       return Array.from(map.values()).sort((a,b)=>b.fullOrders-a.fullOrders);
     }
 
     function render(rows){
       const groups = groupByCountry(rows);
-      const allOps=rows.map(r=>r.ops), allAvail=rows.map(r=>r.avail), allTotal=rows.map(r=>r.total);
+      const allOps  = rows.map(r=>r.ops);
+      const allAvail= rows.map(r=>r.avail);
+      const allTotal= rows.map(r=>r.total);
       const mm=a=>({min:Math.min(...a,0),max:Math.max(...a,1)});
       const mmOps=mm(allOps), mmAvail=mm(allAvail), mmTotal=mm(allTotal);
       const scale=(v,{min,max})=> max===min?0:Math.round(((v-min)/(max-min))*100);
@@ -191,11 +194,11 @@
           tr.innerHTML = `
             <td>${g.country}</td>
             <td>${r.queue}</td>
-            <td class="center" data-h style="--h:${scale(r.ops,mmOps)}%">${fmt(r.ops)}</td>
-            <td class="center badmap" data-h style="--h:${scale(r.avail,mmAvail)}%">${fmt(r.avail)}</td>
-            <td class="center" data-h style="--h:${scale(r.total,mmTotal)}%">${fmt(r.total)}</td>
-            <td class="center muted">${fmt(g.fullAvail)}</td>
-            <td class="center muted">${fmt(g.fullOrders)}</td>`;
+            <td style="text-align:center" data-h style="--h:${scale(r.ops,mmOps)}%">${fmt(r.ops)}</td>
+            <td class="badmap" style="text-align:center" data-h style="--h:${scale(r.avail,mmAvail)}%">${fmt(r.avail)}</td>
+            <td style="text-align:center" data-h style="--h:${scale(r.total,mmTotal)}%">${fmt(r.total)}</td>
+            <td style="text-align:center" class="muted">${fmt(g.fullAvail)}</td>
+            <td style="text-align:center" class="muted">${fmt(g.fullOrders)}</td>`;
           tbody.appendChild(tr);
         }
       }
@@ -203,23 +206,25 @@
       resume.textContent = `— ${rows.length} filas · ${new Set(rows.map(r=>r.country)).size} países`;
     }
 
-    // sort + search (ahora con fullAvail y fullOrders)
+    // Ordenamiento + búsqueda
     let sortKey=null, sortDir=1;
     $$('#tbl thead th.sort').forEach(th=>{
       th.addEventListener('click', ()=>{
         const key = th.dataset.sort;
         sortDir = (sortKey===key) ? -sortDir : 1; sortKey=key;
         const rows = parseRows();
-        // Para ordenar por "full..." necesitamos agrupar primero
+
+        // Columnas agregadas por país
         if (key==='fullAvail' || key==='fullOrders'){
           const groups = groupByCountry(rows);
-          groups.sort((a,b)=> (key==='fullAvail' ? (a.fullAvail-b.fullAvail) : (a.fullOrders-b.fullOrders)) * sortDir);
-          // rearmar rows en nuevo orden de países
+          groups.sort((a,b)=> ((key==='fullAvail'? (a.fullAvail-b.fullAvail) : (a.fullOrders-b.fullOrders)) * sortDir));
           const ordered = [];
           for(const g of groups) ordered.push(...g.rows);
           render(ordered);
           return;
         }
+
+        // Columnas de fila
         rows.sort((a,b)=>{
           const A = key==='country'? a.country.localeCompare(b.country)
                   : key==='queue' ? a.queue.localeCompare(b.queue)
@@ -246,7 +251,9 @@
     });
 
     $('#btnProcess').addEventListener('click', ()=> render(parseRows()));
-    $('#btnClear').addEventListener('click', ()=>{ rawEl.value=''; out.style.display='none'; $('#search').value=''; });
+    $('#btnClear').addEventListener('click', ()=>{
+      rawEl.value=''; out.style.display='none'; $('#search').value='';
+    });
   </script>
 </body>
 </html>
