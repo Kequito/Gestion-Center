@@ -54,7 +54,7 @@
       background:linear-gradient(180deg,#e5e7eb,#cbd5e1);
       border-right:1px solid var(--gray-300);
       padding:8px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; /* evita "deformar" por nombres largos */
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
     .ghead .title{
       background:#000; color:#fff; padding:8px 12px; font-weight:800;
@@ -66,9 +66,9 @@
     .gtable th,.gtable td{ padding:8px 10px; border-bottom:1px solid var(--gray-200) }
     .gtable thead th{ background:#000; color:#fff; font-size:12px }
     .gtable tfoot td{ background:var(--gray-100); font-weight:800 }
-    .gtable td:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } /* colas largas sin romper tarjeta */
+    .gtable td:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-    /* Botón activo negro (no “se vuelve blanco”) heredando GC */
+    /* Botón activo negro */
     .gc-btn--primary[aria-pressed="true"]{
       filter:brightness(1.05); outline:2px solid var(--black)
     }
@@ -80,7 +80,7 @@
     <div class="toolbar">
       <input id="q" class="grow gc-btn gc-btn--ghost" placeholder="🔎 Buscar país o cola… (ej: Peru, 3-3)"/>
       <button id="btnProcess" type="button" class="gc-btn gc-btn--primary">⚙️ Procesar texto</button>
-      <button id="btnClear" type="button" class="gc-btn">🧹 Limpiar</button>
+      <button id="btnClear"   type="button" class="gc-btn">🧹 Limpiar</button>
       <a class="gc-btn gc-btn--ghost" target="_blank" rel="noopener"
          href="https://panel.2wcall.com/queue/control/index?QueueSearch%5Bid%5D=&QueueSearch%5Bname%5D=&QueueSearch%5Bpartner_id%5D=&QueueSearch%5Bcountry_id%5D%5B0%5D=26&QueueSearch%5Bcountry_id%5D%5B1%5D=28&QueueSearch%5Bcountry_id%5D%5B2%5D=67&QueueSearch%5Bcountry_id%5D%5B3%5D=88&QueueSearch%5Bcountry_id%5D%5B4%5D=3&QueueSearch%5Bcountry_id%5D%5B5%5D=84&QueueSearch%5Bcountry_id%5D%5B6%5D=39&QueueSearch%5Bcountry_id%5D%5B7%5D=96&QueueSearch%5Bcountry_id%5D%5B8%5D=103&QueueSearch%5Bpriorities%5D=&QueueSearch%5Btype_primary%5D=&QueueSearch%5Bis_primary%5D=0&per-page=500">🔗 Fuente (Panel)</a>
       <span class="u-right"></span>
@@ -127,30 +127,19 @@ function flagUrl(country){
   return `https://flagcdn.com/w20/${code}.png`;
 }
 function clean(s){ return String(s||"").trim(); }
-function numFirst(s){
-  const m = String(s||"").match(/-?\d+/);
-  return m ? parseInt(m[0],10) : 0;
-}
-function splitFirstPipe(s){ // "11 | 0" -> 11
-  const m = String(s||"").split("|");
-  return m.length ? numFirst(m[0]) : 0;
-}
-function rightPipe(s){ // "17 | 4" -> 4
-  const m = String(s||"").split("|");
-  return m.length > 1 ? numFirst(m[1]) : 0;
-}
-function capacityLeft(s){ // "0 -> 11" -> 0
-  return numFirst(s);
-}
+function numFirst(s){ const m = String(s||"").match(/-?\d+/); return m ? parseInt(m[0],10) : 0; }
+function splitFirstPipe(s){ const m = String(s||"").split("|"); return m.length ? numFirst(m[0]) : 0; }
+function rightPipe(s){ const m = String(s||"").split("|"); return m.length>1 ? numFirst(m[1]) : 0; }
+function capacityLeft(s){ return numFirst(s); } // "0 -> 11" => 0
 
 /* ============ header resolver (tolerante a variaciones) ============ */
 const ALIAS = {
-  country: [/^country$/i],
-  name: [/^name$/i, /^description$/i],
-  numops: [/^number of operators$/i],
+  country:  [/^country$/i],
+  name:     [/^name$/i, /^description$/i],
+  numops:   [/^number of operators$/i],
   capacity: [/^capacity$/i],
-  orders: [/^orders$/i],
-  ordertype: [/^order type$/i]
+  orders:   [/^orders$/i],
+  ordertype:[/^order type$/i]
 };
 function findIdx(headers, aliasArr){
   const idx = headers.findIndex(h => aliasArr.some(rx => rx.test(h)));
@@ -176,7 +165,7 @@ function parseInput(txt){
 
   const rows = [];
   for (let i = headerIdx + 1; i < lines.length; i++){
-    let line = lines[i];
+    const line = lines[i];
     if (!line || !line.includes("\t")) continue;
     if (/^[☰=]+$/.test(line.trim())) continue;
 
@@ -186,26 +175,16 @@ function parseInput(txt){
     const countryRaw = clean(val(idxCountry)).replace(/^\d+\.\s*/,"");
     const queueName  = clean(val(idxName)) || "";
     const typeStr    = clean(val(idxType));
-
-    // Ignorar PS / Post-sale / PS-Auto en cualquier campo relevante
     const sAll = `${queueName} ${typeStr}`.toLowerCase();
-    if (/(^|\W)(ps(-auto)?|post[-\s]?sale(_auto)?)/i.test(sAll)) continue;
+    if (/(^|\W)(ps(-auto)?|post[-\s]?sale(_auto)?)/i.test(sAll)) continue; // ignorar PS / PS-Auto
 
-    // Lectura EXACTA solicitada:
-    // - Operators(Y): segundo número de "Number of operators"
-    // - Orders available: número izquierdo de Capacity (a -> b  ⇒ a)
-    // - Total orders: primer número de Orders (a | b ⇒ a)
-    const opsY   = rightPipe(val(idxOps));
-    const avail  = capacityLeft(val(idxCapacity));
-    const orders = splitFirstPipe(val(idxOrders));
+    const opsY   = rightPipe(val(idxOps));     // segunda parte
+    const avail  = capacityLeft(val(idxCapacity)); // izquierda capacity
+    const orders = splitFirstPipe(val(idxOrders)); // primer número de Orders
 
     if (!countryRaw || !queueName) continue;
 
-    rows.push({
-      country: countryRaw,
-      queue: queueName,
-      opsY, avail, orders
-    });
+    rows.push({ country:countryRaw, queue:queueName, opsY, avail, orders });
   }
   return rows;
 }
@@ -250,7 +229,7 @@ function renderCountryCards(rows){
     const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
     fullAvail += sumAvail; fullOrders += sumOrders;
 
-    const mAvail = Math.max(1, ...items.map(x=>x.avail));
+    const mAvail  = Math.max(1, ...items.map(x=>x.avail));
     const mOrders = Math.max(1, ...items.map(x=>x.orders));
 
     const table = `
@@ -301,7 +280,7 @@ function renderCountryCards(rows){
   document.getElementById("resume").textContent = `Resultados — ${rows.length} filas · ${countries.length} países`;
 }
 
-/* ============== Render: Global (3 columnas, tarjetas iguales) ============== */
+/* ============== Render: Global (3 columnas) ============== */
 function renderGlobalThreeCol(rows){
   const root = document.getElementById("result");
   root.innerHTML = "";
@@ -369,12 +348,12 @@ function renderGlobalThreeCol(rows){
   document.getElementById("resume").textContent = `Resultados — ${rows.length} filas · ${countries.length} países`;
 }
 
-/* ============== Control / Estado ============== */
+/* ============== Control / Estado + Rebinding robusto ============== */
 let CURRENT_ROWS = [];
 let CURRENT_VIEW = "country"; // "country" | "global3"
 
 function applyFilterAndRender(){
-  const term = document.getElementById("q").value.trim().toLowerCase();
+  const term = (document.getElementById("q")?.value || "").trim().toLowerCase();
   const rows = term
     ? CURRENT_ROWS.filter(r =>
         r.country.toLowerCase().includes(term) ||
@@ -385,30 +364,58 @@ function applyFilterAndRender(){
   else renderGlobalThreeCol(rows);
 }
 
-document.getElementById("btnProcess").addEventListener("click", ()=>{
-  const txt = document.getElementById("raw").value;
-  CURRENT_ROWS = parseInput(txt);
-  applyFilterAndRender();
-});
-document.getElementById("btnClear").addEventListener("click", ()=>{
-  document.getElementById("raw").value = "";
-  CURRENT_ROWS = [];
-  applyFilterAndRender();
-});
-document.getElementById("q").addEventListener("input", applyFilterAndRender);
+/* Vincula listeners si aún no están enlazados (se llama repetidamente). */
+function bindUI(){
+  const btnProcess = document.getElementById("btnProcess");
+  const btnClear   = document.getElementById("btnClear");
+  const q          = document.getElementById("q");
+  const vCountry   = document.getElementById("viewCountry");
+  const vGlobal    = document.getElementById("viewGlobal");
 
-document.getElementById("viewCountry").addEventListener("click", ()=>{
-  CURRENT_VIEW = "country";
-  document.getElementById("viewCountry").setAttribute("aria-pressed","true");
-  document.getElementById("viewGlobal").setAttribute("aria-pressed","false");
-  applyFilterAndRender();
-});
-document.getElementById("viewGlobal").addEventListener("click", ()=>{
-  CURRENT_VIEW = "global3";
-  document.getElementById("viewCountry").setAttribute("aria-pressed","false");
-  document.getElementById("viewGlobal").setAttribute("aria-pressed","true");
-  applyFilterAndRender();
-});
+  if (btnProcess && !btnProcess.dataset.bound){
+    btnProcess.dataset.bound = "1";
+    btnProcess.addEventListener("click", ()=>{
+      const txt = document.getElementById("raw").value;
+      CURRENT_ROWS = parseInput(txt);
+      applyFilterAndRender();
+    });
+  }
+  if (btnClear && !btnClear.dataset.bound){
+    btnClear.dataset.bound = "1";
+    btnClear.addEventListener("click", ()=>{
+      document.getElementById("raw").value = "";
+      CURRENT_ROWS = [];
+      applyFilterAndRender();
+    });
+  }
+  if (q && !q.dataset.bound){
+    q.dataset.bound = "1";
+    q.addEventListener("input", applyFilterAndRender);
+  }
+  if (vCountry && !vCountry.dataset.bound){
+    vCountry.dataset.bound = "1";
+    vCountry.addEventListener("click", ()=>{
+      CURRENT_VIEW = "country";
+      vCountry.setAttribute("aria-pressed","true");
+      document.getElementById("viewGlobal")?.setAttribute("aria-pressed","false");
+      applyFilterAndRender();
+    });
+  }
+  if (vGlobal && !vGlobal.dataset.bound){
+    vGlobal.dataset.bound = "1";
+    vGlobal.addEventListener("click", ()=>{
+      CURRENT_VIEW = "global3";
+      vGlobal.setAttribute("aria-pressed","true");
+      document.getElementById("viewCountry")?.setAttribute("aria-pressed","false");
+      applyFilterAndRender();
+    });
+  }
+}
+
+/* Re-vincular cuando el shell reescriba el DOM */
+const mo = new MutationObserver(() => bindUI());
+mo.observe(document.documentElement, {subtree:true, childList:true});
+bindUI(); // primer intento inmediato
 </script>
 </body>
 </html>
