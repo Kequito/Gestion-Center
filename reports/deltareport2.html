@@ -6,13 +6,17 @@
   <meta name="gc-base" content="/Gestion-Center/"/>
   <title>Delta Report 2</title>
   <script defer src="../assets/bw/shell.js"></script>
+
   <style>
     /* ---- Ajustes propios de la página ---- */
     .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0 12px }
     .toolbar .grow{ flex:1 1 320px }
     .gc-panel h3{ margin:0 0 8px }
 
-    textarea#raw{ width:100%; min-height:220px; resize:vertical; font-family:ui-monospace,Menlo,Consolas,monospace }
+    textarea#raw{
+      width:100%; min-height:220px; resize:vertical;
+      font-family:ui-monospace,Menlo,Consolas,monospace
+    }
 
     /* Chips info */
     .legend{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 }
@@ -23,14 +27,19 @@
     .bar-wrap{ position:relative; height:22px; background:#f3f4f6; border-radius:6px; overflow:hidden }
     .bar{ position:absolute; inset:0 0 0 0; transform-origin:left center; background:#ef4444; opacity:.25 }
     .bar.green{ background:#10b981; opacity:.25 }
+    .bar-val{ position:relative; z-index:1; padding:0 6px; font-weight:700 }
 
     /* ===== Vista "Por país" (cards) ===== */
     .country-card{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden; margin-bottom:14px }
     .country-hd{
-      background:#000; color:#fff; padding:8px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap
+      background:#000; color:#fff; padding:8px 12px;
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap
     }
     .country-hd .name{ font-weight:800; text-transform:capitalize }
-    .country-hd .pill{ background:#111; border:1px solid #222; border-radius:999px; padding:4px 8px; font-weight:700 }
+    .country-hd .pill{
+      background:#111; border:1px solid #222; border-radius:999px;
+      padding:4px 8px; font-weight:700
+    }
     .country-table{ width:100%; border-collapse:separate; border-spacing:0 }
     .country-table th, .country-table td{ padding:10px 12px; border-bottom:1px solid var(--gray-200) }
     .country-table thead th{ background:#000; color:#fff; text-align:left }
@@ -44,9 +53,7 @@
     @media (max-width:1200px){ .global-grid{ grid-template-columns:1fr } }
 
     .gcard{ border:1px solid var(--gray-300); border-radius:12px; overflow:hidden }
-    .ghead{
-      display:grid; grid-template-columns:120px 1fr; align-items:stretch; min-height:48px;
-    }
+    .ghead{ display:grid; grid-template-columns:120px 1fr; align-items:stretch; min-height:48px }
     .ghead .tag{
       display:flex; align-items:center; justify-content:center;
       font-weight:900; font-size:14px; color:#111; text-transform:uppercase;
@@ -112,7 +119,7 @@ function queueOrderKey(q){
   if (!m) return 999;
   const key = `${m[1]}-${m[2]}`;
   if (key in orderMap) return orderMap[key];
-  return 500 + (+m[1])*10 + (+m[2]);
+  return 500 + (+m[1])*10 + (+m[2]); // fallback estable
 }
 function clean(s){ return String(s||"").trim(); }
 function num(s){
@@ -120,28 +127,45 @@ function num(s){
   const m = String(s).match(/-?\d+/g);
   return m ? parseInt(m[0],10) : 0;
 }
-function splitPipePair(s, sep="|"){ const parts = String(s||"").split(sep); return [num(parts[0]), num(parts[1])]; }
-function leftOfArrow(s){ const m = String(s||"").match(/-?\d+/); return m ? parseInt(m[0],10) : 0; }
+function splitPipePair(s, sep="|"){ // "53 | 8" -> [53,8]
+  const parts = String(s||"").split(sep);
+  const a = num(parts[0]), b = num(parts[1]);
+  return [a,b];
+}
+function leftOfArrow(s){ // "0 -> 2" -> 0
+  const m = String(s||"").match(/-?\d+/);
+  return m ? parseInt(m[0],10) : 0;
+}
 function barHTML(value, max, green=false){
   const pct = max > 0 ? Math.min(1, value/max) : 0;
   return `
     <div class="bar-wrap" title="${value}">
       <div class="bar ${green?'green':''}" style="transform:scaleX(${pct})"></div>
-      <div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${value}</div>
+      <div class="bar-val">${value}</div>
     </div>`;
 }
-/* Helper: si la cola es "Chile 1-1", devuelve "Chile" */
+
+/* ================== Parser ================== */
+// Detectar variantes PS / Post-Sale / Auto-Post Sale
+function isPSLike(str){
+  const s = String(str||"");
+  return /post\s*-?\s*sale/i.test(s)           // Post sale / Post-sale
+      || /auto\s*-?\s*post\s*-?\s*sale/i.test(s) // Auto-Post Sale
+      || /\bps\b/i.test(s)                    // PS, PS 2...
+      || /ps[-_\s]*auto/i.test(s);            // PS-Auto / PS_Auto
+}
+// Si la cola es "Chile 1-1", devuelve "Chile"
 function inferCountryFromQueue(queue){
   const m = String(queue||"").match(/^(.+?)\s+\d\s*-\s*\d/);
   return m ? m[1].trim() : "";
 }
 
-/* ================== Parser (robusto) ================== */
 function parseInput(txt){
   if (!txt) return [];
   const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
   let headerIdx = lines.findIndex(l => l.includes("\t") && /Country/i.test(l));
   if (headerIdx === -1) headerIdx = 0;
+
   const headers = lines[headerIdx].split("\t").map(h => h.trim());
   const rows = [];
 
@@ -155,21 +179,24 @@ function parseInput(txt){
     headers.forEach((h,idx)=> map[h] = cells[idx]);
 
     const name = clean(map["Name"] || map["Description"] || "");
-    // Ignorar PS / PS-Auto
-    if (/post[- ]?sale/i.test(map["Order type"] || "") || /post[- ]?sale/i.test(name) || /PS[- ]?Auto/i.test(name)) {
-      continue;
-    }
+    const otype = clean(map["Order type"] || "");
 
+    // Descartar PS/PS-Auto/Post-Sale
+    if (isPSLike(otype) || isPSLike(name)) continue;
+
+    // Base
     const queue = clean(name);
+
+    // País robusto
     let rawCountry = clean((map["Country"] || "").replace(/^\d+\.\s*/,""));
-    // Si el "Country" parece una cola (termina en N-N) o viene vacío, inferimos desde la cola
     const looksLikeQueue = /\d\s*-\s*\d$/.test(rawCountry);
     const inferred = inferCountryFromQueue(queue);
     const country = (!rawCountry || looksLikeQueue) && inferred ? inferred : rawCountry;
 
-    const [, opsY]        = splitPipePair(map["Number of operators"] || "");
-    const capacityAvail   = leftOfArrow(map["Capacity"] || "");
-    const totalOrders     = splitPipePair(map["Orders"] || "")[0];
+    // Lectura EXACTA (lo que pediste)
+    const [, opsY]      = splitPipePair(map["Number of operators"] || ""); // 2ª parte
+    const capacityAvail = leftOfArrow(map["Capacity"] || "");              // izquierda de Capacity
+    const totalOrders   = splitPipePair(map["Orders"] || "")[0];           // 1ª parte de Orders
 
     rows.push({ country, queue, opsY, avail: capacityAvail, orders: totalOrders });
   }
@@ -183,6 +210,7 @@ function groupByCountry(rows){
     if (!map.has(r.country)) map.set(r.country, []);
     map.get(r.country).push(r);
   }
+  // ordenar colas según key
   for (const arr of map.values()){
     arr.sort((a,b)=>{
       const ka = queueOrderKey(a.queue);
@@ -208,7 +236,8 @@ function renderCountryCards(rows){
     const sumOrders = items.reduce((s,x)=> s + x.orders, 0);
     fullAvail += sumAvail; fullOrders += sumOrders;
 
-    const mAvail  = Math.max(1, ...items.map(x=>x.avail));
+    // máximos locales para barras
+    const mAvail = Math.max(1, ...items.map(x=>x.avail));
     const mOrders = Math.max(1, ...items.map(x=>x.orders));
 
     const table = `
@@ -225,7 +254,7 @@ function renderCountryCards(rows){
           ${items.map(x=>`
             <tr>
               <td>${x.queue}</td>
-              <td><div class="bar-wrap"><div class="bar green" style="transform:scaleX(0)"></div><div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${x.opsY}</div></div></td>
+              <td style="text-align:center; font-weight:800">${x.opsY}</td>
               <td>${barHTML(x.avail,  mAvail, false)}</td>
               <td>${barHTML(x.orders, mOrders, true)}</td>
             </tr>`).join("")}
@@ -270,6 +299,7 @@ function renderGlobalTwoCol(rows){
   const grid = document.createElement("div");
   grid.className = "global-grid";
 
+  // máximos globales para barras
   const maxAvailGlobal  = Math.max(1, ...rows.map(x=>x.avail));
   const maxOrdersGlobal = Math.max(1, ...rows.map(x=>x.orders));
 
@@ -327,13 +357,12 @@ function renderGlobalTwoCol(rows){
   document.getElementById("resume").textContent = `Resultados — ${rows.length} filas · ${countries.length} países`;
 }
 
-/* ============== Control / Estado (delegación robusta) ============== */
+/* ============== Control / Estado ============== */
 let CURRENT_ROWS = [];
 let CURRENT_VIEW = "country"; // "country" | "global2"
 
 function applyFilterAndRender(){
-  const q = document.getElementById("q");
-  const term = (q?.value || "").trim().toLowerCase();
+  const term = document.getElementById("q").value.trim().toLowerCase();
   const rows = term
     ? CURRENT_ROWS.filter(r =>
         r.country.toLowerCase().includes(term) ||
@@ -344,35 +373,30 @@ function applyFilterAndRender(){
   else renderGlobalTwoCol(rows);
 }
 
-// Delegación de eventos
-document.addEventListener("click", (ev)=>{
-  const t = ev.target;
-  if (t.closest("#btnProcess")){
-    const txt = document.getElementById("raw")?.value || "";
-    CURRENT_ROWS = parseInput(txt);
-    applyFilterAndRender();
-  } else if (t.closest("#btnClear")){
-    const ta = document.getElementById("raw"); if (ta) ta.value = "";
-    CURRENT_ROWS = [];
-    applyFilterAndRender();
-  } else if (t.closest("#viewCountry")){
-    CURRENT_VIEW = "country";
-    document.getElementById("viewCountry")?.setAttribute("aria-pressed","true");
-    document.getElementById("viewGlobal")?.setAttribute("aria-pressed","false");
-    applyFilterAndRender();
-  } else if (t.closest("#viewGlobal")){
-    CURRENT_VIEW = "global2";
-    document.getElementById("viewCountry")?.setAttribute("aria-pressed","false");
-    document.getElementById("viewGlobal")?.setAttribute("aria-pressed","true");
-    applyFilterAndRender();
-  }
+document.getElementById("btnProcess").addEventListener("click", ()=>{
+  const txt = document.getElementById("raw").value;
+  CURRENT_ROWS = parseInput(txt);
+  applyFilterAndRender();
 });
-
-document.addEventListener("input", (ev)=>{
-  if (ev.target && ev.target.id === "q") applyFilterAndRender();
+document.getElementById("btnClear").addEventListener("click", ()=>{
+  document.getElementById("raw").value = "";
+  CURRENT_ROWS = [];
+  applyFilterAndRender();
 });
+document.getElementById("q").addEventListener("input", applyFilterAndRender);
 
-window.addEventListener("load", applyFilterAndRender);
+document.getElementById("viewCountry").addEventListener("click", ()=>{
+  CURRENT_VIEW = "country";
+  document.getElementById("viewCountry").setAttribute("aria-pressed","true");
+  document.getElementById("viewGlobal").setAttribute("aria-pressed","false");
+  applyFilterAndRender();
+});
+document.getElementById("viewGlobal").addEventListener("click", ()=>{
+  CURRENT_VIEW = "global2";
+  document.getElementById("viewCountry").setAttribute("aria-pressed","false");
+  document.getElementById("viewGlobal").setAttribute("aria-pressed","true");
+  applyFilterAndRender();
+});
 </script>
 </body>
 </html>
