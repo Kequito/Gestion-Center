@@ -8,7 +8,7 @@
       - Sin subtítulo por defecto
       - Título AUTO desde .page-title / h1 / h2 (o hero-title)
       - Si se usó auto, oculta la .page-title duplicada
-   ✅ Refuerzo: asegura "Delta Report" en Reportes si gc.config.js no lo trae
+   ✅ Refuerzo: asegura "Delta Report" y "Delta Report 2" en Reportes
    =========================================================== */
 
 const HOME_ABS = "https://kequito.github.io/Gestion-Center/";
@@ -59,24 +59,29 @@ window.__GC_BASE__ = BASE;
 function ensureDeltaReportInConfig(cfg){
   if (!cfg || !Array.isArray(cfg.nav)) return cfg;
 
-  // Encontrar grupo "Reportes"
+  // Buscar grupo "Reportes"
   const reportsIdx = cfg.nav.findIndex(e => e?.type === "group" && /reportes/i.test(e.title||""));
   if (reportsIdx === -1) return cfg;
 
   const grp = cfg.nav[reportsIdx];
   grp.items ||= [];
 
-  const hasDelta = grp.items.some(it =>
-    /deltareport\.html$/i.test(it?.href||"") || /delta\s*report/i.test(it?.label||"")
+  // Helpers de existencia
+  const hasDelta1 = grp.items.some(it =>
+    /reports\/deltareport\.html$/i.test(it?.href||"") || /delta\s*report(?!\s*2)/i.test(it?.label||"")
+  );
+  const hasDelta2 = grp.items.some(it =>
+    /reports\/deltareport2\.html$/i.test(it?.href||"") || /delta\s*report\s*2/i.test(it?.label||"")
   );
 
-  if (!hasDelta){
-    grp.items.push({
-      href: "reports/deltareport.html",
-      icon: "📈",
-      label: "Delta Report",
-    });
+  // Inyectar si faltan
+  if (!hasDelta1){
+    grp.items.push({ href: "reports/deltareport.html",  icon: "📈", label: "Delta Report" });
   }
+  if (!hasDelta2){
+    grp.items.push({ href: "reports/deltareport2.html", icon: "📊", label: "Delta Report 2" });
+  }
+
   cfg.nav[reportsIdx] = grp;
   return cfg;
 }
@@ -102,7 +107,7 @@ async function loadConfig() {
       });
     }
 
-    // Refuerzo: asegurar presencia de "Delta Report"
+    // Refuerzo: asegurar presencia de Delta Report y Delta Report 2
     cfg = ensureDeltaReportInConfig(cfg);
 
     return cfg;
@@ -122,19 +127,20 @@ async function loadConfig() {
         { type: "link", id: "home", label: "Inicio", icon: "🏠", href: HOME_ABS },
         { type: "group", id: "grp-reportes", title: "Reportes",
           items: [
-            { label: "New Report",      icon: "🧰", href: "reports/newreport.html" },
-            { label: "Post-Sale Report",icon: "🚚", href: "reports/psreport.html" },
-            { label: "Delta Report",    icon: "📈", href: "reports/deltareport.html" }, // ✅ fallback incluye Delta
+            { label: "New Report",         icon: "🧰", href: "reports/newreport.html" },
+            { label: "Post-Sale Report",   icon: "🚚", href: "reports/psreport.html" },
+            { label: "Delta Report",       icon: "📈", href: "reports/deltareport.html" },
+            { label: "Delta Report 2",     icon: "📊", href: "reports/deltareport2.html" }, // ← nuevo
           ]},
         { type: "group", id: "grp-operaciones", title: "Operaciones",
           items: [
-            { label: "Distribución",    icon: "📋", href: "operations/distribucion.html" },
-            { label: "BI de OPs + Links", icon: "🔗", href: "operations/biops.html" },
+            { label: "Distribución",        icon: "📋", href: "operations/distribucion.html" },
+            { label: "BI de OPs + Links",   icon: "🔗", href: "operations/biops.html" },
           ]},
         { type: "group", id: "grp-cobertura", title: "Cobertura",
           items: [
-            { label: "Mapa de cobertura", icon: "🗺️", href: "cobertura.html" },
-            { label: "New Cobertura 1.1", icon: "🧭", href: "newcobertura.html" },
+            { label: "Mapa de cobertura",   icon: "🗺️", href: "cobertura.html" },
+            { label: "New Cobertura 1.1",   icon: "🧭", href: "newcobertura.html" },
           ]},
         { type: "group", id: "grp-utils", title: "Utilidades",
           items: [
@@ -384,7 +390,7 @@ class GCShell extends HTMLElement {
     const extractedTitle = extractTitleFromHtml(userContent);
     const attrTitle = (this.getAttribute("hero-title") || "").trim();
     const heroTitle = attrTitle || extractedTitle || (CFG.heroDefault?.title || "");
-    const heroSub   = (this.getAttribute("hero-subtitle") || "").trim(); // <- sin fallback (se oculta si vacío)
+    const heroSub   = (this.getAttribute("hero-subtitle") || "").trim(); // <- sin fallback
 
     // Si no hay aside y no se ha puesto override, ajustar padding main
     if (noAside && !document.querySelector('style[data-gc="no-aside-ov"]')) {
@@ -407,7 +413,7 @@ class GCShell extends HTMLElement {
       </main>
     `;
 
-    // Si el título vino de .page-title (auto), ocultamos esa .page-title en el contenido para no duplicar
+    // Si el título vino de .page-title (auto), ocultamos esa .page-title para no duplicar
     if (!attrTitle && extractedTitle){
       const src = this.querySelector('.page-title, [data-hero-title]');
       if (src) src.style.display = 'none';
