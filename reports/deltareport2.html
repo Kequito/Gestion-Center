@@ -6,9 +6,7 @@
   <meta name="gc-base" content="/Gestion-Center/">
   <title>Delta Report 2 · Gestión Center</title>
 
-  <!-- Solo estilos mínimos propios (el resto lo pone bw.css vía shell) -->
   <style>
-    /* Heatmap suave para números */
     td[data-h]{background:linear-gradient(90deg, rgba(56,142,60,.18) var(--h,0%), transparent 0)}
     td.badmap[data-h]{background:linear-gradient(90deg, rgba(183,28,28,.25) var(--h,0%), transparent 0)}
     .muted{color:var(--gray-700)}
@@ -16,12 +14,9 @@
   </style>
 </head>
 <body>
-  <!-- 🌟 Shell GC: sidebar + header + hero -->
   <gc-shell>
-    <!-- Hero AUTO leerá este título y ocultará este h1 para no duplicar -->
     <h1 class="page-title">Delta Report 2</h1>
 
-    <!-- Toolbar / entrada -->
     <div class="gc-panel" style="margin-top:14px;">
       <div class="gc-toolbar">
         <input id="search" class="gc-btn gc-btn--ghost" placeholder="🔎 Buscar país o cola…" style="width:280px; text-align:left;" />
@@ -41,7 +36,6 @@
                 style="width:100%; min-height:220px; white-space:pre; border:1px solid var(--gray-300);"></textarea>
     </div>
 
-    <!-- Resultados -->
     <div id="out" class="gc-panel" style="margin-top:14px; display:none;">
       <div style="display:flex; align-items:center; gap:10px; justify-content:space-between; margin-bottom:8px;">
         <h3 style="margin:0;">Resultados <span id="resume" class="muted"></span></h3>
@@ -71,32 +65,35 @@
     </div>
   </gc-shell>
 
-  <!-- Shell (inyecta bw.css, guarda, sidebar, hero…) -->
   <script type="module" src="../assets/bw/shell.js"></script>
 
-  <!-- Lógica del reporte (con DELEGACIÓN de eventos) -->
   <script>
-    // ===== Utils DOM
     const $  = (s,p=document)=>p.querySelector(s);
     const $$ = (s,p=document)=>Array.from(p.querySelectorAll(s));
 
-    // ===== Reglas de parseo / filtro
-    const queueAllow = /(?:^|\\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\\s|$)/;
-    const isPS       = /(\\bPS\\b|Post-sale|Post-sale_Auto|-PS\\b)/i;
+    const queueAllow = /(?:^|\s)(?:1-1|2-2|3-3|4-4|5-2|5-5)(?:\s|$)/;
+    const isPS       = /(\bPS\b|Post-sale|Post-sale_Auto|-PS\b)/i;
 
-    // ===== Helpers de datos
     const fmt = n => Number(n||0).toLocaleString('en-US');
-    const cleanCountry = s => String(s||'').replace(/^\\d+\\.\\s*/,'').trim();
-    const secondNum = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[2],10) : 0; };
-    const firstNum  = s => { const m = String(s||'').match(/(\\d+)\\s*\\|\\s*(\\d+)/); return m ? parseInt(m[1],10) : 0; };
-    const firstArrow= s => { const m = String(s||'').match(/(\\d+)\\s*->\\s*\\d+/);  return m ? parseInt(m[1],10) : 0; };
+    const cleanCountry = s => String(s||'').replace(/^\d+\.\s*/,'').trim();
 
-    // Split flexible: TABs o 2+ espacios
-    function smartSplit(line){
-      return line.includes('\\t') ? line.split('\\t') : line.trim().split(/\\s{2,}/);
+    const secondNum = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/); return m ? parseInt(m[2],10) : 0; };
+    const firstNum  = s => { const m = String(s||'').match(/(\d+)\s*\|\s*(\d+)/); return m ? parseInt(m[1],10) : 0; };
+    const firstArrow= s => { const m = String(s||'').match(/(\d+)\s*->\s*\d+/);  return m ? parseInt(m[1],10) : null; };
+
+    // Split robusto por fila: tabs, luego normalización de espacios, luego \s+
+    function robustSplit(line, expectedCount){
+      let cols = line.split('\t');
+      if (cols.length < expectedCount){
+        const normalized = line.replace(/\s{2,}/g, '\t'); // grupos de espacios => tab
+        cols = normalized.split('\t');
+      }
+      if (cols.length < expectedCount){
+        cols = line.trim().split(/\s+/); // último recurso
+      }
+      return cols.map(c=>c.trim());
     }
 
-    // Detectar header y cortar en chunks "☰"
     function findHeaderAndChunks(lines){
       const headIdx = lines.findIndex(l=>{
         const low = l.toLowerCase();
@@ -105,7 +102,12 @@
       });
       if (headIdx === -1) return { headers:[], chunks:[] };
 
-      const headers = smartSplit(lines[headIdx]).map(h=>h.trim());
+      // Headers con robustSplit también
+      const tmpCols = lines[headIdx].includes('\t')
+        ? lines[headIdx].split('\t').map(c=>c.trim())
+        : lines[headIdx].trim().split(/\s{2,}/).map(c=>c.trim());
+
+      const headers = tmpCols;
 
       const rest = lines.slice(headIdx+1);
       const chunks = [];
@@ -116,35 +118,40 @@
           if (buf.length) { chunks.push(buf.join(' ')); buf = []; }
           continue;
         }
-        if (t) buf.push(t);
+        if (t) buf.push(ln);  // mantenemos tabs originales
       }
       if (buf.length) chunks.push(buf.join(' '));
+
       return { headers, chunks };
     }
 
     function parseRows(){
       const rawEl = $('#raw');
-      const text = (rawEl?.value || '').replace(/\\r/g,'').trim();
+      const text = (rawEl?.value || '').replace(/\r/g,'').trim();
       if(!text) return [];
 
-      const all   = text.split(/\\n/).map(l=>l.replace(/\\s+$/,''));
+      const all   = text.split(/\n/).map(l=>l.replace(/\s+$/,''));
       const lines = all.filter(l=>l.trim() || l.trim()==='☰');
 
       const { headers, chunks } = findHeaderAndChunks(lines);
       if (!headers.length || !chunks.length) return [];
 
       const idx = (name) => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+
       const iCountry = idx('Country');
       const iName    = idx('Name');
       const iOps     = idx('Number of operators');
       const iOrders  = idx('Orders');
       const iCap     = idx('Capacity');
+      const iPri     = idx('Priority'); // para fallback de "a -> b"
 
       if ([iCountry,iName,iOps,iOrders,iCap].some(v => v === -1)) return [];
 
+      const expectedCount = headers.length;
       const rows = [];
+
       for(const ch of chunks){
-        const cols = smartSplit(ch);
+        const cols = robustSplit(ch, expectedCount);
 
         const name = (cols[iName] || '').trim();
         if (!name) continue;
@@ -152,9 +159,10 @@
         if (!queueAllow.test(name)) continue;
 
         const country = cleanCountry(cols[iCountry] || '');
-        const ops     = secondNum(cols[iOps] || '');     // 2º de "X | Y"
-        const avail   = firstArrow(cols[iCap] || '');    // 1º de "a -> b" (Capacity)
-        const total   = firstNum (cols[iOrders] || '');  // 1º de "A | B" (Orders)
+        const ops     = secondNum(cols[iOps] || '');     // Y de "X | Y"
+        // Orders available: 1) Capacity "a -> b"  2) si no existe, Priority "a -> b"
+        let avail  = firstArrow(cols[iCap]) ?? firstArrow(cols[iPri]) ?? 0;
+        const total = firstNum (cols[iOrders] || '');    // A de "A | B"
 
         rows.push({ country, queue:name, ops, avail, total });
       }
@@ -207,7 +215,7 @@
       resume.textContent = `— ${rows.length} filas · ${new Set(rows.map(r=>r.country)).size} países`;
     }
 
-    // ===== Delegación de eventos (para que funcione dentro de <gc-shell>)
+    // Delegación de eventos
     document.addEventListener('click', (e)=>{
       if (e.target.closest('#btnProcess')) render(parseRows());
       if (e.target.closest('#btnClear')) {
@@ -226,7 +234,6 @@
       }
     });
 
-    // Atajo: Ctrl/Cmd + Enter para procesar
     document.addEventListener('keydown', (e)=>{
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) render(parseRows());
     });
