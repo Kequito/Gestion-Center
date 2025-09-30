@@ -128,15 +128,8 @@ function num(s){
   const m = String(s).match(/-?\d+/g);
   return m ? parseInt(m[0],10) : 0;
 }
-function splitPipePair(s, sep="|"){ // "53 | 8" -> [53,8]
-  const parts = String(s||"").split(sep);
-  const a = num(parts[0]), b = num(parts[1]);
-  return [a,b];
-}
-function leftOfArrow(s){ // "0 -> 2" -> 0
-  const m = String(s||"").match(/-?\d+/);
-  return m ? parseInt(m[0],10) : 0;
-}
+function splitPipePair(s, sep="|"){ const parts = String(s||"").split(sep); return [num(parts[0]), num(parts[1])]; }
+function leftOfArrow(s){ const m = String(s||"").match(/-?\d+/); return m ? parseInt(m[0],10) : 0; }
 function barHTML(value, max, green=false){
   const pct = max > 0 ? Math.min(1, value/max) : 0;
   return `
@@ -147,7 +140,6 @@ function barHTML(value, max, green=false){
 }
 
 /* ================== Parser ================== */
-// Aliases de encabezados (insensible a mayus/espacios)
 const COL_ALIAS = {
   country: [/^country$/i],
   name: [/^name$/i, /^description$/i],
@@ -201,7 +193,7 @@ function parseInput(txt){
     }
 
     const numOpsRaw = cells[idx.numOps] ?? "";
-    const [opsX, opsY] = splitPipePair(numOpsRaw);
+    const [, opsY] = splitPipePair(numOpsRaw);
 
     const capRaw = cells[idx.capacity] ?? "";
     const avail = leftOfArrow(capRaw);
@@ -209,13 +201,7 @@ function parseInput(txt){
     const ordRaw = cells[idx.orders] ?? "";
     const totalOrders = splitPipePair(ordRaw)[0];
 
-    out.push({
-      country,
-      queue: name,
-      opsY,
-      avail,
-      orders: totalOrders
-    });
+    out.push({ country, queue: name, opsY, avail, orders: totalOrders });
   }
   return out;
 }
@@ -246,7 +232,7 @@ const FLAG_MAP = {
 function flagImg(country){
   const code = FLAG_MAP[country] || "";
   if(!code) return "";
-  const src = `../images/flags/${code}.png`; /* ajusta si tu carpeta varía */
+  const src = `../images/flags/${code}.png`;
   return `<img alt="${country}" src="${src}" />`;
 }
 
@@ -289,7 +275,7 @@ function renderCountryCards(rows){
         <tfoot>
           <tr>
             <td><strong>Totales país</strong></td>
-            <td><!-- sin suma de ops --></td>
+            <td></td>
             <td>${sumAvail}</td>
             <td>${sumOrders}</td>
           </tr>
@@ -367,7 +353,7 @@ function renderGlobalThreeCol(rows){
         <tfoot>
           <tr>
             <td><strong>Totales país</strong></td>
-            <td><!-- sin suma de ops --></td>
+            <td></td>
             <td>${sumAvail}</td>
             <td>${sumOrders}</td>
           </tr>
@@ -388,7 +374,7 @@ let CURRENT_ROWS = [];
 let CURRENT_VIEW = "country"; // "country" | "global3"
 
 function applyFilterAndRender(){
-  const term = document.getElementById("q").value.trim().toLowerCase();
+  const term = (document.getElementById("q")?.value || "").trim().toLowerCase();
   const rows = term
     ? CURRENT_ROWS.filter(r =>
         r.country.toLowerCase().includes(term) ||
@@ -400,43 +386,61 @@ function applyFilterAndRender(){
 }
 </script>
 
-<!-- ============== Bind con hook del shell ============== -->
+<!-- ============== Delegación global de eventos (a prueba de shell) ============== -->
 <script>
-  function bindUI(){
-    const $ = (id)=>document.getElementById(id);
-    // Si el shell aún no terminó de inyectar el DOM, reintenta
-    if (!$("btnProcess")) { setTimeout(bindUI, 50); return; }
+(function(){
+  const $ = (id)=>document.getElementById(id);
 
-    $("btnProcess").addEventListener("click", ()=>{
-      const txt = $("raw").value;
-      CURRENT_ROWS = parseInput(txt);
-      applyFilterAndRender();
-    });
-    $("btnClear").addEventListener("click", ()=>{
-      $("raw").value = "";
-      CURRENT_ROWS = [];
-      applyFilterAndRender();
-    });
-    $("q").addEventListener("input", applyFilterAndRender);
-
-    $("viewCountry").addEventListener("click", ()=>{
-      CURRENT_VIEW = "country";
-      $("viewCountry").setAttribute("aria-pressed","true");
-      $("viewGlobal").setAttribute("aria-pressed","false");
-      applyFilterAndRender();
-    });
-    $("viewGlobal").addEventListener("click", ()=>{
-      CURRENT_VIEW = "global3";
-      $("viewCountry").setAttribute("aria-pressed","false");
-      $("viewGlobal").setAttribute("aria-pressed","true");
-      applyFilterAndRender();
-    });
+  function setViewButtons(){
+    const vc=$("viewCountry"), vg=$("viewGlobal");
+    if(vc && vg){
+      vc.setAttribute("aria-pressed", CURRENT_VIEW==="country" ? "true":"false");
+      vg.setAttribute("aria-pressed", CURRENT_VIEW==="global3" ? "true":"false");
+    }
   }
 
-  // Hook seguro: si gcOnReady aún no existe, encola y el shell lo ejecutará
-  (window.gcOnReady || function(fn){
-    (window.gcPendingReady = window.gcPendingReady || []).push(fn);
-  })(bindUI);
+  // Clicks delegados
+  document.addEventListener("click", (ev)=>{
+    const t = ev.target;
+
+    if (t.closest("#btnProcess")){
+      const txt = $("raw")?.value || "";
+      CURRENT_ROWS = parseInput(txt);
+      applyFilterAndRender();
+      return;
+    }
+    if (t.closest("#btnClear")){
+      if ($("raw")) $("raw").value = "";
+      CURRENT_ROWS = [];
+      applyFilterAndRender();
+      return;
+    }
+    if (t.closest("#viewCountry")){
+      CURRENT_VIEW = "country";
+      setViewButtons();
+      applyFilterAndRender();
+      return;
+    }
+    if (t.closest("#viewGlobal")){
+      CURRENT_VIEW = "global3";
+      setViewButtons();
+      applyFilterAndRender();
+      return;
+    }
+  });
+
+  // Input delegado para el buscador
+  document.addEventListener("input", (ev)=>{
+    if (ev.target && ev.target.id === "q"){
+      applyFilterAndRender();
+    }
+  });
+
+  // Mantener aria-pressed correcto aunque el shell re-renderice
+  const mo = new MutationObserver(setViewButtons);
+  mo.observe(document.documentElement, {childList:true, subtree:true});
+  setViewButtons();
+})();
 </script>
 </body>
 </html>
