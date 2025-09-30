@@ -123,30 +123,25 @@ function queueOrderKey(q){
   return 500 + (+m[1])*10 + (+m[2]);
 }
 function clean(s){ return String(s||"").trim(); }
-function num(s){
-  if (s == null) return 0;
-  const m = String(s).match(/-?\d+/g);
-  return m ? parseInt(m[0],10) : 0;
-}
-function splitPipePair(s, sep="|"){ const parts = String(s||"").split(sep); return [num(parts[0]), num(parts[1])]; }
+function num(s){ const m = String(s ?? "").match(/-?\d+/g); return m ? parseInt(m[0],10) : 0; }
+function splitPipePair(s, sep="|"){ const p = String(s||"").split(sep); return [num(p[0]), num(p[1])]; }
 function leftOfArrow(s){ const m = String(s||"").match(/-?\d+/); return m ? parseInt(m[0],10) : 0; }
 function barHTML(value, max, green=false){
   const pct = max > 0 ? Math.min(1, value/max) : 0;
-  return `
-    <div class="bar-wrap" title="${value}">
-      <div class="bar ${green?'green':''}" style="transform:scaleX(${pct})"></div>
-      <div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${value}</div>
-    </div>`;
+  return `<div class="bar-wrap" title="${value}">
+    <div class="bar ${green?'green':''}" style="transform:scaleX(${pct})"></div>
+    <div style="position:relative;z-index:1;padding:0 6px;font-weight:700">${value}</div>
+  </div>`;
 }
 
-/* ================== Parser ================== */
+/* ====== helpers para detección robusta ====== */
 const COL_ALIAS = {
-  country: [/^country$/i],
-  name: [/^name$/i, /^description$/i],
-  numOps: [/^number\s*of\s*operators$/i],
+  country:  [/^country$/i, /^country\s*name$/i],
+  name:     [/^name$/i, /^description$/i],
+  numOps:   [/^number\s*of\s*operators$/i, /^operators$/i, /operators/i],
   capacity: [/^capacity$/i],
-  orders: [/^orders$/i],
-  otype: [/^order\s*type$/i],
+  orders:   [/^orders$/i],
+  otype:    [/^order\s*type$/i],
 };
 function findColIndex(headers, aliasList){
   const norm = (s)=> String(s||"").replace(/\s+/g," ").trim();
@@ -156,13 +151,29 @@ function findColIndex(headers, aliasList){
   }
   return -1;
 }
+function smartCountryFromQueue(queue){
+  // “Costa Rica 3-3” -> “Costa Rica”, “Peru 5-2” -> “Peru”
+  const m = String(queue||"").match(/^(.+?)\s+\d\s*-\s*\d\b/);
+  return m ? m[1].trim() : String(queue||"").trim();
+}
+function looksLikeOpsCell(s){
+  // Algo como “17 | 4”, “53|15”, “4 | 0”
+  return /\d+\s*\|\s*\d+/.test(String(s||""));
+}
+
+/* ================== Parser robusto ================== */
 function parseInput(txt){
   if (!txt) return [];
   const lines = txt.split(/\r?\n/).filter(l => l.trim().length);
-  let headerIdx = lines.findIndex(l => l.includes("\t") && /Country/i.test(l));
+
+  // Encuentro el encabezado: la primera línea que contenga "Country" y separadores
+  let headerIdx = lines.findIndex(l => /Country/i.test(l) && (/\t/.test(l) || /\s{2,}/.test(l)));
   if (headerIdx === -1) headerIdx = 0;
 
-  const headers = lines[headerIdx].split("\t").map(h => h.trim());
+  // Separador preferente: TAB; si no hay, caigo a 2+ espacios
+  const splitRow = (row) => (row.includes("\t") ? row.split("\t") : row.split(/\s{2,}/));
+
+  const headers = splitRow(lines[headerIdx]).map(h => h.trim());
   const idx = {
     country:  findColIndex(headers, COL_ALIAS.country),
     name:     findColIndex(headers, COL_ALIAS.name),
@@ -173,40 +184,54 @@ function parseInput(txt){
   };
 
   const out = [];
+
   for (let i = headerIdx + 1; i < lines.length; i++){
-    const line = lines[i];
-    if (!line || !line.includes("\t")) continue;
-    if (/^[☰=]+$/.test(line.trim())) continue;
+    const rawLine = lines[i].trim();
+    if (!rawLine || /^[☰=]+$/.test(rawLine)) continue;
 
-    const cells = line.split("\t");
+    const cells = splitRow(rawLine);
 
-    const rawCountry = cells[idx.country] ?? "";
-    const country = clean(String(rawCountry).replace(/^\d+\.\s*/,""));
-    const name = clean(cells[idx.name] ?? "");
-    const otype = clean(cells[idx.otype] ?? "");
+    const rawCountry = idx.country >= 0 ? cells[idx.country] : "";
+    const rawName    = idx.name    >= 0 ? cells[idx.name]    : "";
+    const otype      = clean(idx.otype >= 0 ? cells[idx.otype] : "");
 
-    // Ignorar PS / PS Auto por nombre o tipo
-    const nameLC = name.toLowerCase();
+    // Ignorar PS/PS-Auto por nombre o tipo
+    const nameLC = String(rawName||"").toLowerCase();
     const typeLC = otype.toLowerCase();
-    if (nameLC.includes("post-sale") || nameLC.includes("ps-auto") || typeLC.includes("post-sale")){
-      continue;
+    if (nameLC.includes("post-sale") || nameLC.includes("ps-auto") || typeLC.includes("post-sale")) continue;
+
+    // País: si no tengo “Country”, lo derivo del nombre de la cola
+    let country = clean(String(rawCountry).replace(/^\d+\.\s*/,""));
+    const queue = clean(rawName);
+    if (!country) country = smartCountryFromQueue(queue);
+
+    // Number of operators (Y): normal o fallback buscando la celda “A | B”
+    let opsY = 0;
+    if (idx.numOps >= 0) {
+      const [, y] = splitPipePair(cells[idx.numOps] ?? "");
+      opsY = y;
+    } else {
+      const guess = cells.find(looksLikeOpsCell);
+      if (guess) opsY = splitPipePair(guess)[1];
     }
 
-    const numOpsRaw = cells[idx.numOps] ?? "";
-    const [, opsY] = splitPipePair(numOpsRaw);
+    // Capacity (izquierda del ->)
+    const capRaw = idx.capacity >= 0 ? cells[idx.capacity] : "";
+    const avail  = leftOfArrow(capRaw);
 
-    const capRaw = cells[idx.capacity] ?? "";
-    const avail = leftOfArrow(capRaw);
-
-    const ordRaw = cells[idx.orders] ?? "";
+    // Orders (primera parte)
+    const ordRaw = idx.orders >= 0 ? cells[idx.orders] : "";
     const totalOrders = splitPipePair(ordRaw)[0];
 
-    out.push({ country, queue: name, opsY, avail, orders: totalOrders });
+    // Solo filas que tengan nombre de cola y país
+    if (!queue || !country) continue;
+
+    out.push({ country, queue, opsY, avail, orders: totalOrders });
   }
   return out;
 }
 
-/* ============== Transformaciones ============== */
+/* ============== Agrupar por país (orden fijo de colas) ============== */
 function groupByCountry(rows){
   const map = new Map();
   for (const r of rows){
@@ -232,7 +257,7 @@ const FLAG_MAP = {
 function flagImg(country){
   const code = FLAG_MAP[country] || "";
   if(!code) return "";
-  const src = `../images/flags/${code}.png`;
+  const src = `../images/flags/${code}.png`; /* ajusta si tu carpeta varía */
   return `<img alt="${country}" src="${src}" />`;
 }
 
@@ -275,7 +300,7 @@ function renderCountryCards(rows){
         <tfoot>
           <tr>
             <td><strong>Totales país</strong></td>
-            <td></td>
+            <td><!-- sin suma de ops --></td>
             <td>${sumAvail}</td>
             <td>${sumOrders}</td>
           </tr>
@@ -353,7 +378,7 @@ function renderGlobalThreeCol(rows){
         <tfoot>
           <tr>
             <td><strong>Totales país</strong></td>
-            <td></td>
+            <td><!-- sin suma de ops --></td>
             <td>${sumAvail}</td>
             <td>${sumOrders}</td>
           </tr>
@@ -374,7 +399,7 @@ let CURRENT_ROWS = [];
 let CURRENT_VIEW = "country"; // "country" | "global3"
 
 function applyFilterAndRender(){
-  const term = (document.getElementById("q")?.value || "").trim().toLowerCase();
+  const term = document.getElementById("q").value.trim().toLowerCase();
   const rows = term
     ? CURRENT_ROWS.filter(r =>
         r.country.toLowerCase().includes(term) ||
@@ -386,61 +411,43 @@ function applyFilterAndRender(){
 }
 </script>
 
-<!-- ============== Delegación global de eventos (a prueba de shell) ============== -->
+<!-- ============== Bind con hook del shell ============== -->
 <script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
+  function bindUI(){
+    const $ = (id)=>document.getElementById(id);
+    // Si el shell aún no terminó de inyectar el DOM, reintenta
+    if (!$("btnProcess")) { setTimeout(bindUI, 50); return; }
 
-  function setViewButtons(){
-    const vc=$("viewCountry"), vg=$("viewGlobal");
-    if(vc && vg){
-      vc.setAttribute("aria-pressed", CURRENT_VIEW==="country" ? "true":"false");
-      vg.setAttribute("aria-pressed", CURRENT_VIEW==="global3" ? "true":"false");
-    }
-  }
-
-  // Clicks delegados
-  document.addEventListener("click", (ev)=>{
-    const t = ev.target;
-
-    if (t.closest("#btnProcess")){
-      const txt = $("raw")?.value || "";
+    $("btnProcess").addEventListener("click", ()=>{
+      const txt = $("raw").value;
       CURRENT_ROWS = parseInput(txt);
       applyFilterAndRender();
-      return;
-    }
-    if (t.closest("#btnClear")){
-      if ($("raw")) $("raw").value = "";
+    });
+    $("btnClear").addEventListener("click", ()=>{
+      $("raw").value = "";
       CURRENT_ROWS = [];
       applyFilterAndRender();
-      return;
-    }
-    if (t.closest("#viewCountry")){
+    });
+    $("q").addEventListener("input", applyFilterAndRender);
+
+    $("viewCountry").addEventListener("click", ()=>{
       CURRENT_VIEW = "country";
-      setViewButtons();
+      $("viewCountry").setAttribute("aria-pressed","true");
+      $("viewGlobal").setAttribute("aria-pressed","false");
       applyFilterAndRender();
-      return;
-    }
-    if (t.closest("#viewGlobal")){
+    });
+    $("viewGlobal").addEventListener("click", ()=>{
       CURRENT_VIEW = "global3";
-      setViewButtons();
+      $("viewCountry").setAttribute("aria-pressed","false");
+      $("viewGlobal").setAttribute("aria-pressed","true");
       applyFilterAndRender();
-      return;
-    }
-  });
+    });
+  }
 
-  // Input delegado para el buscador
-  document.addEventListener("input", (ev)=>{
-    if (ev.target && ev.target.id === "q"){
-      applyFilterAndRender();
-    }
-  });
-
-  // Mantener aria-pressed correcto aunque el shell re-renderice
-  const mo = new MutationObserver(setViewButtons);
-  mo.observe(document.documentElement, {childList:true, subtree:true});
-  setViewButtons();
-})();
+  // Hook seguro: si gcOnReady aún no existe, encola y el shell lo ejecutará
+  (window.gcOnReady || function(fn){
+    (window.gcPendingReady = window.gcPendingReady || []).push(fn);
+  })(bindUI);
 </script>
 </body>
 </html>
