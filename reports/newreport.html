@@ -33,7 +33,10 @@
   <!-- Ajustes locales -->
   <style>
     /* Título y estado Firebase */
-    #nr .page-title{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; margin:0 0 8px }
+    #nr .page-title{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; font-size:20px; margin:0 0 8px;
+    }
     #nr .gc-chip.ok{ background:var(--gray-200); border-color:var(--gray-300) }
     #nr .datetime{ font-size:14px; color:var(--gray-700); margin:6px 0 10px }
 
@@ -49,6 +52,11 @@
     .gc-table th, .gc-table td{ text-align:center }
     .gc-table thead th:first-child, .gc-table tbody td:first-child{ text-align:left }
 
+    /* Estado de orden en encabezados */
+    .th-sortable{ cursor:pointer; user-select:none }
+    .th-sorted{ background:rgba(0,0,0,.18) }
+    .th-sort-indicator{ font-size:11px; margin-left:4px; opacity:.85 }
+
     /* Semáforo % Approve */
     :root{
       --ok-bg:#eaf7ee; --ok-fg:#166534; --ok-br:#22c55e;
@@ -62,7 +70,7 @@
     /* Botón eliminar histórico compacto */
     #tablaHistorico .gc-btn.gc-btn--sm{ padding:6px 10px; font-size:12px }
 
-    /* ---- Campos nativos estilizados (para evitar issues de .gc-btn en selects/inputs) ---- */
+    /* ---- Campos nativos estilizados ---- */
     .gc-select, .gc-date{
       padding:8px 12px; border-radius:12px; border:1px solid var(--gray-300);
       background:var(--white); color:var(--gray-900); font-weight:700; line-height:1;
@@ -166,6 +174,7 @@
 
   <!-- Lógica -->
   <script type="module">
+    /* ===== Helpers de DOM ===== */
     async function waitForEl(sel, timeout=8000){
       const t0=performance.now();
       while(performance.now()-t0 < timeout){
@@ -178,10 +187,46 @@
     await customElements.whenDefined('gc-shell');
     await waitForEl('#encabezadoTabla');
 
+    /* ===== Helpers de URL (deep-link) ===== */
+    function getUrlState(){
+      const qp = new URLSearchParams(location.search);
+      return {
+        pais:  qp.get('pais')  || null,
+        rango: qp.get('rango') || null,
+        fecha: qp.get('fecha') || null,
+        vista: qp.get('vista') || null
+      };
+    }
+    function setUrlState(partial){
+      const qp = new URLSearchParams(location.search);
+      for(const [k,v] of Object.entries(partial)){
+        if(v===null || v===undefined || v==='') qp.delete(k);
+        else qp.set(k, v);
+      }
+      const newUrl = location.pathname + (qp.toString() ? '?' + qp.toString() : '') + location.hash;
+      history.replaceState(null, '', newUrl);
+    }
+    const URL_STATE = getUrlState();
+
     /* ===== Firebase ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import {
+      getAuth,
+      signInAnonymously,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      query,
+      where,
+      deleteDoc,
+      doc,
+      writeBatch,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCHBsq9AdVZEMVryQWReX7oaPparo9lK8M",
@@ -198,7 +243,10 @@
     const db   = getFirestore(app);
 
     const fbBadge = document.getElementById('fbBadge');
-    function setBadge(txt, cls=''){ fbBadge.textContent = txt; fbBadge.className = 'gc-chip ' + (cls || ''); }
+    function setBadge(txt, cls=''){
+      fbBadge.textContent = txt;
+      fbBadge.className = 'gc-chip ' + (cls || '');
+    }
 
     let authSettled = false;
     const authWatchdog = setTimeout(()=>{
@@ -214,21 +262,38 @@
     const PREF_VISTA='gc_vista', PREF_ORDEN='gc_orden', PREF_FPAIS='gc_filtro_pais',
           PREF_FFECHA='gc_filtro_fecha_iso', PREF_PRESET='gc_preset_rango';
     const savePref=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-    const readPref=(k,d=null)=>{ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{ return d;} };
+    const readPref=(k,d=null)=>{
+      try{
+        const v=JSON.parse(localStorage.getItem(k));
+        return v ?? d;
+      }catch{
+        return d;
+      }
+    };
 
     const pad2=n=>String(n).padStart(2,'0');
     const formatDDMMYYYY=d=>`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
     const formatISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 
-    function ddmmyyyyToISO(s){ if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s); if(!m) return ""; return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`; }
+    function ddmmyyyyToISO(s){
+      if(!s) return "";
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      const m=/^\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\s*$/.exec(s);
+      if(!m) return "";
+      return `${m[3]}-${pad2(+m[2])}-${pad2(+m[1])}`;
+    }
 
     function toHora24(str){
       if(!str) return "";
       let s=str.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[\.]/g,'');
-      const m24=s.match(/^(\d{1,2}):(\d{2})$/); if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
+      const m24=s.match(/^(\d{1,2}):(\d{2})$/);
+      if(m24) return `${pad2(+m24[1])}:${pad2(+m24[2])}`;
       const m12=s.match(/^(\d{1,2}):(\d{2})(am|pm)$/);
-      if(m12){ let h=+m12[1]%12, min=+m12[2]; if(m12[3]==='pm') h+=12; return `${pad2(h)}:${pad2(min)}`; }
+      if(m12){
+        let h=+m12[1]%12, min=+m12[2];
+        if(m12[3]==='pm') h+=12;
+        return `${pad2(h)}:${pad2(min)}`;
+      }
       return str;
     }
 
@@ -238,67 +303,165 @@
       const hora =ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
       document.getElementById('fechaHora').textContent=`📅 ${fecha} – 🕒 ${hora}`;
     }
-    actualizarFechaHora(); setInterval(actualizarFechaHora,1000);
+    actualizarFechaHora();
+    setInterval(actualizarFechaHora,1000);
 
-    let vistaActual=readPref(PREF_VISTA,'numerico'), dataGlobal={}, dataOriginal=[], estadoOrdenColumna=readPref(PREF_ORDEN,{}), columnaOrdenActual=null;
+    // Vista inicial: URL tiene prioridad, luego prefs
+    let vistaInicial = readPref(PREF_VISTA,'numerico');
+    if(URL_STATE.vista && ['numerico','porcentaje','mixto'].includes(URL_STATE.vista)){
+      vistaInicial = URL_STATE.vista;
+    }
+    let vistaActual = vistaInicial;
 
-    const codigos={ "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx","Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo" };
+    let dataGlobal={}, dataOriginal=[];
+    let estadoOrdenColumna=readPref(PREF_ORDEN,{});
+    let columnaOrdenActual=null;
+
+    const codigos={
+      "Chile":"cl","Colombia":"co","Costa Rica":"cr","Ecuador":"ec","Mexico":"mx","México":"mx",
+      "Paraguay":"py","Peru":"pe","Perú":"pe","Uruguay":"uy","Venezuela":"ve","Bolivia":"bo"
+    };
 
     function mostrarToast(msg){
       const t=document.getElementById("toast");
-      t.textContent=msg; t.style.display="block"; t.style.opacity=1;
+      t.textContent=msg;
+      t.style.display="block";
+      t.style.opacity=1;
       setTimeout(()=>{t.style.transition="opacity .5s"; t.style.opacity=0;},2600);
       setTimeout(()=>{t.style.display="none"; t.style.transition="";},3200);
     }
 
-    const COLMAP={ country:["Country"], total:["Total"], news:["New"], recall:["Recall"], noAnswer:["No answer","No Answer"], approved:["Approved","Call center (approved)","Call center approved"], reject:["Reject"], trash:["Trash"] };
+    const COLMAP={
+      country:["Country"],
+      total:["Total"],
+      news:["New"],
+      recall:["Recall"],
+      noAnswer:["No answer","No Answer"],
+      approved:["Approved","Call center (approved)","Call center approved"],
+      reject:["Reject"],
+      trash:["Trash"]
+    };
 
     function borrarTodo(){
       document.getElementById("inputData").value="";
       document.querySelector("#tablaReporte tbody").innerHTML="";
       document.querySelector("#encabezadoTabla").innerHTML="";
       document.querySelector("#filaTotales").innerHTML="";
-      dataGlobal={}; dataOriginal=[]; estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{});
+      dataGlobal={}; dataOriginal=[];
+      estadoOrdenColumna={}; columnaOrdenActual=null;
+      savePref(PREF_ORDEN,{});
     }
 
     function procesar(vista){
-      vistaActual=vista; savePref(PREF_VISTA,vista); estadoOrdenColumna={}; savePref(PREF_ORDEN,{}); columnaOrdenActual=null;
-      const input=document.getElementById("inputData").value.trim(); if(!input){ mostrarToast("Pega la tabla del panel para procesar."); return; }
-      const filas=input.split("\n"), headersRaw=filas[0].split("\t").map(h=>h.trim()), headersLC=headersRaw.map(h=>h.toLowerCase());
-      const idx=(names)=> (Array.isArray(names)?names:[names]).reduce((r,n)=> r>=0?r:(headersRaw.indexOf(n)>=0?headersRaw.indexOf(n):headersLC.indexOf(n.toLowerCase())), -1);
-      const IDX={ country:idx(COLMAP.country), total:idx(COLMAP.total), news:idx(COLMAP.news), recall:idx(COLMAP.recall), noAnswer:idx(COLMAP.noAnswer), approved:idx(COLMAP.approved), reject:idx(COLMAP.reject), trash:idx(COLMAP.trash) };
-      if(IDX.country===-1||IDX.total===-1){ mostrarToast("⚠️ Falta Country/Total."); return; }
-      if(IDX.approved===-1){ mostrarToast("ℹ️ No encuentro ‘Approved’; usaré 0."); }
+      vistaActual=vista;
+      savePref(PREF_VISTA,vista);
+      setUrlState({ vista: vista });
+      estadoOrdenColumna={};
+      savePref(PREF_ORDEN,{});
+      columnaOrdenActual=null;
+
+      const input=document.getElementById("inputData").value.trim();
+      if(!input){
+        mostrarToast("Pega la tabla del panel para procesar.");
+        return;
+      }
+
+      const filas=input.split("\n");
+      const headersRaw=filas[0].split("\t").map(h=>h.trim());
+      const headersLC=headersRaw.map(h=>h.toLowerCase());
+      const idx=(names)=> (Array.isArray(names)?names:[names]).reduce(
+        (r,n)=> r>=0 ? r : (headersRaw.indexOf(n)>=0 ? headersRaw.indexOf(n) : headersLC.indexOf(n.toLowerCase())),
+        -1
+      );
+      const IDX={
+        country:idx(COLMAP.country),
+        total:idx(COLMAP.total),
+        news:idx(COLMAP.news),
+        recall:idx(COLMAP.recall),
+        noAnswer:idx(COLMAP.noAnswer),
+        approved:idx(COLMAP.approved),
+        reject:idx(COLMAP.reject),
+        trash:idx(COLMAP.trash)
+      };
+      if(IDX.country===-1||IDX.total===-1){
+        mostrarToast("⚠️ Falta Country/Total.");
+        return;
+      }
+      if(IDX.approved===-1){
+        mostrarToast("ℹ️ No encuentro ‘Approved’; usaré 0.");
+      }
+
       dataGlobal={};
       for(let i=1;i<filas.length;i++){
-        const f=filas[i].split("\t"), pais=(f[IDX.country]||"").trim(); if(!pais) continue;
+        const f=filas[i].split("\t");
+        const pais=(f[IDX.country]||"").trim();
+        if(!pais) continue;
         if(!dataGlobal[pais]) dataGlobal[pais]={total:0,news:0,recall:0,noAnswer:0,approved:0,reject:0,trash:0};
         const val=j=> j===-1?0:(parseInt(f[j])||0);
-        dataGlobal[pais].total+=val(IDX.total); dataGlobal[pais].news+=val(IDX.news); dataGlobal[pais].recall+=val(IDX.recall); dataGlobal[pais].noAnswer+=val(IDX.noAnswer); dataGlobal[pais].approved+=val(IDX.approved); dataGlobal[pais].reject+=val(IDX.reject); dataGlobal[pais].trash+=val(IDX.trash);
+        dataGlobal[pais].total   += val(IDX.total);
+        dataGlobal[pais].news    += val(IDX.news);
+        dataGlobal[pais].recall  += val(IDX.recall);
+        dataGlobal[pais].noAnswer+= val(IDX.noAnswer);
+        dataGlobal[pais].approved+= val(IDX.approved);
+        dataGlobal[pais].reject  += val(IDX.reject);
+        dataGlobal[pais].trash   += val(IDX.trash);
       }
       dataOriginal=Object.entries(dataGlobal);
-      renderTabla(); mostrarToast("✅ Datos procesados");
+      renderTabla();
+      mostrarToast("✅ Datos procesados");
     }
 
-    function pctSafe(v,t){ if(!t) return "0.0%"; return ((v/t)*100).toFixed(1)+"%"; }
+    function pctSafe(v,t){
+      if(!t) return "0.0%";
+      return ((v/t)*100).toFixed(1)+"%";
+    }
     const colorPct=p=> p<=25?"red": p>=30?"green":"orange";
 
     function renderTabla(){
-      const enc=document.getElementById("encabezadoTabla"), cuerpo=document.querySelector("#tablaReporte tbody"), tfoot=document.getElementById("filaTotales");
+      const enc=document.getElementById("encabezadoTabla");
+      const cuerpo=document.querySelector("#tablaReporte tbody");
+      const tfoot=document.getElementById("filaTotales");
       enc.innerHTML=""; cuerpo.innerHTML=""; tfoot.innerHTML="";
+
       let cols=["País","Leads"];
-      if(vistaActual==="numerico"){ cols.push("New","Recall","No Answer","Approve","Reject","Trash");
-      }else if(vistaActual==="porcentaje"){ cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
-      }else{ cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash"); }
-      cols.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; if(col!=="País"){ th.style.cursor='pointer'; th.onclick=()=>cambiarOrdenColumna(col);} enc.appendChild(th); });
+      if(vistaActual==="numerico"){
+        cols.push("New","Recall","No Answer","Approve","Reject","Trash");
+      }else if(vistaActual==="porcentaje"){
+        cols.push("% New","% Recall","% No Answer","% Approve","% Reject","% Trash");
+      }else{
+        cols.push("New","% New","Recall","% Recall","No Answer","% No Answer","Approve","% Approve","Reject","% Reject","Trash","% Trash");
+      }
+
+      cols.forEach(col=>{
+        const th=document.createElement("th");
+        th.textContent=col;
+        if(col!=="País"){
+          th.classList.add('th-sortable');
+          const estado = estadoOrdenColumna[col]||0;
+          if(col===columnaOrdenActual && estado>0){
+            const span=document.createElement('span');
+            span.className='th-sort-indicator';
+            span.textContent = estado===1 ? '▲' : '▼';
+            th.appendChild(span);
+            th.classList.add('th-sorted');
+          }
+          th.onclick=()=>cambiarOrdenColumna(col);
+        }
+        enc.appendChild(th);
+      });
 
       let datos=[...dataOriginal];
       if(columnaOrdenActual){
         const e=estadoOrdenColumna[columnaOrdenActual]||0;
-        datos.sort((a,b)=>{ const A=getValorOrdenable(a[1],columnaOrdenActual), B=getValorOrdenable(b[1],columnaOrdenActual);
-          return e===1?B-A:e===2?A-B:0; });
+        datos.sort((a,b)=>{
+          const A=getValorOrdenable(a[1],columnaOrdenActual);
+          const B=getValorOrdenable(b[1],columnaOrdenActual);
+          return e===1?B-A:e===2?A-B:0;
+        });
       }
-      const flag=p=>codigos[p]?`<img style="width:20px;height:14px;vertical-align:middle;margin-right:6px" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`:"";
+      const flag=p=>codigos[p]
+        ? `<img style="width:20px;height:14px;vertical-align:middle;margin-right:6px" src="https://flagcdn.com/w40/${codigos[p]}.png" alt="">`
+        : "";
 
       for(const [pais,d] of datos){
         const t=d.total||0;
@@ -313,12 +476,20 @@
           const cls = colorPct(t?d.approved/t*100:0);
           html+=`<td>${d.news}</td><td>${pctSafe(d.news,t)}</td><td>${d.recall}</td><td>${pctSafe(d.recall,t)}</td><td>${d.noAnswer}</td><td>${pctSafe(d.noAnswer,t)}</td><td>${d.approved}</td><td class="${cls}">${pctSafe(d.approved,t)}</td><td>${d.reject}</td><td>${pctSafe(d.reject,t)}</td><td>${d.trash}</td><td>${pctSafe(d.trash,t)}</td>`;
         }
-        tr.innerHTML=html; cuerpo.appendChild(tr);
+        tr.innerHTML=html;
+        cuerpo.appendChild(tr);
       }
 
-      const tot=Object.values(dataGlobal).reduce((a,d)=>{ a.total+=d.total; a.news+=d.news; a.recall+=d.recall; a.noAnswer+=d.noAnswer; a.approved+=d.approved; a.trash+=d.trash; a.reject+=d.reject; return a; },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
+      const tot=Object.values(dataGlobal).reduce((a,d)=>{
+        a.total+=d.total; a.news+=d.news; a.recall+=d.recall;
+        a.noAnswer+=d.noAnswer; a.approved+=d.approved;
+        a.trash+=d.trash; a.reject+=d.reject;
+        return a;
+      },{total:0,news:0,recall:0,noAnswer:0,approved:0,trash:0,reject:0});
+
       if(Object.keys(dataGlobal).length){
-        let foot=`<td><strong>TOTAL</strong></td><td>${tot.total}</td>`; const t=tot.total||0;
+        let foot=`<td><strong>TOTAL</strong></td><td>${tot.total}</td>`;
+        const t=tot.total||0;
         const clsTot = colorPct(t?tot.approved/t*100:0);
         if(vistaActual==="numerico"){
           foot+=`<td>${tot.news}</td><td>${tot.recall}</td><td>${tot.noAnswer}</td><td>${tot.approved}</td><td>${tot.reject}</td><td>${tot.trash}</td>`;
@@ -331,9 +502,32 @@
       }
     }
 
-    function cambiarOrdenColumna(col){ estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1; if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0; columnaOrdenActual=estadoOrdenColumna[col]===0?null:col; savePref(PREF_ORDEN,estadoOrdenColumna); renderTabla(); }
-    function restablecerOrden(){ estadoOrdenColumna={}; columnaOrdenActual=null; savePref(PREF_ORDEN,{}); renderTabla(); }
-    function getValorOrdenable(d,col){ const t=d.total||0; const base={"Leads":d.total,"New":d.news,"% New":t?(d.news/t)*100:0,"Recall":d.recall,"% Recall":t?(d.recall/t)*100:0,"No Answer":d.noAnswer,"% No Answer":t?(d.noAnswer/t)*100:0,"Approve":d.approved,"% Approve":t?(d.approved/t)*100:0,"Reject":d.reject,"% Reject":t?(d.reject/t)*100:0,"Trash":d.trash,"% Trash":t?(d.trash/t)*100:0}; return base[col]||0; }
+    function cambiarOrdenColumna(col){
+      estadoOrdenColumna[col]=(estadoOrdenColumna[col]||0)+1;
+      if(estadoOrdenColumna[col]>2) estadoOrdenColumna[col]=0;
+      columnaOrdenActual=estadoOrdenColumna[col]===0?null:col;
+      savePref(PREF_ORDEN,estadoOrdenColumna);
+      renderTabla();
+    }
+    function restablecerOrden(){
+      estadoOrdenColumna={};
+      columnaOrdenActual=null;
+      savePref(PREF_ORDEN,{});
+      renderTabla();
+    }
+    function getValorOrdenable(d,col){
+      const t=d.total||0;
+      const base={
+        "Leads":d.total,
+        "New":d.news, "% New":t?(d.news/t)*100:0,
+        "Recall":d.recall, "% Recall":t?(d.recall/t)*100:0,
+        "No Answer":d.noAnswer, "% No Answer":t?(d.noAnswer/t)*100:0,
+        "Approve":d.approved, "% Approve":t?(d.approved/t)*100:0,
+        "Reject":d.reject, "% Reject":t?(d.reject/t)*100:0,
+        "Trash":d.trash, "% Trash":t?(d.trash/t)*100:0
+      };
+      return base[col]||0;
+    }
 
     /* ===== Cloud histórico ===== */
     let cloudHistorico=[];
@@ -345,11 +539,26 @@
       const now=new Date();
       const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
       const startOf=(iso)=> new Date(`${iso}T00:00:00`).getTime();
-      const addDays=(iso,days)=>{ const d=new Date(`${iso}T00:00:00`); d.setDate(d.getDate()+days); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
-      if(preset==='hoy'){ const s=startOf(todayISO), e=startOf(addDays(todayISO,1)); return {start:s, end:e}; }
-      if(preset==='ayer'){ const y=addDays(todayISO,-1); return {start:startOf(y), end:startOf(todayISO)}; }
-      if(preset==='7d'){ const s=addDays(todayISO,-6); return {start:startOf(s), end:startOf(addDays(todayISO,1))}; }
-      if(preset==='dia' && dateISO){ return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))}; }
+      const addDays=(iso,days)=>{
+        const d=new Date(`${iso}T00:00:00`);
+        d.setDate(d.getDate()+days);
+        return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+      };
+      if(preset==='hoy'){
+        const s=startOf(todayISO), e=startOf(addDays(todayISO,1));
+        return {start:s, end:e};
+      }
+      if(preset==='ayer'){
+        const y=addDays(todayISO,-1);
+        return {start:startOf(y), end:startOf(todayISO)};
+      }
+      if(preset==='7d'){
+        const s=addDays(todayISO,-6);
+        return {start:startOf(s), end:startOf(addDays(todayISO,1))};
+      }
+      if(preset==='dia' && dateISO){
+        return {start:startOf(dateISO), end:startOf(addDays(dateISO,1))};
+      }
       return {start:null, end:null};
     }
 
@@ -357,7 +566,9 @@
       rows.forEach(r=>{
         const iso  = r.fechaISO || ddmmyyyyToISO(r.fecha);
         const hhmm = r.hora24 || toHora24(r.hora);
-        if(!r.ts && iso && hhmm){ r.ts = new Date(`${iso}T${hhmm}:00`).getTime(); }
+        if(!r.ts && iso && hhmm){
+          r.ts = new Date(`${iso}T${hhmm}:00`).getTime();
+        }
         r.hora = hhmm || r.hora;
       });
       rows.sort((a,b)=>(a.ts||0)-(b.ts||0));
@@ -398,28 +609,52 @@
       }
     }
 
-    // (temporal) habilitar botón siempre
-    document.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('btnRegistrar')?.removeAttribute('disabled'); });
+    // (temporal) habilitar botón siempre si carga la página
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('btnRegistrar')?.removeAttribute('disabled');
+    });
 
+    /* ===== Registrar Avance (batch + idempotente) ===== */
     async function registrarAvance(){
-      if(!Object.keys(dataGlobal).length){ mostrarToast("ℹ️ Procesa datos antes de registrar."); return; }
+      if(!Object.keys(dataGlobal).length){
+        mostrarToast("ℹ️ Procesa datos antes de registrar.");
+        return;
+      }
       const now=new Date();
       const hora24=`${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
-      const fecha=formatDDMMYYYY(now), fechaISO=formatISO(now), ts=now.getTime();
+      const fecha=formatDDMMYYYY(now);
+      const fechaISO=formatISO(now);
+      const ts=now.getTime();
+      const uid = auth.currentUser?.uid || null;
 
       const colRef=collection(db,'historico');
-      const writes=[];
+      const batch = writeBatch(db);
+
       for(const [pais,d] of Object.entries(dataGlobal)){
         const total=d.total||0;
-        writes.push(addDoc(colRef,{
-          fecha, fechaISO, hora:hora24, hora24:hora24, ts, pais,
-          leads:d.total, news:d.news, recall:d.recall, noAnswer:d.noAnswer,
-          approve:d.approved, pctApprove: total?((d.approved/total)*100).toFixed(1):"0.0",
-          reject:d.reject, trash:d.trash
-        }));
+        const safePais = pais.replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
+        const docId = `${fechaISO}_${hora24}_${safePais}`;
+        const ref = doc(colRef, docId);
+        batch.set(ref,{
+          fecha, fechaISO,
+          hora:hora24, hora24:hora24,
+          ts, pais,
+          leads:d.total,
+          news:d.news,
+          recall:d.recall,
+          noAnswer:d.noAnswer,
+          approve:d.approved,
+          pctApprove: total?((d.approved/total)*100).toFixed(1):"0.0",
+          reject:d.reject,
+          trash:d.trash,
+          createdAt: serverTimestamp(),
+          createdBy: uid,
+          source: 'newreport'
+        }, { merge:false });
       }
+
       try{
-        await Promise.all(writes);
+        await batch.commit();
         mostrarToast("✅ Avance registrado en la nube.");
         await renderTablaHistorico();
         renderGrafico();
@@ -433,13 +668,23 @@
       if(!confirm("¿Borrar TODO el historial de la nube?")) return;
       try{
         const snap=await getDocs(collection(db,'historico'));
-        const ops=[]; snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
-        await Promise.all(ops); mostrarToast("🗑️ Historial borrado."); await renderTablaHistorico(); renderGrafico();
-      }catch(e){ console.error(e); mostrarToast("❌ No se pudo borrar: " + (e.code||e.message)); }
+        const ops=[];
+        snap.forEach(d=>ops.push(deleteDoc(doc(db,'historico',d.id))));
+        await Promise.all(ops);
+        mostrarToast("🗑️ Historial borrado.");
+        await renderTablaHistorico();
+        renderGrafico();
+      }catch(e){
+        console.error(e);
+        mostrarToast("❌ No se pudo borrar: " + (e.code||e.message));
+      }
     }
 
     async function eliminarRegistro(id){
-      if(!id){ mostrarToast("⚠️ No se encontró el ID del registro."); return; }
+      if(!id){
+        mostrarToast("⚠️ No se encontró el ID del registro.");
+        return;
+      }
       const ok = confirm("¿Seguro que deseas eliminar este registro?");
       if(!ok) return;
       try{
@@ -457,23 +702,38 @@
       if(filtroPaisEl.options.length>1) return;
       try{
         const snap=await getDocs(collection(db,'historico'));
-        const set=new Set(); snap.forEach(d=>set.add(d.data().pais||""));
-        [...set].filter(Boolean).forEach(p=>{ const o=document.createElement("option");o.value=p;o.textContent=p;filtroPaisEl.appendChild(o); });
-      }catch(e){ console.warn('[GC] ensurePaisesOptions:', e); }
+        const set=new Set();
+        snap.forEach(d=>set.add(d.data().pais||""));
+        [...set].filter(Boolean).forEach(p=>{
+          const o=document.createElement("option");
+          o.value=p; o.textContent=p;
+          filtroPaisEl.appendChild(o);
+        });
+      }catch(e){
+        console.warn('[GC] ensurePaisesOptions:', e);
+      }
     }
 
     function calcMedian(arr){
       if(!arr.length) return 0;
       const v=[...arr].sort((a,b)=>a-b);
       const m=Math.floor(v.length/2);
-      return v.length%2?v[m]:(v[m-1]+v[m])/2;
+      return v.length%2 ? v[m] : (v[m-1]+v[m])/2;
     }
 
     function renderQuickMetrics(){
       const box=document.getElementById('quickMetrics');
-      if(!cloudHistorico.length){ box.style.display='none'; return; }
-      const vals=cloudHistorico.map(r=>parseFloat(r.pctApprove||0)).filter(n=>!isNaN(n));
-      if(!vals.length){ box.style.display='none'; return; }
+      if(!cloudHistorico.length){
+        box.style.display='none';
+        return;
+      }
+      const vals=cloudHistorico
+        .map(r=>parseFloat(r.pctApprove||0))
+        .filter(n=>!isNaN(n));
+      if(!vals.length){
+        box.style.display='none';
+        return;
+      }
       const min=Math.min(...vals).toFixed(1);
       const med=calcMedian(vals).toFixed(1);
       const max=Math.max(...vals).toFixed(1);
@@ -484,7 +744,8 @@
 
       let deltaTxt='–';
       if(vals.length>=2){
-        const last=vals[vals.length-1], prev=vals[vals.length-2];
+        const last=vals[vals.length-1];
+        const prev=vals[vals.length-2];
         const d=(last-prev).toFixed(1);
         const arrow = (d>=0? '↑':'↓');
         deltaTxt = `${arrow} ${Math.abs(d)} pp`;
@@ -495,23 +756,47 @@
 
     async function renderTablaHistorico(){
       await ensurePaisesOptions();
-      const tbody=document.querySelector("#tablaHistorico tbody"); tbody.innerHTML="";
+      const tbody=document.querySelector("#tablaHistorico tbody");
+      tbody.innerHTML="";
 
-      // Forzar predeterminado "hoy" SIEMPRE al entrar
       const firstLoad = !sessionStorage.getItem('nr-init');
       if(firstLoad){
-        presetEl.value = 'hoy';
-        filtroFechaEl.value = '';
-        filtroFechaEl.disabled = true;
-        savePref(PREF_PRESET,'hoy');
-        savePref(PREF_FFECHA,'');
+        // Si hay estado en la URL, se respeta; si no, default a "hoy"
+        const hasUrl =
+          (URL_STATE.pais && URL_STATE.pais!=='') ||
+          (URL_STATE.rango && URL_STATE.rango!=='') ||
+          (URL_STATE.fecha && URL_STATE.fecha!=='');
+
+        if(hasUrl){
+          if(URL_STATE.pais && [...filtroPaisEl.options].some(o=>o.value===URL_STATE.pais)){
+            filtroPaisEl.value = URL_STATE.pais;
+          }
+          const rango = URL_STATE.rango || 'hoy';
+          presetEl.value = rango;
+          if(URL_STATE.fecha){
+            filtroFechaEl.value = URL_STATE.fecha;
+          }
+          filtroFechaEl.disabled = (presetEl.value !== 'dia');
+
+          savePref(PREF_FPAIS, filtroPaisEl.value);
+          savePref(PREF_PRESET, presetEl.value);
+          savePref(PREF_FFECHA, filtroFechaEl.value || '');
+        }else{
+          presetEl.value = 'hoy';
+          filtroFechaEl.value = '';
+          filtroFechaEl.disabled = true;
+          savePref(PREF_PRESET,'hoy');
+          savePref(PREF_FFECHA,'');
+          setUrlState({ rango:'hoy', fecha:null });
+        }
         sessionStorage.setItem('nr-init','1');
       }else{
-        // restaurar desde prefs para navegación interna
         const prefPais=readPref(PREF_FPAIS,'todos');
         const prefFecha=readPref(PREF_FFECHA,'');
         const prefPreset=readPref(PREF_PRESET,'hoy');
-        if([...filtroPaisEl.options].some(o=>o.value===prefPais)) filtroPaisEl.value=prefPais;
+        if([...filtroPaisEl.options].some(o=>o.value===prefPais)){
+          filtroPaisEl.value=prefPais;
+        }
         presetEl.value = prefPreset;
         if(prefFecha) filtroFechaEl.value = prefFecha;
         filtroFechaEl.disabled = (presetEl.value !== 'dia');
@@ -559,13 +844,22 @@
     function onFiltroChange(){
       savePref(PREF_FPAIS, filtroPaisEl.value);
       savePref(PREF_FFECHA, filtroFechaEl.value || '');
+      setUrlState({
+        pais:  filtroPaisEl.value==='todos' ? null : filtroPaisEl.value,
+        fecha: filtroFechaEl.value || null
+      });
       renderTablaHistorico();
     }
     function onPresetChange(){
       const preset=presetEl.value;
       savePref(PREF_PRESET, preset);
       filtroFechaEl.disabled = (preset !== 'dia');
-      if(preset!=='dia'){ filtroFechaEl.value=''; savePref(PREF_FFECHA,''); }
+      if(preset!=='dia'){
+        filtroFechaEl.value='';
+        savePref(PREF_FFECHA,'');
+        setUrlState({ fecha:null });
+      }
+      setUrlState({ rango:preset });
       renderTablaHistorico();
     }
     function limpiarFecha(){
@@ -574,27 +868,67 @@
       presetEl.value='dia';
       savePref(PREF_PRESET,'dia');
       filtroFechaEl.disabled=false;
+      setUrlState({ rango:'dia', fecha:null });
       renderTablaHistorico();
+    }
+
+    /* ===== Colores deterministas por país para el gráfico ===== */
+    function colorFromString(str){
+      let hash=0;
+      for(let i=0;i<str.length;i++){
+        hash = (hash*31 + str.charCodeAt(i)) | 0;
+      }
+      const h = Math.abs(hash)%360;
+      const s = 55;
+      const l = 45;
+      return `hsl(${h} ${s}% ${l}%)`;
     }
 
     function renderGrafico(){
       const ctx=document.getElementById('graficoAvance').getContext('2d');
-      const agr={}; cloudHistorico.forEach(r=>{ if(!agr[r.pais]) agr[r.pais]=[]; agr[r.pais].push({x:r.hora,y:r.pctApprove}); });
-      const grayPal=['#111','#333','#555','#777','#999','#bbb'];
-      const datasets=Object.keys(agr).map((k,i)=>({
-        label:k, data:agr[k], fill:false, tension:.2,
-        borderColor: grayPal[i % grayPal.length],
-        backgroundColor: grayPal[i % grayPal.length],
-        pointRadius: 2
-      }));
+      const agr={};
+      cloudHistorico.forEach(r=>{
+        if(!agr[r.pais]) agr[r.pais]=[];
+        agr[r.pais].push({x:r.hora,y:r.pctApprove});
+      });
+
+      const datasets=Object.keys(agr).map((k)=> {
+        const color = colorFromString(k || 'N/A');
+        return {
+          label:k || 'N/A',
+          data:agr[k],
+          fill:false,
+          tension:.2,
+          borderColor: color,
+          backgroundColor: color,
+          pointRadius: 2.5
+        };
+      });
+
       if(window.graficoAvance) window.graficoAvance.destroy();
-      window.graficoAvance=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Hora'},type:'category'},y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}}}});
+      window.graficoAvance=new Chart(ctx,{
+        type:'line',
+        data:{datasets},
+        options:{
+          responsive:true,
+          plugins:{legend:{position:'top'}},
+          scales:{
+            x:{title:{display:true,text:'Hora'},type:'category'},
+            y:{title:{display:true,text:'% Approve'},beginAtZero:true,max:100}
+          }
+        }
+      });
     }
 
-    // Exponer
-    window.procesar=procesar; window.borrarTodo=borrarTodo; window.restablecerOrden=restablecerOrden;
-    window.registrarAvance=registrarAvance; window.borrarHistorial=borrarHistorial;
-    window.onFiltroChange=onFiltroChange; window.onPresetChange=onPresetChange; window.limpiarFecha=limpiarFecha;
+    // Exponer en window para los onclick inline
+    window.procesar=procesar;
+    window.borrarTodo=borrarTodo;
+    window.restablecerOrden=restablecerOrden;
+    window.registrarAvance=registrarAvance;
+    window.borrarHistorial=borrarHistorial;
+    window.onFiltroChange=onFiltroChange;
+    window.onPresetChange=onPresetChange;
+    window.limpiarFecha=limpiarFecha;
     window.eliminarRegistro=eliminarRegistro;
 
     // Auth
@@ -605,14 +939,8 @@
       setBadge('Conectado ✓','ok');
       renderTablaHistorico();
     });
-    signInAnonymously(auth).catch(e=>{ console.error('[GC] signInAnonymously error:', e); });
-
-    // Init (fija 'hoy' en primer ingreso de la sesión)
-    document.addEventListener('DOMContentLoaded', ()=>{
-      presetEl.value='hoy';
-      filtroFechaEl.disabled=true;
-      savePref(PREF_PRESET,'hoy');
-      savePref(PREF_FFECHA,'');
+    signInAnonymously(auth).catch(e=>{
+      console.error('[GC] signInAnonymously error:', e);
     });
   </script>
 </body>
