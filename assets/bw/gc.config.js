@@ -19,6 +19,7 @@ export const GC_CONFIG = {
       title: "Reportes",
       items: [
         { href: "reports/newreport.html", icon: "🧰", label: "New Report" },
+        { href: "reports/leadstable.html", icon: "🔧", label: "Leads Table" },
         { href: "reports/psreport.html",  icon: "🚚", label: "Post-Sale Report" },
       ],
     },
