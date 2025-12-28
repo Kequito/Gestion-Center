@@ -11,12 +11,8 @@
 </head>
 
 <body>
-  <!-- ✅ Shell BW: sidebar + hero + estilos base -->
   <gc-shell hero-title="Leads Table" hero-subtitle="Pega la data del panel y genera la tabla agrupada por país (estilo Gestión Center).">
 
-    <!-- =========================
-         CONTENIDO DE LA PÁGINA
-         ========================= -->
     <section class="gc-panel">
       <div class="gc-toolbar" style="gap:12px">
         <button class="gc-btn gc-btn--primary" id="btnRender">Generar Tabla</button>
@@ -55,11 +51,7 @@
       </div>
     </section>
 
-    <!-- =========================
-         CSS específico (solo para este módulo)
-         ========================= -->
     <style>
-      /* Inputs básicos alineados a BW */
       .gc-input{
         width:100%;
         min-height:170px;
@@ -67,28 +59,17 @@
         border:1px solid var(--gray-300);
         border-radius:12px;
         padding:12px 14px;
-
-        /* ✅ Mejor para pegar tablas “raras” */
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
         font-size:13px;
         line-height:1.35;
         outline:none;
       }
       .gc-input:focus{ box-shadow:0 0 0 3px rgba(0,0,0,.08); }
 
-      .gc-help{
-        font-size:12px;
-        color:var(--gray-700);
-      }
+      .gc-help{ font-size:12px; color:var(--gray-700); }
 
-      /* Contenedor scroll tabla */
-      .gc-table-wrap{
-        overflow:auto;
-        border-radius:12px;
-      }
+      .gc-table-wrap{ overflow:auto; border-radius:12px; }
 
-      /* Ajustes: centrado numérico */
       #leadsTable td:nth-child(3),
       #leadsTable td:nth-child(4),
       #leadsTable td:nth-child(5),
@@ -97,34 +78,31 @@
         font-weight:800;
       }
 
-      /* Country merge */
       td.country-cell{
         text-transform:uppercase;
         font-weight:900;
         letter-spacing:.6px;
         text-align:center;
         color:#000;
+        white-space:nowrap;
       }
 
-      /* Queues alineado a la izquierda */
       td.queue-cell{
         text-align:left;
         font-weight:800;
+        white-space:nowrap;
       }
 
-      /* Full total */
       td.fulltotal{
         font-weight:900;
         background: var(--gray-100);
       }
 
-      /* Semáforo */
       .heat-red   { background:#ff6b6b !important; }
       .heat-pink  { background:#f6b2b2 !important; }
       .heat-beige { background:#e8ddc6 !important; }
       .heat-green { background:#9ad39a !important; }
 
-      /* Colores por país */
       .cc-chile     { background:#9fc6e6 !important; }
       .cc-colombia  { background:#f3de8a !important; }
       .cc-costarica { background:#b675a7 !important; }
@@ -139,12 +117,11 @@
 
   </gc-shell>
 
-  <!-- ✅ Importar shell (asumiendo que este HTML está en /reports/) -->
   <script type="module" src="../assets/bw/shell.js"></script>
 
   <script>
     // =====================================
-    // Helpers
+    // Helpers de parse
     // =====================================
     function toIntSafe(v){
       const n = parseInt(String(v || "").replace(/[^\d-]/g, ""), 10);
@@ -152,20 +129,20 @@
     }
     function parseRightPipe(value){
       const parts = String(value || "").split("|").map(s => s.trim());
-      if (parts.length >= 2) return toIntSafe(parts[1]);
+      if (parts.length >= 2) return toIntSafe(parts[1]); // ✅ derecha
       return toIntSafe(value);
     }
     function parseLeftPipe(value){
       const parts = String(value || "").split("|").map(s => s.trim());
-      return toIntSafe(parts[0]);
+      return toIntSafe(parts[0]); // ✅ izquierda
     }
     function parseCapacityMin(value){
       const parts = String(value || "").split("->").map(s => s.trim());
-      return toIntSafe(parts[0]);
+      return toIntSafe(parts[0]); // ✅ min
     }
     function extractCountryName(raw){
       const s = String(raw || "").trim();
-      const m = s.match(/^\d+\.\s*(.+)$/);
+      const m = s.match(/^\d+\.\s*(.+)$/); // "3. Mexico" => "Mexico"
       return (m ? m[1] : s).trim();
     }
     function countryClass(countryUpper){
@@ -190,95 +167,106 @@
     }
 
     // =====================================
-    // Parser robusto por posiciones (header slicing)
-    // ✅ Funciona aunque venga con 1 solo espacio
-    // ✅ Ignora ☰ y ≡
+    // ✅ Parser correcto (TAB-based)
     // =====================================
+    function splitRow(line){
+      // Preferimos tabs porque así viene desde el panel
+      if (line.includes("\t")){
+        const arr = line.replace(/\r/g,"").split("\t").map(s => (s ?? "").trim());
+        // Header suele venir con un tab inicial => primera celda vacía
+        if (arr.length && arr[0] === "") arr.shift();
+        return arr;
+      }
+      // Fallback: si alguna vez lo copian sin tabs
+      return line.replace(/\r/g,"").trim().split(/\s{2,}/g).map(s => s.trim());
+    }
+
+    function normHeaderKey(s){
+      return String(s || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g," ")
+        .replace(/\u00a0/g," "); // NBSP
+    }
+
+    function findHeaderIndex(lines){
+      for (let i=0;i<lines.length;i++){
+        const low = lines[i].toLowerCase();
+        // Match fuerte
+        if (low.includes("country") && low.includes("name") && low.includes("number of operators") && low.includes("capacity") && low.includes("orders")){
+          return i;
+        }
+      }
+      return -1;
+    }
+
     function parsePastedData(text){
       const rawLines = String(text || "")
         .split("\n")
-        .map(l => (l || "").replace(/\r/g, "").trim())
+        .map(l => (l || "").replace(/\r/g,"").trim())
         .filter(Boolean);
 
-      // Quitar líneas sueltas de "handles" (☰ o ≡) y variantes
+      // Quitar líneas “☰” o “≡”
       const lines = rawLines.filter(l => !/^(☰|≡)+$/.test(l));
 
       if (!lines.length) return { rows: [], groups: [] };
 
-      // Detectar header por columnas clave
-      let headerIndex = -1;
-      for (let i = 0; i < lines.length; i++){
-        const low = lines[i].toLowerCase();
-        if (low.includes("country") && low.includes("name") && low.includes("capacity") && low.includes("orders")){
-          headerIndex = i;
-          break;
-        }
-      }
+      const headerIndex = findHeaderIndex(lines);
       if (headerIndex === -1){
         return { rows: [], groups: [], error: "No se detectó encabezado. Pega incluyendo la fila de headers." };
       }
 
-      const headerLine = lines[headerIndex];
+      const headerCells = splitRow(lines[headerIndex]).map(normHeaderKey);
 
-      function buildSlicesFromHeader(h){
-        // Estas son las columnas que realmente usamos
-        const keys = [
-          { key:"country", label:"Country" },
-          { key:"name", label:"Name" },
-          { key:"number of operators", label:"Number of operators" },
-          { key:"capacity", label:"Capacity" },
-          { key:"orders", label:"Orders" },
-        ];
+      // Mapear índices
+      const colIndex = {};
+      headerCells.forEach((h, idx) => { colIndex[h] = idx; });
 
-        const pos = [];
-        for (const k of keys){
-          const idx = h.indexOf(k.label);
-          if (idx === -1) return null;
-          pos.push({ key: k.key, start: idx, label: k.label });
+      // Nombres EXACTOS (como viene en tu export)
+      const KEY_COUNTRY   = "country";
+      const KEY_NAME      = "name";
+      const KEY_OPERATORS = "number of operators";
+      const KEY_CAPACITY  = "capacity";
+      const KEY_ORDERS    = "orders";
+
+      const required = [KEY_COUNTRY, KEY_NAME, KEY_OPERATORS, KEY_CAPACITY, KEY_ORDERS];
+      for (const k of required){
+        if (!(k in colIndex)){
+          return { rows: [], groups: [], error: `Falta la columna "${k}" en el header detectado.` };
         }
-
-        pos.sort((a,b)=>a.start-b.start);
-
-        for (let i=0;i<pos.length;i++){
-          pos[i].end = (i < pos.length-1) ? pos[i+1].start : h.length;
-        }
-        return pos;
       }
 
-      const slices = buildSlicesFromHeader(headerLine);
-      if (!slices){
-        return { rows: [], groups: [], error: "No se pudieron ubicar las columnas necesarias en el header." };
-      }
-
-      function sliceValue(line, key){
-        const s = slices.find(x => x.key === key);
-        if (!s) return "";
-        return String(line.slice(s.start, s.end) || "").trim();
-      }
-
-      const dataLines = lines.slice(headerIndex + 1);
       const rows = [];
+      const dataLines = lines.slice(headerIndex + 1);
 
       for (const line of dataLines){
         if (!line || /^(☰|≡)+$/.test(line)) continue;
 
-        const rawCountry   = sliceValue(line, "country");
-        const rawName      = sliceValue(line, "name");
-        const rawOperators = sliceValue(line, "number of operators");
-        const rawCapacity  = sliceValue(line, "capacity");
-        const rawOrders    = sliceValue(line, "orders");
+        const cells = splitRow(line);
+        const get = (key) => {
+          const idx = colIndex[key];
+          return (idx != null && idx < cells.length) ? (cells[idx] ?? "") : "";
+        };
 
+        const rawCountry   = get(KEY_COUNTRY);
+        const rawName      = get(KEY_NAME);
+        const rawOperators = get(KEY_OPERATORS);
+        const rawCapacity  = get(KEY_CAPACITY);
+        const rawOrders    = get(KEY_ORDERS);
+
+        // Country/Name son obligatorios
         if (!rawCountry || !rawName) continue;
 
         rows.push({
           country: extractCountryName(rawCountry),
-          queue: rawName.trim(),                    // ✅ Queues = Name
-          operators: parseRightPipe(rawOperators),  // ✅ derecha X|Y
-          ordersAvailable: parseCapacityMin(rawCapacity), // ✅ min de min->max
-          totalOrders: parseLeftPipe(rawOrders)     // ✅ primer valor X|Y
+          queue: rawName.trim(),
+          operators: parseRightPipe(rawOperators),
+          ordersAvailable: parseCapacityMin(rawCapacity),
+          totalOrders: parseLeftPipe(rawOrders),
         });
       }
 
+      // Agrupar por país (orden de aparición)
       const groupsMap = new Map();
       for (const r of rows){
         if (!groupsMap.has(r.country)){
@@ -328,22 +316,19 @@
           tdOps.textContent = item.operators;
           tr.appendChild(tdOps);
 
-          // Orders available (heat)
+          // Orders available
           const tdAvail = document.createElement("td");
           tdAvail.className = heatClass(item.ordersAvailable);
           tdAvail.textContent = item.ordersAvailable;
           tr.appendChild(tdAvail);
 
-          // Total orders (heat)
+          // Total orders
           const tdTotal = document.createElement("td");
           tdTotal.className = heatClass(item.totalOrders);
           tdTotal.textContent = item.totalOrders;
           tr.appendChild(tdTotal);
 
-          // Full Total:
-          // idx 0 -> sumAvail
-          // idx 1 -> sumTotal
-          // resto -> vacío
+          // Full Total (1ra fila sumAvail, 2da fila sumTotal)
           const tdFull = document.createElement("td");
           tdFull.className = "fulltotal";
           if (idx === 0) tdFull.textContent = g.sumAvail;
@@ -363,7 +348,7 @@
     }
 
     // =====================================
-    // Init (se ejecuta DESPUÉS del shell)
+    // Init seguro con shell ready
     // =====================================
     function initLeadsTable(){
       const btnRender = document.getElementById("btnRender");
@@ -393,7 +378,6 @@
       });
     }
 
-    // ✅ Ejecutar cuando el shell ya terminó de renderizar el DOM final
     function whenShellReady(fn){
       if (window.__GC_READY__ === true) return fn();
       window.addEventListener("gc:shell-ready", fn, { once:true });
