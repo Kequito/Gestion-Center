@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leads Table | Gestión Center</title>
+
+  <!-- Opcional: si quieres forzar base en entornos raros.
+       Normalmente NO hace falta porque shell calcula BASE solo.
+  <meta name="gc-base" content="/Gestion-Center/">
+  -->
+</head>
+
+<body>
+  <!-- ✅ Shell BW: sidebar + hero + estilos base -->
+  <gc-shell hero-title="Leads Table" hero-subtitle="Pega la data del panel y genera la tabla agrupada por país (estilo Gestión Center).">
+
+    <!-- =========================
+         CONTENIDO DE LA PÁGINA
+         ========================= -->
+    <section class="gc-panel">
+      <div class="gc-toolbar" style="gap:12px">
+        <button class="gc-btn gc-btn--primary" id="btnRender">Generar Tabla</button>
+        <button class="gc-btn gc-btn--ghost" id="btnClear">Limpiar</button>
+
+        <div class="gc-chipset u-right" style="margin-left:auto">
+          <span class="gc-chip" id="metaRows">Filas: —</span>
+          <span class="gc-chip" id="metaCountries">Países: —</span>
+          <span class="gc-chip gc-chip--dark" id="metaUpdated">Último render: —</span>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <textarea id="pasteInput" class="gc-input" placeholder="Pega aquí la tabla completa (incluye encabezados)."></textarea>
+        <div class="gc-help" style="margin-top:8px">
+          ✅ Mapeo: <b>Queues = Name</b> · <b>Operators = derecha (X|Y)</b> · <b>Orders available = min de Capacity</b> · <b>Total orders = primer valor de Orders</b>
+        </div>
+      </div>
+    </section>
+
+    <section class="gc-panel" style="margin-top:12px">
+      <div class="gc-table-wrap">
+        <table class="gc-table gc-table--compact" id="leadsTable">
+          <thead>
+            <tr>
+              <th style="width:150px;text-align:center">Country</th>
+              <th>Queues</th>
+              <th style="width:140px;text-align:center">Number<br/>of operators</th>
+              <th style="width:140px;text-align:center">Orders<br/>available</th>
+              <th style="width:120px;text-align:center">Total<br/>orders</th>
+              <th style="width:120px;text-align:center">Full Total</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =========================
+         CSS específico (solo para este módulo)
+         ========================= -->
+    <style>
+      /* Inputs básicos alineados a BW */
+      .gc-input{
+        width:100%;
+        min-height:170px;
+        resize:vertical;
+        border:1px solid var(--gray-300);
+        border-radius:12px;
+        padding:12px 14px;
+        font-family:var(--font);
+        font-size:13px;
+        line-height:1.35;
+        outline:none;
+      }
+      .gc-input:focus{ box-shadow:0 0 0 3px rgba(0,0,0,.08); }
+
+      .gc-help{
+        font-size:12px;
+        color:var(--gray-700);
+      }
+
+      /* Contenedor scroll tabla */
+      .gc-table-wrap{
+        overflow:auto;
+        border-radius:12px;
+      }
+
+      /* Ajustes: centrado numérico */
+      #leadsTable td:nth-child(3),
+      #leadsTable td:nth-child(4),
+      #leadsTable td:nth-child(5),
+      #leadsTable td:nth-child(6){
+        text-align:center;
+        font-weight:800;
+      }
+
+      /* Country merge */
+      td.country-cell{
+        text-transform:uppercase;
+        font-weight:900;
+        letter-spacing:.6px;
+        text-align:center;
+        color:#000;
+      }
+
+      /* Queues alineado a la izquierda como tu ejemplo */
+      td.queue-cell{
+        text-align:left;
+        font-weight:800;
+      }
+
+      /* Full total */
+      td.fulltotal{
+        font-weight:900;
+        background: var(--gray-100);
+      }
+
+      /* Semáforo */
+      .heat-red   { background:#ff6b6b !important; }
+      .heat-pink  { background:#f6b2b2 !important; }
+      .heat-beige { background:#e8ddc6 !important; }
+      .heat-green { background:#9ad39a !important; }
+
+      /* Colores por país (ajústalos si quieres que calcen al 100% con tu captura) */
+      .cc-chile     { background:#9fc6e6 !important; }
+      .cc-colombia  { background:#f3de8a !important; }
+      .cc-costarica { background:#b675a7 !important; }
+      .cc-ecuador   { background:#f1b782 !important; }
+      .cc-mexico    { background:#cfe8c7 !important; }
+      .cc-paraguay  { background:#e6c7d6 !important; }
+      .cc-peru      { background:#e39a9a !important; }
+      .cc-uruguay   { background:#9fc0c3 !important; }
+      .cc-venezuela { background:#c9c9c9 !important; }
+      .cc-default   { background:#bdbdbd !important; }
+    </style>
+
+  </gc-shell>
+
+  <!-- ✅ Importar shell (asumiendo que este HTML está en /reports/) -->
+  <script type="module" src="../assets/bw/shell.js"></script>
+
+  <script>
+    // =====================================
+    // Helpers de parse
+    // =====================================
+    function normalizeLine(line){
+      return (line || "").replace(/\r/g, "").trim();
+    }
+    function splitByTabsOrManySpaces(line){
+      if (line.includes("\t")) return line.split("\t").map(s => s.trim());
+      return line.split(/\s{2,}/g).map(s => s.trim());
+    }
+    function toIntSafe(v){
+      const n = parseInt(String(v || "").replace(/[^\d-]/g, ""), 10);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function parseRightPipe(value){
+      const parts = String(value || "").split("|").map(s => s.trim());
+      if (parts.length >= 2) return toIntSafe(parts[1]);
+      return toIntSafe(value);
+    }
+    function parseLeftPipe(value){
+      const parts = String(value || "").split("|").map(s => s.trim());
+      return toIntSafe(parts[0]);
+    }
+    function parseCapacityMin(value){
+      const parts = String(value || "").split("->").map(s => s.trim());
+      return toIntSafe(parts[0]);
+    }
+    function extractCountryName(raw){
+      const s = String(raw || "").trim();
+      const m = s.match(/^\d+\.\s*(.+)$/);
+      return (m ? m[1] : s).trim();
+    }
+    function countryClass(countryUpper){
+      const key = countryUpper.toLowerCase();
+      if (key.includes("chile")) return "cc-chile";
+      if (key.includes("colombia")) return "cc-colombia";
+      if (key.includes("costa rica") || key.includes("costarica")) return "cc-costarica";
+      if (key.includes("ecuador")) return "cc-ecuador";
+      if (key.includes("mexico")) return "cc-mexico";
+      if (key.includes("paraguay")) return "cc-paraguay";
+      if (key.includes("peru")) return "cc-peru";
+      if (key.includes("uruguay")) return "cc-uruguay";
+      if (key.includes("venezuela")) return "cc-venezuela";
+      return "cc-default";
+    }
+    function heatClass(val){
+      const n = Number(val);
+      if (n === 0) return "heat-red";
+      if (n <= 5) return "heat-pink";
+      if (n <= 20) return "heat-beige";
+      return "heat-green";
+    }
+
+    // =====================================
+    // Parser principal
+    // =====================================
+    function parsePastedData(text){
+      const rawLines = String(text || "").split("\n").map(normalizeLine).filter(Boolean);
+
+      // Remover líneas "☰" sueltas
+      const lines = rawLines.filter(l => l !== "☰");
+
+      if (!lines.length) return { rows: [], groups: [] };
+
+      // Detectar header
+      let headerIndex = -1;
+      for (let i = 0; i < lines.length; i++){
+        const low = lines[i].toLowerCase();
+        if (low.includes("country") && low.includes("name") && low.includes("capacity")) {
+          headerIndex = i;
+          break;
+        }
+      }
+      if (headerIndex === -1){
+        return { rows: [], groups: [], error: "No se detectó encabezado. Pega incluyendo la fila de headers." };
+      }
+
+      const headerCells = splitByTabsOrManySpaces(lines[headerIndex])
+        .map(h => h.replace(/^#\s*/,"").trim());
+
+      const colIndex = {};
+      headerCells.forEach((h, idx) => { colIndex[h.toLowerCase()] = idx; });
+
+      const need = ["country", "name", "capacity", "orders", "number of operators"];
+      for (const k of need){
+        if (!(k in colIndex)){
+          return { rows: [], groups: [], error: `Falta la columna "${k}" en el header detectado.` };
+        }
+      }
+
+      const dataLines = lines.slice(headerIndex + 1);
+      const rows = [];
+
+      for (const line of dataLines){
+        if (!line || line === "☰") continue;
+        const cells = splitByTabsOrManySpaces(line);
+
+        const get = (colName) => {
+          const idx = colIndex[colName];
+          return (idx != null && idx < cells.length) ? cells[idx] : "";
+        };
+
+        const rawCountry   = get("country");
+        const rawName      = get("name");
+        const rawOperators = get("number of operators");
+        const rawCapacity  = get("capacity");
+        const rawOrders    = get("orders");
+
+        if (!rawCountry || !rawName) continue;
+
+        rows.push({
+          country: extractCountryName(rawCountry),
+          queue: rawName.trim(),
+          operators: parseRightPipe(rawOperators),        // ✅ derecha X|Y
+          ordersAvailable: parseCapacityMin(rawCapacity), // ✅ min de min->max
+          totalOrders: parseLeftPipe(rawOrders)           // ✅ primer valor X|Y
+        });
+      }
+
+      // Agrupar por país (orden de aparición)
+      const groupsMap = new Map();
+      for (const r of rows){
+        if (!groupsMap.has(r.country)){
+          groupsMap.set(r.country, { country: r.country, items: [], sumAvail: 0, sumTotal: 0 });
+        }
+        const g = groupsMap.get(r.country);
+        g.items.push(r);
+        g.sumAvail += r.ordersAvailable;
+        g.sumTotal += r.totalOrders;
+      }
+
+      return { rows, groups: Array.from(groupsMap.values()) };
+    }
+
+    // =====================================
+    // Render
+    // =====================================
+    function renderTable(groups){
+      const tbody = document.getElementById("leadsTbody");
+      tbody.innerHTML = "";
+
+      for (const g of groups){
+        const rowspan = g.items.length;
+        const cUpper = String(g.country || "").toUpperCase();
+        const cClass = countryClass(cUpper);
+
+        g.items.forEach((item, idx) => {
+          const tr = document.createElement("tr");
+
+          // Country merged
+          if (idx === 0){
+            const tdCountry = document.createElement("td");
+            tdCountry.className = `country-cell ${cClass}`;
+            tdCountry.rowSpan = rowspan;
+            tdCountry.textContent = cUpper;
+            tr.appendChild(tdCountry);
+          }
+
+          // Queues
+          const tdQueue = document.createElement("td");
+          tdQueue.className = "queue-cell";
+          tdQueue.textContent = item.queue;
+          tr.appendChild(tdQueue);
+
+          // Operators
+          const tdOps = document.createElement("td");
+          tdOps.textContent = item.operators;
+          tr.appendChild(tdOps);
+
+          // Orders available (heat)
+          const tdAvail = document.createElement("td");
+          tdAvail.className = heatClass(item.ordersAvailable);
+          tdAvail.textContent = item.ordersAvailable;
+          tr.appendChild(tdAvail);
+
+          // Total orders (heat)
+          const tdTotal = document.createElement("td");
+          tdTotal.className = heatClass(item.totalOrders);
+          tdTotal.textContent = item.totalOrders;
+          tr.appendChild(tdTotal);
+
+          // Full Total:
+          // idx 0 -> sumAvail
+          // idx 1 -> sumTotal
+          // resto -> vacío
+          const tdFull = document.createElement("td");
+          tdFull.className = "fulltotal";
+          if (idx === 0) tdFull.textContent = g.sumAvail;
+          else if (idx === 1) tdFull.textContent = g.sumTotal;
+          else tdFull.textContent = "";
+          tr.appendChild(tdFull);
+
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    function setMeta(rowsCount, countriesCount){
+      document.getElementById("metaRows").textContent = `Filas: ${rowsCount}`;
+      document.getElementById("metaCountries").textContent = `Países: ${countriesCount}`;
+      document.getElementById("metaUpdated").textContent = `Último render: ${new Date().toLocaleString()}`;
+    }
+
+    // =====================================
+    // Init seguro con BW Shell
+    // =====================================
+    function initLeadsTable(){
+      const btnRender = document.getElementById("btnRender");
+      const btnClear  = document.getElementById("btnClear");
+      const input     = document.getElementById("pasteInput");
+
+      btnRender.addEventListener("click", () => {
+        const parsed = parsePastedData(input.value);
+
+        if (parsed.error){
+          alert(parsed.error);
+          return;
+        }
+
+        renderTable(parsed.groups);
+        setMeta(parsed.rows.length, parsed.groups.length);
+      });
+
+      btnClear.addEventListener("click", () => {
+        input.value = "";
+        document.getElementById("leadsTbody").innerHTML = "";
+        document.getElementById("metaRows").textContent = "Filas: —";
+        document.getElementById("metaCountries").textContent = "Países: —";
+        document.getElementById("metaUpdated").textContent = "Último render: —";
+      });
+    }
+
+    // ✅ Esto evita el clásico bug de listeners cuando shell re-renderiza
+    if (window.gcOnReady) {
+      window.gcOnReady(initLeadsTable);
+    } else {
+      // fallback por si algo raro pasa
+      window.addEventListener("DOMContentLoaded", initLeadsTable);
+    }
+  </script>
+</body>
+</html>
