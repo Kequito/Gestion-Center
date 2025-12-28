@@ -143,6 +143,7 @@ async function loadConfig() {
         { type: "group", id: "grp-reportes", title: "Reportes",
           items: [
             { label: "New Report",         icon: "🧰", href: "reports/newreport.html" },
+            { label: "New Report",         icon: "🔧", href: "reports/leadstable.html" },
             { label: "Post-Sale Report",   icon: "🚚", href: "reports/psreport.html" },
             { label: "Delta Report",       icon: "📈", href: "reports/deltareport.html" },
             { label: "Delta Report 2",     icon: "📊", href: "reports/deltareport2.html" }, // ← nuevo
