@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="es">
 <head>
@@ -5,8 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Leads Table | Gestión Center</title>
 
-  <!-- Opcional: si quieres forzar base en entornos raros.
-       Normalmente NO hace falta porque shell calcula BASE solo.
+  <!-- Opcional:
   <meta name="gc-base" content="/Gestion-Center/">
   -->
 </head>
@@ -68,7 +68,10 @@
         border:1px solid var(--gray-300);
         border-radius:12px;
         padding:12px 14px;
-        font-family:var(--font);
+
+        /* ✅ Mejor para pegar tablas “raras” */
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
         font-size:13px;
         line-height:1.35;
         outline:none;
@@ -104,7 +107,7 @@
         color:#000;
       }
 
-      /* Queues alineado a la izquierda como tu ejemplo */
+      /* Queues alineado a la izquierda */
       td.queue-cell{
         text-align:left;
         font-weight:800;
@@ -122,7 +125,7 @@
       .heat-beige { background:#e8ddc6 !important; }
       .heat-green { background:#9ad39a !important; }
 
-      /* Colores por país (ajústalos si quieres que calcen al 100% con tu captura) */
+      /* Colores por país */
       .cc-chile     { background:#9fc6e6 !important; }
       .cc-colombia  { background:#f3de8a !important; }
       .cc-costarica { background:#b675a7 !important; }
@@ -142,15 +145,8 @@
 
   <script>
     // =====================================
-    // Helpers de parse
+    // Helpers
     // =====================================
-    function normalizeLine(line){
-      return (line || "").replace(/\r/g, "").trim();
-    }
-    function splitByTabsOrManySpaces(line){
-      if (line.includes("\t")) return line.split("\t").map(s => s.trim());
-      return line.split(/\s{2,}/g).map(s => s.trim());
-    }
     function toIntSafe(v){
       const n = parseInt(String(v || "").replace(/[^\d-]/g, ""), 10);
       return Number.isFinite(n) ? n : 0;
@@ -195,21 +191,26 @@
     }
 
     // =====================================
-    // Parser principal
+    // Parser robusto por posiciones (header slicing)
+    // ✅ Funciona aunque venga con 1 solo espacio
+    // ✅ Ignora ☰ y ≡
     // =====================================
     function parsePastedData(text){
-      const rawLines = String(text || "").split("\n").map(normalizeLine).filter(Boolean);
+      const rawLines = String(text || "")
+        .split("\n")
+        .map(l => (l || "").replace(/\r/g, "").trim())
+        .filter(Boolean);
 
-      // Remover líneas "☰" sueltas
-      const lines = rawLines.filter(l => l !== "☰");
+      // Quitar líneas sueltas de "handles" (☰ o ≡) y variantes
+      const lines = rawLines.filter(l => !/^(☰|≡)+$/.test(l));
 
       if (!lines.length) return { rows: [], groups: [] };
 
-      // Detectar header
+      // Detectar header por columnas clave
       let headerIndex = -1;
       for (let i = 0; i < lines.length; i++){
         const low = lines[i].toLowerCase();
-        if (low.includes("country") && low.includes("name") && low.includes("capacity")) {
+        if (low.includes("country") && low.includes("name") && low.includes("capacity") && low.includes("orders")){
           headerIndex = i;
           break;
         }
@@ -218,49 +219,67 @@
         return { rows: [], groups: [], error: "No se detectó encabezado. Pega incluyendo la fila de headers." };
       }
 
-      const headerCells = splitByTabsOrManySpaces(lines[headerIndex])
-        .map(h => h.replace(/^#\s*/,"").trim());
+      const headerLine = lines[headerIndex];
 
-      const colIndex = {};
-      headerCells.forEach((h, idx) => { colIndex[h.toLowerCase()] = idx; });
+      function buildSlicesFromHeader(h){
+        // Estas son las columnas que realmente usamos
+        const keys = [
+          { key:"country", label:"Country" },
+          { key:"name", label:"Name" },
+          { key:"number of operators", label:"Number of operators" },
+          { key:"capacity", label:"Capacity" },
+          { key:"orders", label:"Orders" },
+        ];
 
-      const need = ["country", "name", "capacity", "orders", "number of operators"];
-      for (const k of need){
-        if (!(k in colIndex)){
-          return { rows: [], groups: [], error: `Falta la columna "${k}" en el header detectado.` };
+        const pos = [];
+        for (const k of keys){
+          const idx = h.indexOf(k.label);
+          if (idx === -1) return null;
+          pos.push({ key: k.key, start: idx, label: k.label });
         }
+
+        pos.sort((a,b)=>a.start-b.start);
+
+        for (let i=0;i<pos.length;i++){
+          pos[i].end = (i < pos.length-1) ? pos[i+1].start : h.length;
+        }
+        return pos;
+      }
+
+      const slices = buildSlicesFromHeader(headerLine);
+      if (!slices){
+        return { rows: [], groups: [], error: "No se pudieron ubicar las columnas necesarias en el header." };
+      }
+
+      function sliceValue(line, key){
+        const s = slices.find(x => x.key === key);
+        if (!s) return "";
+        return String(line.slice(s.start, s.end) || "").trim();
       }
 
       const dataLines = lines.slice(headerIndex + 1);
       const rows = [];
 
       for (const line of dataLines){
-        if (!line || line === "☰") continue;
-        const cells = splitByTabsOrManySpaces(line);
+        if (!line || /^(☰|≡)+$/.test(line)) continue;
 
-        const get = (colName) => {
-          const idx = colIndex[colName];
-          return (idx != null && idx < cells.length) ? cells[idx] : "";
-        };
-
-        const rawCountry   = get("country");
-        const rawName      = get("name");
-        const rawOperators = get("number of operators");
-        const rawCapacity  = get("capacity");
-        const rawOrders    = get("orders");
+        const rawCountry   = sliceValue(line, "country");
+        const rawName      = sliceValue(line, "name");
+        const rawOperators = sliceValue(line, "number of operators");
+        const rawCapacity  = sliceValue(line, "capacity");
+        const rawOrders    = sliceValue(line, "orders");
 
         if (!rawCountry || !rawName) continue;
 
         rows.push({
           country: extractCountryName(rawCountry),
-          queue: rawName.trim(),
-          operators: parseRightPipe(rawOperators),        // ✅ derecha X|Y
+          queue: rawName.trim(),                    // ✅ Queues = Name
+          operators: parseRightPipe(rawOperators),  // ✅ derecha X|Y
           ordersAvailable: parseCapacityMin(rawCapacity), // ✅ min de min->max
-          totalOrders: parseLeftPipe(rawOrders)           // ✅ primer valor X|Y
+          totalOrders: parseLeftPipe(rawOrders)     // ✅ primer valor X|Y
         });
       }
 
-      // Agrupar por país (orden de aparición)
       const groupsMap = new Map();
       for (const r of rows){
         if (!groupsMap.has(r.country)){
@@ -345,12 +364,14 @@
     }
 
     // =====================================
-    // Init seguro con BW Shell
+    // Init (se ejecuta DESPUÉS del shell)
     // =====================================
     function initLeadsTable(){
       const btnRender = document.getElementById("btnRender");
       const btnClear  = document.getElementById("btnClear");
       const input     = document.getElementById("pasteInput");
+
+      if (!btnRender || !btnClear || !input) return;
 
       btnRender.addEventListener("click", () => {
         const parsed = parsePastedData(input.value);
@@ -373,13 +394,13 @@
       });
     }
 
-    // ✅ Esto evita el clásico bug de listeners cuando shell re-renderiza
-    if (window.gcOnReady) {
-      window.gcOnReady(initLeadsTable);
-    } else {
-      // fallback por si algo raro pasa
-      window.addEventListener("DOMContentLoaded", initLeadsTable);
+    // ✅ Ejecutar cuando el shell ya terminó de renderizar el DOM final
+    function whenShellReady(fn){
+      if (window.__GC_READY__ === true) return fn();
+      window.addEventListener("gc:shell-ready", fn, { once:true });
     }
+    whenShellReady(initLeadsTable);
   </script>
 </body>
 </html>
+```
